@@ -12,8 +12,6 @@ from utils import debug, const
 
 env = environ.Env()
 
-log, warn, error = debug.log, debug.warn, debug.error
-
 PROCESS = "Common"
 
 
@@ -51,7 +49,7 @@ def browseSFTP(brand, src=""):
         transport.connect(username=username, password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
     except Exception as e:
-        warn(brand, f"Connect to {brand} SFTP Server. {str(e)}")
+        debug.warn(brand, f"Connect to {brand} SFTP Server. {str(e)}")
         return []
 
     if src != "":
@@ -85,25 +83,25 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
                 if delete:
                     os.remove(f"{src}/{file}")
 
-        log(brand, f"Download Local SFTP file From {src} To {dst}")
+        debug.log(brand, f"Download Local SFTP file From {src} To {dst}")
     else:
         try:
             transport = paramiko.Transport((host, port))
             transport.connect(username=username, password=password)
             sftp = paramiko.SFTPClient.from_transport(transport)
         except Exception as e:
-            warn(brand, f"Connect to {brand} SFTP Server. {str(e)}")
+            debug.warn(brand, f"Connect to {brand} SFTP Server. {str(e)}")
             return
 
         if fileSrc:
             try:
                 sftp.get(src, dst)
-                log(brand, f"Download SFTP file From {src} To {dst}")
+                debug.log(brand, f"Download SFTP file From {src} To {dst}")
 
                 if delete:
                     sftp.remove(src)
             except Exception as e:
-                warn(
+                debug.warn(
                     brand, f"Download SFTP file From {src} To {dst}. {str(e)}")
         else:
             try:
@@ -116,12 +114,12 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
                         continue
 
                     sftp.get(file, dst)
-                    log(brand, f"Download SFTP file From {src} To {dst}")
+                    debug.log(brand, f"Download SFTP file From {src} To {dst}")
 
                     if delete:
                         sftp.remove(file)
             except Exception as e:
-                warn(
+                debug.warn(
                     brand, f"Download SFTP file From {src} To {dst}. {str(e)}")
                 return
 
@@ -136,25 +134,28 @@ def downloadFileFromFTP(brand, src, dst):
     try:
         urllib.request.urlretrieve(
             f"ftp://{username}:{password}@{host}/{src}", dst)
-        log(brand, f"Download FTP file From {src} To {dst}")
+        debug.log(brand, f"Download FTP file From {src} To {dst}")
     except Exception as e:
-        warn(brand, f"Download FTP file From {src} To {dst}. {str(e)}")
+        debug.warn(brand, f"Download FTP file From {src} To {dst}. {str(e)}")
 
 
 def downloadFileFromLink(src, dst):
     try:
         urllib.request.urlretrieve(src, dst)
-        log(PROCESS, f"Download From {dst} To {src}")
+        debug.log(PROCESS, f"Download From {dst} To {src}")
     except Exception as e:
-        warn(PROCESS, f"Download From {dst} To {src}. Error: {str(e)}")
+        debug.warn(PROCESS, f"Download From {dst} To {src}. Error: {str(e)}")
 
 
 def toText(text):
-    return str(text).replace("N/A", "").replace("n/a", "").replace('', '').replace('¥', '').replace('…', '').replace('„', '').strip()
+    if text:
+        return str(text).replace("N/A", "").replace("n/a", "").replace('', '').replace('¥', '').replace('…', '').replace('„', '').strip()
+    else:
+        return ""
 
 
 def toFloat(value):
-    if str(value).strip() != '':
+    if value and str(value).strip() != '':
         try:
             return round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("in", "").replace("kg", "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "").strip()), 2)
         except:

@@ -56,7 +56,6 @@ class FeedAdmin(admin.ModelAdmin):
             'width',
             'length',
             'height',
-            'depth',
             'size',
             'dimension',
             'repeatH',
@@ -90,7 +89,7 @@ class FeedAdmin(admin.ModelAdmin):
         ]}),
         ('Tagging', {'fields': [
             'keywords',
-            'tags'
+            'colors'
         ]}),
         ('Status', {'fields': [
             'statusP',

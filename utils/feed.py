@@ -4,8 +4,6 @@ from utils import debug, const
 
 env = environ.Env()
 
-log, warn, error = debug.log, debug.warn, debug.error
-
 
 class FeedManager:
     def __init__(self, brand, Feed):
@@ -44,7 +42,6 @@ class FeedManager:
                     width=product.get('width', 0),
                     length=product.get('length', 0),
                     height=product.get('height', 0),
-                    depth=product.get('depth', 0),
                     size=product.get('size', ""),
                     dimension=product.get('dimension', ""),
                     repeatH=product.get('repeatH', 0),
@@ -92,11 +89,11 @@ class FeedManager:
                     roomsets=product.get('roomsets', [])
                 )
                 success += 1
-                log(feed.brand, f"Imported MPN: {feed.mpn}")
+                debug.log(self.brand, f"Imported MPN: {feed.mpn}")
             except Exception as e:
                 failed += 1
-                warn(self.brand, str(e))
+                debug.warn(self.brand, str(e))
                 continue
 
-        log(self.brand,
-            f"Finished writing {self.brand} feeds. Total: {total}, Success: {success}, Failed: {failed}")
+        debug.log(self.brand,
+                  f"Finished writing {self.brand} feeds. Total: {total}, Success: {success}, Failed: {failed}")
