@@ -158,3 +158,4 @@ images/
 migrations/
 static/
 main.sqlite3-journal
+utils/const.py
