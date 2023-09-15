@@ -86,7 +86,7 @@ DATABASES = {
     }
 }
 
-DATABASE_ROUTERS = ['mysql.router.VendorRouter']
+DATABASE_ROUTERS = ['vendor.router.VendorRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
