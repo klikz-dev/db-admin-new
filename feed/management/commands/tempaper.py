@@ -4,7 +4,7 @@ from feed.models import Tempaper
 import os
 import openpyxl
 
-from utils import feed, debug, common
+from utils import database, debug, common
 
 BRAND = "Tempaper"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
@@ -27,12 +27,13 @@ class Command(BaseCommand):
                 delete=False
             )
             products = processor.fetchFeed()
-            processor.feedManager.writeFeed(products=products)
+            processor.DatabaseManager.writeFeed(products=products)
 
 
 class Processor:
     def __init__(self):
-        self.feedManager = feed.FeedManager(brand=BRAND, Feed=Tempaper)
+        self.DatabaseManager = database.DatabaseManager(
+            brand=BRAND, Feed=Tempaper)
 
     def __enter__(self):
         return self
@@ -48,8 +49,7 @@ class Processor:
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(values_only=True):
-            # try:
-            if True:
+            try:
                 # Primary Keys
                 mpn = common.toText(row[3])
                 sku = f"TP {mpn}"
@@ -126,9 +126,9 @@ class Processor:
                 else:
                     statusS = False
 
-            # except Exception as e:
-            #     debug.warn(BRAND, str(e))
-            #     continue
+            except Exception as e:
+                debug.warn(BRAND, str(e))
+                continue
 
             product = {
                 'mpn': mpn,
