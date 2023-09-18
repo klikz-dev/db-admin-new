@@ -43,7 +43,7 @@ class Product(models.Model):
     title = models.CharField(max_length=200, blank=False, null=False)
     description = models.CharField(
         max_length=2000, default=None, blank=True, null=True)
-    data = models.JSONField()
+    data = models.JSONField(default=None)
 
     manufacturer = models.ForeignKey(
         Manufacturer, related_name="products", on_delete=models.CASCADE, blank=False, null=False)

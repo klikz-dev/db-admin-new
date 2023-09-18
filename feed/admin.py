@@ -56,11 +56,9 @@ class FeedAdmin(admin.ModelAdmin):
             'width',
             'length',
             'height',
-            'size',
-            'dimension',
             'repeatH',
             'repeatV',
-            'repeat',
+            'specs',
         ]}),
         ('Additional Information', {'fields': [
             'yards',
@@ -69,13 +67,10 @@ class FeedAdmin(admin.ModelAdmin):
             'material',
             'finish',
             'care',
-            'construction',
-            'specs',
-            'features',
             'weight',
             'country',
             'upc',
-            'custom'
+            'features',
         ]}),
         ('Pricing', {'fields': [
             'cost',
@@ -108,6 +103,9 @@ class FeedAdmin(admin.ModelAdmin):
         ('Assets', {'fields': [
             'thumbnail',
             'roomsets'
+        ]}),
+        (None, {'fields': [
+            'custom',
         ]}),
     ]
 

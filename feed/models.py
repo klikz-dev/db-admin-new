@@ -28,14 +28,9 @@ class Feed(models.Model):
     width = models.FloatField(default=0, null=True, blank=True)
     length = models.FloatField(default=0, null=True, blank=True)
     height = models.FloatField(default=0, null=True, blank=True)
-    size = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
-    dimension = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
     repeatH = models.FloatField(default=0, null=True, blank=True)
     repeatV = models.FloatField(default=0, null=True, blank=True)
-    repeat = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
+    specs = models.JSONField(default=None, null=True, blank=True)
 
     yards = models.FloatField(default=0, null=True, blank=True)
     content = models.CharField(
@@ -48,15 +43,11 @@ class Feed(models.Model):
         max_length=200, default=None, null=True, blank=True)
     care = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    construction = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
-    specs = models.JSONField(default=None, null=True, blank=True)
-    features = models.JSONField(
-        default=None, null=True, blank=True)
     weight = models.FloatField(default=0, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    custom = models.JSONField(default=None, null=True, blank=True)
+    features = models.JSONField(
+        default=None, null=True, blank=True)
 
     cost = models.FloatField(null=False, blank=False)
     msrp = models.FloatField(default=0, null=True, blank=True)
@@ -87,6 +78,8 @@ class Feed(models.Model):
     thumbnail = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     roomsets = models.JSONField(default=None, null=True, blank=True)
+
+    custom = models.JSONField(default=None, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
