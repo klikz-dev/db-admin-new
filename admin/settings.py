@@ -70,23 +70,18 @@ WSGI_APPLICATION = 'admin.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'main.sqlite3',
-        'OPTIONS': {
-            'timeout': 60,
-        }
-    },
-    'vendor': {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': env('MYSQL_HOST'),
         'PORT': env('MYSQL_PORT'),
         'USER': env('MYSQL_USER'),
         'PASSWORD': env('MYSQL_PASSWORD'),
         'NAME': env('MYSQL_DATABASE'),
+        "OPTIONS": {
+            "init_command": "SET default_storage_engine=INNODB",
+            "sql_mode": "STRICT_TRANS_TABLES",
+        }
     }
 }
-
-DATABASE_ROUTERS = ['vendor.router.VendorRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
