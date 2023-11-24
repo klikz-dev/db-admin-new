@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         if "sync" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.syncFeed(products=products)
+            processor.DatabaseManager.statusSync()
 
 
 class Processor:
@@ -53,7 +53,7 @@ class Processor:
         wb = openpyxl.load_workbook(f"{FILEDIR}/tempaper-master.xlsx")
         sh = wb.worksheets[0]
 
-        for row in sh.iter_rows(values_only=True):
+        for row in sh.iter_rows(min_row=2, values_only=True):
             try:
                 # Primary Keys
                 mpn = common.toText(row[3])
@@ -91,7 +91,7 @@ class Processor:
                     dimension = ""
 
                 # Additional Information
-                yards = common.toInt(row[14])
+                yardsPR = common.toInt(row[14])
                 weight = common.toFloat(row[22])
                 match = common.toText(row[25])
                 material = common.toText(row[27])
@@ -154,7 +154,7 @@ class Processor:
                 'dimension': dimension,
 
                 'material': material,
-                'yards': yards,
+                'yardsPR': yardsPR,
                 'weight': weight,
                 'country': country,
                 'match': match,

@@ -1,5 +1,7 @@
 import environ
 
+from vendor.models import Product, Sync
+
 from utils import debug, const
 
 env = environ.Env()
@@ -46,7 +48,7 @@ class DatabaseManager:
                     repeatV=product.get('repeatV', 0),
                     specs=product.get('specs', []),
 
-                    yards=product.get('yards', 0),
+                    yardsPR=product.get('yardsPR', 0),
                     content=product.get('content', ""),
                     match=product.get('match', ""),
                     material=product.get('material', ""),
@@ -94,3 +96,35 @@ class DatabaseManager:
 
         debug.log(self.brand,
                   f"Finished writing {self.brand} feeds. Total: {total}, Success: {success}, Failed: {failed}")
+
+    def statusSync(self, fullSync=False):
+        products = Product.objects.filter(manufacturer__brand=self.brand)
+
+        for product in products:
+            try:
+                feed = self.Feed.objects.get(sku=product.sku)
+
+                if product.published != feed.statusP:
+                    product.published = feed.statusP
+                    product.save()
+
+                    Sync.objects.get_or_create(
+                        productId=product.productId, type="Status")
+                    debug.log(
+                        self.brand, f"Changed Product: {product.sku} Status to: {feed.statusP}")
+
+            except self.Feed.DoesNotExist:
+                if product.published:
+                    product.published = False
+                    product.save()
+
+                    Sync.objects.get_or_create(
+                        productId=product.productId, type="Status")
+                    debug.log(
+                        self.brand, f"Changed Product: {product.sku} Status to: False")
+
+            if fullSync:
+                Sync.objects.get_or_create(
+                    productId=product.productId, type="Status")
+                debug.log(
+                    self.brand, f"Resync Product: {product.sku} Status to: {product.published}")

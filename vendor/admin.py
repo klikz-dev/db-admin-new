@@ -103,7 +103,8 @@ class ProductAdmin(admin.ModelAdmin):
             'finish',
             'care',
             'country',
-            'meta',
+            'specs',
+            'features',
         ]}),
         ('Category', {'fields': [
             'manufacturer',

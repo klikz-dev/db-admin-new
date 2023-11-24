@@ -79,7 +79,8 @@ class Product(models.Model):
         max_length=200, default=None, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    meta = models.JSONField(default=None, null=True, blank=True)
+    specs = models.JSONField(default=None, null=True, blank=True)
+    features = models.JSONField(default=None, null=True, blank=True)
 
     manufacturer = models.ForeignKey(
         Manufacturer, related_name="products", on_delete=models.CASCADE, blank=False, null=False)
