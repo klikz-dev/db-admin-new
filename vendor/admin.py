@@ -1,22 +1,25 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Variant, Image
+from .models import Manufacturer, Type, Tag, Product, Variant, Image, Sync
 
 
 @admin.register(Manufacturer)
 class ManufacturerAdmin(admin.ModelAdmin):
     fields = [
         'name',
-        'brand'
+        'brand',
+        'private'
     ]
 
     list_display = [
         'name',
-        'brand'
+        'brand',
+        'private'
     ]
 
     list_filter = [
-        'brand'
+        'brand',
+        'private'
     ]
 
     search_fields = [
@@ -81,7 +84,26 @@ class ProductAdmin(admin.ModelAdmin):
         ('Content', {'fields': [
             'title',
             'description',
-            'data',
+        ]}),
+        ('Data', {'fields': [
+            'pattern',
+            'color',
+            'collection',
+            'usage',
+            'disclaimer',
+            'width',
+            'length',
+            'height',
+            'repeatH',
+            'repeatV',
+            'yardsPR',
+            'content',
+            'match',
+            'material',
+            'finish',
+            'care',
+            'country',
+            'meta',
         ]}),
         ('Category', {'fields': [
             'manufacturer',
@@ -173,4 +195,25 @@ class ImageAdmin(admin.ModelAdmin):
     search_fields = [
         'product',
         'url'
+    ]
+
+
+@admin.register(Sync)
+class SyncAdmin(admin.ModelAdmin):
+    fields = [
+        'productId',
+        'type',
+    ]
+
+    list_display = [
+        'productId',
+        'type',
+    ]
+
+    list_filter = [
+        'type'
+    ]
+
+    search_fields = [
+        'productId',
     ]

@@ -42,11 +42,9 @@ class DatabaseManager:
                     width=product.get('width', 0),
                     length=product.get('length', 0),
                     height=product.get('height', 0),
-                    size=product.get('size', ""),
-                    dimension=product.get('dimension', ""),
                     repeatH=product.get('repeatH', 0),
                     repeatV=product.get('repeatV', 0),
-                    repeat=product.get('repeat', ""),
+                    specs=product.get('specs', []),
 
                     yards=product.get('yards', 0),
                     content=product.get('content', ""),
@@ -54,13 +52,10 @@ class DatabaseManager:
                     material=product.get('material', ""),
                     finish=product.get('finish', ""),
                     care=product.get('care', ""),
-                    construction=product.get('construction', ""),
-                    specs=product.get('specs', []),
-                    features=product.get('features', []),
                     weight=product.get('weight', 5),
                     country=product.get('country', ""),
                     upc=product.get('upc', ""),
-                    custom=product.get('custom', {}),
+                    features=product.get('features', []),
 
                     cost=product.get('cost'),
                     msrp=product.get('msrp', 0),
@@ -86,7 +81,9 @@ class DatabaseManager:
                     stockNote=product.get('stockNote', ""),
 
                     thumbnail=product.get('thumbnail', ""),
-                    roomsets=product.get('roomsets', [])
+                    roomsets=product.get('roomsets', []),
+
+                    custom=product.get('custom', {}),
                 )
                 success += 1
                 debug.log(self.brand, f"Imported MPN: {feed.mpn}")

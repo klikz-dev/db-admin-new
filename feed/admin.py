@@ -6,18 +6,18 @@ from .models import Covington
 from .models import DanaGibson
 from .models import ElaineSmith
 from .models import ExquisiteRugs
+from .models import HubbardtonForge
 from .models import JaipurLiving
 from .models import JamieYoung
 from .models import JFFabrics
 from .models import Kasmir
 from .models import Kravet
-from .models import KravetDecor
-from .models import MadcapCottage
 from .models import Materialworks
 from .models import Maxwell
 from .models import MindTheGap
 from .models import NOIR
-from .models import Phillips
+from .models import PeninsulaHome
+from .models import PhillipsCollection
 from .models import PhillipJeffries
 from .models import Pindler
 from .models import Port68
@@ -28,7 +28,7 @@ from .models import Seabrook
 from .models import Stout
 from .models import Surya
 from .models import Tempaper
-from .models import HubbardtonForge
+from .models import WallsRepublic
 from .models import York
 from .models import Zoffany
 
@@ -45,8 +45,8 @@ class FeedAdmin(admin.ModelAdmin):
         ]}),
         ('Categorization', {'fields': [
             'brand',
-            'type',
             'manufacturer',
+            'type',
             'collection'
         ]}),
         ('Main Information', {'fields': [
@@ -61,7 +61,7 @@ class FeedAdmin(admin.ModelAdmin):
             'specs',
         ]}),
         ('Additional Information', {'fields': [
-            'yards',
+            'yardsPR',
             'content',
             'match',
             'material',
@@ -176,6 +176,11 @@ class ExquisiteRugsAdmin(FeedAdmin):
     pass
 
 
+@admin.register(HubbardtonForge)
+class HubbardtonForgeAdmin(FeedAdmin):
+    pass
+
+
 @admin.register(JaipurLiving)
 class JaipurLivingAdmin(FeedAdmin):
     pass
@@ -201,16 +206,6 @@ class KravetAdmin(FeedAdmin):
     pass
 
 
-@admin.register(KravetDecor)
-class KravetDecorAdmin(FeedAdmin):
-    pass
-
-
-@admin.register(MadcapCottage)
-class MadcapCottageAdmin(FeedAdmin):
-    pass
-
-
 @admin.register(Materialworks)
 class MaterialworksAdmin(FeedAdmin):
     pass
@@ -231,13 +226,18 @@ class NOIRAdmin(FeedAdmin):
     pass
 
 
+@admin.register(PeninsulaHome)
+class PeninsulaHomeAdmin(FeedAdmin):
+    pass
+
+
 @admin.register(PhillipJeffries)
 class PhillipJeffriesAdmin(FeedAdmin):
     pass
 
 
-@admin.register(Phillips)
-class PhillipsAdmin(FeedAdmin):
+@admin.register(PhillipsCollection)
+class PhillipsCollectionAdmin(FeedAdmin):
     pass
 
 
@@ -286,8 +286,8 @@ class TempaperAdmin(FeedAdmin):
     pass
 
 
-@admin.register(HubbardtonForge)
-class HubbardtonForgeAdmin(FeedAdmin):
+@admin.register(WallsRepublic)
+class WallsRepublicAdmin(FeedAdmin):
     pass
 
 

@@ -12,8 +12,8 @@ class Feed(models.Model):
         max_length=200, default=None, null=True, blank=True)
 
     brand = models.CharField(max_length=200, null=False, blank=False)
-    type = models.CharField(max_length=200, null=False, blank=False)
     manufacturer = models.CharField(max_length=200, null=False, blank=False)
+    type = models.CharField(max_length=200, null=False, blank=False)
     collection = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 
@@ -32,7 +32,7 @@ class Feed(models.Model):
     repeatV = models.FloatField(default=0, null=True, blank=True)
     specs = models.JSONField(default=None, null=True, blank=True)
 
-    yards = models.FloatField(default=0, null=True, blank=True)
+    yardsPR = models.FloatField(default=0, null=True, blank=True)
     content = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     match = models.CharField(
@@ -127,6 +127,12 @@ class ExquisiteRugs(Feed):
         verbose_name_plural = "Exquisite Rugs"
 
 
+class HubbardtonForge(Feed):
+    class Meta:
+        verbose_name = "Hubbardton Forge"
+        verbose_name_plural = "Hubbardton Forge"
+
+
 class JaipurLiving(Feed):
     class Meta:
         verbose_name = "Jaipur Living"
@@ -157,18 +163,6 @@ class Kravet(Feed):
         verbose_name_plural = "Kravet"
 
 
-class KravetDecor(Feed):
-    class Meta:
-        verbose_name = "Kravet Decor"
-        verbose_name_plural = "Kravet Decor"
-
-
-class MadcapCottage(Feed):
-    class Meta:
-        verbose_name = "Madcap Cottage"
-        verbose_name_plural = "Madcap Cottage"
-
-
 class Materialworks(Feed):
     class Meta:
         verbose_name = "Materialworks"
@@ -193,16 +187,22 @@ class NOIR(Feed):
         verbose_name_plural = "NOIR"
 
 
+class PeninsulaHome(Feed):
+    class Meta:
+        verbose_name = "Peninsula Home"
+        verbose_name_plural = "Peninsula Home"
+
+
 class PhillipJeffries(Feed):
     class Meta:
         verbose_name = "Phillip Jeffries"
         verbose_name_plural = "Phillip Jeffries"
 
 
-class Phillips(Feed):
+class PhillipsCollection(Feed):
     class Meta:
-        verbose_name = "Phillips"
-        verbose_name_plural = "Phillips"
+        verbose_name = "Phillips Collection"
+        verbose_name_plural = "Phillips Collection"
 
 
 class Pindler(Feed):
@@ -259,10 +259,10 @@ class Tempaper(Feed):
         verbose_name_plural = "Tempaper"
 
 
-class HubbardtonForge(Feed):
+class WallsRepublic(Feed):
     class Meta:
-        verbose_name = "Hubbardton Forge"
-        verbose_name_plural = "Hubbardton Forge"
+        verbose_name = "Walls Republic"
+        verbose_name_plural = "Walls Republic"
 
 
 class York(Feed):

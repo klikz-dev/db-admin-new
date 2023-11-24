@@ -28,6 +28,11 @@ class Command(BaseCommand):
             )
             products = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(products=products)
+            # processor.DatabaseManager.validateFeed(products=products)
+
+        if "sync" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.syncFeed(products=products)
 
 
 class Processor:
