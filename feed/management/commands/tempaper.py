@@ -70,25 +70,15 @@ class Processor:
                 manufacturer = brand
                 collection = common.toText(row[2])
 
-                # Main Intoion
+                # Specs
                 description = common.toText(row[9])
+
                 width = common.toFloat(row[17])
                 length = common.toFloat(row[18]) * 12
-                coverage = common.toText(row[21])
 
                 specs = [
-                    ("Width", f"{round(width / 36, 2)} yd ({width} in)"),
-                    ("Length", f"{round(length / 36, 2)} yd ({length} in)"),
-                    ("Coverage", coverage),
+                    ("Coverage", common.toText(row[21])),
                 ]
-
-                if type == "Rug":
-                    specs = []
-                    dimension = coverage
-                else:
-                    width = 0
-                    length = 0
-                    dimension = ""
 
                 # Additional Information
                 yardsPR = common.toInt(row[14])
@@ -151,7 +141,6 @@ class Processor:
                 'specs': specs,
                 'width': width,
                 'length': length,
-                'dimension': dimension,
 
                 'material': material,
                 'yardsPR': yardsPR,

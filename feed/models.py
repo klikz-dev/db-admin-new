@@ -19,12 +19,6 @@ class Feed(models.Model):
 
     description = models.CharField(
         max_length=5000, default=None, null=True, blank=True)
-    usage = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
-    disclaimer = models.CharField(
-        max_length=2000, default=None, null=True, blank=True)
-    upc = models.CharField(max_length=200, default=None, null=True, blank=True)
-
     width = models.FloatField(default=0, null=True, blank=True)
     length = models.FloatField(default=0, null=True, blank=True)
     height = models.FloatField(default=0, null=True, blank=True)
@@ -48,6 +42,11 @@ class Feed(models.Model):
         max_length=200, default=None, null=True, blank=True)
     features = models.JSONField(
         default=None, null=True, blank=True)
+    usage = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    disclaimer = models.CharField(
+        max_length=2000, default=None, null=True, blank=True)
+    upc = models.CharField(max_length=200, default=None, null=True, blank=True)
 
     cost = models.FloatField(null=False, blank=False)
     msrp = models.FloatField(default=0, null=True, blank=True)

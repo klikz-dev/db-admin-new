@@ -51,8 +51,6 @@ class FeedAdmin(admin.ModelAdmin):
         ]}),
         ('Main Information', {'fields': [
             'description',
-            'usage',
-            'disclaimer',
             'width',
             'length',
             'height',
@@ -69,8 +67,10 @@ class FeedAdmin(admin.ModelAdmin):
             'care',
             'weight',
             'country',
-            'upc',
             'features',
+            'usage',
+            'disclaimer',
+            'upc',
         ]}),
         ('Pricing', {'fields': [
             'cost',
@@ -104,7 +104,7 @@ class FeedAdmin(admin.ModelAdmin):
             'thumbnail',
             'roomsets'
         ]}),
-        (None, {'fields': [
+        ('Additional', {'fields': [
             'custom',
         ]}),
     ]

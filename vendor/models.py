@@ -41,31 +41,35 @@ class Tag(models.Model):
 
 
 class Product(models.Model):
-    sku = models.CharField(max_length=200, primary_key=True)
     mpn = models.CharField(max_length=200, blank=False, null=False)
+    sku = models.CharField(max_length=200, primary_key=True)
 
     shopifyId = models.CharField(max_length=200, blank=False, null=False)
     shopifyHandle = models.CharField(
         max_length=200, default=None, blank=True, null=True)
 
     title = models.CharField(max_length=200, blank=False, null=False)
-    description = models.CharField(
-        max_length=2000, default=None, blank=True, null=True)
 
     # Data
     pattern = models.CharField(max_length=200, null=False, blank=False)
     color = models.CharField(max_length=200, null=False, blank=False)
+
+    manufacturer = models.ForeignKey(
+        Manufacturer, related_name="products", on_delete=models.CASCADE, blank=False, null=False)
+    type = models.ForeignKey(
+        Type, related_name="products", on_delete=models.CASCADE, blank=False, null=False)
     collection = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    usage = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
-    disclaimer = models.CharField(
-        max_length=2000, default=None, null=True, blank=True)
+
+    description = models.CharField(
+        max_length=2000, default=None, blank=True, null=True)
     width = models.FloatField(default=0, null=True, blank=True)
     length = models.FloatField(default=0, null=True, blank=True)
     height = models.FloatField(default=0, null=True, blank=True)
     repeatH = models.FloatField(default=0, null=True, blank=True)
     repeatV = models.FloatField(default=0, null=True, blank=True)
+    specs = models.JSONField(default=None, null=True, blank=True)
+
     yardsPR = models.FloatField(default=0, null=True, blank=True)
     content = models.CharField(
         max_length=200, default=None, null=True, blank=True)
@@ -79,13 +83,13 @@ class Product(models.Model):
         max_length=200, default=None, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    specs = models.JSONField(default=None, null=True, blank=True)
     features = models.JSONField(default=None, null=True, blank=True)
+    usage = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    disclaimer = models.CharField(
+        max_length=2000, default=None, null=True, blank=True)
+    upc = models.CharField(max_length=200, default=None, null=True, blank=True)
 
-    manufacturer = models.ForeignKey(
-        Manufacturer, related_name="products", on_delete=models.CASCADE, blank=False, null=False)
-    type = models.ForeignKey(
-        Type, related_name="products", on_delete=models.CASCADE, blank=False, null=False)
     tags = models.ManyToManyField(Tag, related_name="products")
 
     published = models.BooleanField(default=True)
