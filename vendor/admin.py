@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Variant, Image, Sync
+from .models import Manufacturer, Type, Tag, Product, Image, Sync
 
 
 @admin.register(Manufacturer)
@@ -111,7 +111,20 @@ class ProductAdmin(admin.ModelAdmin):
             'type',
             'tags',
         ]}),
-        (None, {'fields': [
+        ('Variant', {'fields': [
+            'consumerId',
+            'tradeId',
+            'sampleId',
+            'freeSampleId',
+            'cost',
+            'consumer',
+            'trade',
+            'sample',
+            'compare',
+            'weight',
+            'barcode',
+        ]}),
+        ("Status", {'fields': [
             'published',
         ]}),
     ]
@@ -136,41 +149,11 @@ class ProductAdmin(admin.ModelAdmin):
         'sku',
         'title',
         'description',
-        'tags'
-    ]
-
-
-@admin.register(Variant)
-class VariantAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Main', {'fields': [
-            'shopifyId',
-            'product',
-            'type',
-        ]}),
-        ('Information', {'fields': [
-            'cost',
-            'price',
-            'weight',
-            'barcode',
-        ]}),
-    ]
-
-    list_display = [
         'shopifyId',
-        'product',
-        'type',
-        'cost',
-        'price',
-    ]
-
-    list_filter = [
-        'type',
-    ]
-
-    search_fields = [
-        'shopifyId',
-        'product',
+        'consumerId',
+        'tradeId',
+        'sampleId',
+        'freeSampleId',
         'barcode',
     ]
 

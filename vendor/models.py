@@ -41,6 +41,7 @@ class Tag(models.Model):
 
 
 class Product(models.Model):
+    # Primary
     mpn = models.CharField(max_length=200, blank=False, null=False)
     sku = models.CharField(max_length=200, primary_key=True)
 
@@ -88,35 +89,34 @@ class Product(models.Model):
         max_length=200, default=None, null=True, blank=True)
     disclaimer = models.CharField(
         max_length=2000, default=None, null=True, blank=True)
-    upc = models.CharField(max_length=200, default=None, null=True, blank=True)
 
     tags = models.ManyToManyField(Tag, related_name="products")
 
-    published = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.title
-
-
-class Variant(models.Model):
-    shopifyId = models.CharField(max_length=200, primary_key=True)
-
-    product = models.ForeignKey(
-        Product, related_name="variants", on_delete=models.CASCADE, blank=False, null=False)
-
-    type = models.CharField(
-        max_length=200, choices=VARIANT_TYPES, default="Consumer")
+    # Variant
+    consumerId = models.CharField(
+        max_length=200, unique=True, db_index=True, null=False, blank=False)
+    tradeId = models.CharField(
+        max_length=200, unique=True, db_index=True, null=False, blank=False)
+    sampleId = models.CharField(
+        max_length=200, unique=True, db_index=True, null=False, blank=False)
+    freeSampleId = models.CharField(
+        max_length=200, unique=True, db_index=True, null=False, blank=False)
 
     cost = models.FloatField(default=0)
-    price = models.FloatField(default=0)
+    consumer = models.FloatField(default=0)
+    trade = models.FloatField(default=0)
+    sample = models.FloatField(default=0)
     compare = models.FloatField(default=0)
 
     weight = models.FloatField(default=0)
     barcode = models.CharField(
         max_length=200, default=None, blank=True, null=True)
 
+    # Status
+    published = models.BooleanField(default=True)
+
     def __str__(self):
-        return f"{self.type} - {self.product}"
+        return self.title
 
 
 class Image(models.Model):

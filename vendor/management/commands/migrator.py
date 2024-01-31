@@ -1,5 +1,11 @@
+import requests
+import json
+
 from django.core.management.base import BaseCommand
-from vendor.models import Type, Manufacturer, Tag
+
+from vendor.models import Type, Manufacturer, Tag, Product, Variant
+from feed.models import Tempaper
+from utils import common
 
 types = [
     ("Fabric", "Root"),
@@ -430,17 +436,19 @@ class Command(BaseCommand):
         parser.add_argument('functions', nargs='+', type=str)
 
     def handle(self, *args, **options):
+        processor = Processor()
+
         if "type" in options['functions']:
-            processor = Processor()
             processor.type()
 
         if "manufacturer" in options['functions']:
-            processor = Processor()
             processor.manufacturer()
 
         if "tag" in options['functions']:
-            processor = Processor()
             processor.tag()
+
+        if "shopify" in options['functions']:
+            processor.shopify()
 
 
 class Processor:
@@ -468,3 +476,132 @@ class Processor:
         Tag.objects.all().delete()
         for name, type in tags:
             Tag.objects.create(name=name, type=type)
+
+    def shopify(self):
+
+        brands = [
+            ("Tempaper", Tempaper, True)  # Vendor Name, Vendor Model, Private
+        ]
+
+        for brandName, brand, private in brands:
+            Product.objects.filter(manufacturer=brandName).delete()
+
+            products = brand.objects.all()
+            for product in products:
+                response = requests.request(
+                    "GET",
+                    f"https://www.decoratorsbestam.com/api/products/?sku={product.sku}",
+                    headers={
+                        'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
+                    }
+                )
+                data = json.loads(response.text)["results"][0]
+                productId = data.get("productId", "")
+                handle = data.get("handle", "")
+                published = data.get("published", False)
+
+                if productId and handle and published:
+                    print(product.sku, productId, handle)
+
+                    ###########
+                    # Variant #
+                    ###########
+                    response = requests.request(
+                        "GET",
+                        f"https://www.decoratorsbestam.com/api/variants/?productid={productId}",
+                        headers={
+                            'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
+                        }
+                    )
+                    results = json.loads(response.text)["results"]
+
+                    consumerId = ""
+                    tradeId = ""
+                    sampleId = ""
+                    freeSampleId = ""
+
+                    consumerPrice, tradePrice, samplePrice = common.markup(
+                        brand=brandName, product=product, format=True)
+
+                    for result in results:
+                        if "Free Sample -" in result['name']:
+                            freeSampleId = result['variantId']
+                        elif "Sample -" in result['name']:
+                            sampleId = result['variantId']
+                        elif "Trade -" in result['name']:
+                            tradeId = result['variantId']
+                        else:
+                            consumerId = result['variantId']
+
+                    if not (consumerId and tradeId and sampleId and freeSampleId):
+                        print(f"Variant Error. SKU: {newProduct.sku}")
+                        continue
+                    ###########
+                    # Variant #
+                    ###########
+
+                    if private:
+                        manufacturerName = "DecoratorsBest"
+                    else:
+                        manufacturerName = product.manufacturer
+
+                    if product.name:
+                        title = f"{manufacturerName} {product.name}"
+                    else:
+                        title = f"{manufacturerName} {product.pattern} {product.color} {product.type}"
+
+                    manufacturer = Manufacturer.objects.get(
+                        name=product.manufacturer)
+
+                    type = Type.objects.get(name=product.type)
+
+                    if manufacturer and type:
+                        newProduct = Product.objects.create(
+                            mpn=product.mpn,
+                            sku=product.sku,
+
+                            shopifyId=productId,
+                            shopifyHandle=handle,
+
+                            title=title,
+
+                            pattern=product.pattern,
+                            color=product.color,
+
+                            manufacturer=manufacturer,
+                            type=type,
+                            collection=product.collection,
+
+                            description=product.description,
+                            width=product.width,
+                            length=product.length,
+                            height=product.height,
+                            repeatH=product.repeatH,
+                            repeatV=product.repeatV,
+                            specs=product.specs,
+
+                            yardsPR=product.yardsPR,
+                            content=product.content,
+                            match=product.match,
+                            material=product.material,
+                            finish=product.finish,
+                            care=product.care,
+                            country=product.country,
+                            features=product.features,
+                            usage=product.usage,
+                            disclaimer=product.disclaimer,
+
+                            consumerId=consumerId,
+                            tradeId=tradeId,
+                            sampleId=sampleId,
+                            freeSampleId=freeSampleId,
+                            cost=product.cost,
+                            consumer=consumerPrice,
+                            trade=tradePrice,
+                            sample=samplePrice,
+                            compare=None,
+                            weight=product.weight,
+                            barcode=product.upc,
+
+                            published=published
+                        )
