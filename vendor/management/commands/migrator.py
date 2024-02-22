@@ -3,7 +3,7 @@ import json
 
 from django.core.management.base import BaseCommand
 
-from vendor.models import Type, Manufacturer, Tag, Product, Variant
+from vendor.models import Type, Manufacturer, Tag, Product
 from feed.models import Tempaper
 from utils import common
 
@@ -15,100 +15,100 @@ types = [
     ("Pillow", "Root"),
     ("Furniture", "Root"),
     ("Lighting", "Root"),
-    ("Accents", "Root"),
-    ("Mirrors", "Root"),
+    ("Accent", "Root"),
+    ("Mirror", "Root"),
     ("Wall Art", "Root"),
     ("Drapery Fabric", "Fabric"),
     ("Upholstery Fabric", "Fabric"),
-    ("Murals", "Wallpaper"),
-    ("Borders", "Wallpaper"),
+    ("Mural", "Wallpaper"),
+    ("Border", "Wallpaper"),
     ("Applique", "Trim"),
-    ("Braids", "Trim"),
-    ("Cords", "Trim"),
-    ("Cords With Tape", "Trim"),
+    ("Braid", "Trim"),
+    ("Cord", "Trim"),
+    ("Cord with Tape", "Trim"),
     ("Fringe", "Trim"),
     ("Gimp", "Trim"),
-    ("Rosettes", "Trim"),
-    ("Tassels With Fringe", "Trim"),
-    ("Tassels", "Trim"),
-    ("Tiebacks", "Trim"),
+    ("Rosette", "Trim"),
+    ("Tassel with Fringe", "Trim"),
+    ("Tassel", "Trim"),
+    ("Tieback", "Trim"),
     ("Rug Pad", "Rug"),
-    ("Rectangle Throw Pillows", "Pillow"),
-    ("Square Throw Pillows", "Pillow"),
+    ("Rectangle Throw Pillow", "Pillow"),
+    ("Square Throw Pillow", "Pillow"),
     ("Pillow Cover", "Pillow"),
     ("Pillow Insert", "Pillow"),
     ("Pillow Kit", "Pillow"),
-    ("Decorative Pillows", "Pillow"),
-    ("Outdoor Pillows", "Pillow"),
-    ("Beds", "Furniture"),
-    ("Benches", "Furniture"),
-    ("Bookcases", "Furniture"),
-    ("Cabinets", "Furniture"),
-    ("Chairs", "Furniture"),
-    ("Consoles", "Furniture"),
-    ("Coffee Tables", "Furniture"),
-    ("Desks", "Furniture"),
-    ("Sofas", "Furniture"),
-    ("Side Tables", "Furniture"),
-    ("Ottomans", "Furniture"),
-    ("Stools", "Furniture"),
-    ("Bar Stools", "Furniture"),
-    ("Counter Stools", "Furniture"),
-    ("Dining Chairs", "Furniture"),
-    ("Accent Chairs", "Furniture"),
-    ("Accent Tables", "Furniture"),
-    ("Dressers", "Furniture"),
-    ("End Tables", "Furniture"),
-    ("Garden Stools", "Furniture"),
-    ("Dining Tables", "Furniture"),
-    ("Cocktail Tables", "Furniture"),
-    ("Hutches", "Furniture"),
-    ("Chandeliers", "Lighting"),
-    ("Floor Lamps", "Lighting"),
-    ("Table Lamps", "Lighting"),
-    ("Wall Sconces", "Lighting"),
-    ("Pendants", "Lighting"),
-    ("Flush Mounts", "Lighting"),
-    ("Semi-Flush Mounts", "Lighting"),
-    ("Accent Lamps", "Lighting"),
+    ("Decorative Pillow", "Pillow"),
+    ("Outdoor Pillow", "Pillow"),
+    ("Bed", "Furniture"),
+    ("Bench", "Furniture"),
+    ("Bookcase", "Furniture"),
+    ("Cabinet", "Furniture"),
+    ("Chair", "Furniture"),
+    ("Console", "Furniture"),
+    ("Coffee Table", "Furniture"),
+    ("Desk", "Furniture"),
+    ("Sofa", "Furniture"),
+    ("Side Table", "Furniture"),
+    ("Ottoman", "Furniture"),
+    ("Stool", "Furniture"),
+    ("Bar Stool", "Furniture"),
+    ("Counter Stool", "Furniture"),
+    ("Dining Chair", "Furniture"),
+    ("Accent Chair", "Furniture"),
+    ("Accent Table", "Furniture"),
+    ("Dresser", "Furniture"),
+    ("End Table", "Furniture"),
+    ("Garden Stool", "Furniture"),
+    ("Dining Table", "Furniture"),
+    ("Cocktail Table", "Furniture"),
+    ("Hutch", "Furniture"),
+    ("Chandelier", "Lighting"),
+    ("Floor Lamp", "Lighting"),
+    ("Table Lamp", "Lighting"),
+    ("Wall Sconce", "Lighting"),
+    ("Pendant", "Lighting"),
+    ("Flush Mount", "Lighting"),
+    ("Semi-Flush Mount", "Lighting"),
+    ("Accent Lamp", "Lighting"),
     ("Lamp Shade", "Lighting"),
-    ("Torchieres", "Lighting"),
-    ("Rectangle Mirrors", "Mirrors"),
-    ("Round Mirrors", "Mirrors"),
-    ("Square Mirrors", "Mirrors"),
-    ("Accessories", "Accents"),
-    ("Table Top", "Accents"),
-    ("Prints", "Accents"),
-    ("Plate", "Accents"),
-    ("Bookends", "Accents"),
-    ("Bowls", "Accents"),
-    ("Boxes", "Accents"),
-    ("Candlesticks", "Accents"),
-    ("Planters", "Accents"),
-    ("Screens", "Accents"),
-    ("Sculpture", "Accents"),
-    ("Trays", "Accents"),
-    ("Vases", "Accents"),
-    ("Wastebaskets", "Accents"),
-    ("Throws", "Accents"),
-    ("Baskets", "Accents"),
-    ("Candle Holders", "Accents"),
-    ("Decorative Bowls", "Accents"),
-    ("Hurricanes", "Accents"),
-    ("Objects", "Accents"),
-    ("Candleholders", "Accents"),
-    ("Cachepot", "Accents"),
-    ("Ginger Jar", "Accents"),
-    ("Ice Bucket", "Accents"),
-    ("Tote", "Accents"),
-    ("Decorative Accents", "Accents"),
-    ("Tissue Box", "Accents"),
-    ("Pouf", "Accents"),
-    ("Paintings", "Wall Art"),
-    ("Wall Hangings", "Wall Art"),
+    ("Torchier", "Lighting"),
+    ("Rectangle Mirror", "Mirror"),
+    ("Round Mirror", "Mirror"),
+    ("Square Mirror", "Mirror"),
+    ("Accessory", "Accent"),
+    ("Tabletop", "Accent"),
+    ("Print", "Accent"),
+    ("Plate", "Accent"),
+    ("Bookend", "Accent"),
+    ("Bowl", "Accent"),
+    ("Box", "Accent"),
+    ("Candlestick", "Accent"),
+    ("Planter", "Accent"),
+    ("Screen", "Accent"),
+    ("Sculpture", "Accent"),
+    ("Tray", "Accent"),
+    ("Vase", "Accent"),
+    ("Wastebasket", "Accent"),
+    ("Throw", "Accent"),
+    ("Basket", "Accent"),
+    ("Candle Holder", "Accent"),
+    ("Decorative Bowl", "Accent"),
+    ("Hurricane", "Accent"),
+    ("Object", "Accent"),
+    ("Candleholder", "Accent"),
+    ("Cachepot", "Accent"),
+    ("Ginger Jar", "Accent"),
+    ("Ice Bucket", "Accent"),
+    ("Tote", "Accent"),
+    ("Decorative Accent", "Accent"),
+    ("Tissue Box", "Accent"),
+    ("Pouf", "Accent"),
+    ("Painting", "Wall Art"),
+    ("Wall Hanging", "Wall Art"),
     ("Original Art", "Wall Art"),
     ("Wall Accent", "Wall Art"),
-    ("Wall Mirrors", "Wall Art"),
+    ("Wall Mirror", "Wall Art"),
 ]
 
 manufacturers = [
@@ -487,7 +487,13 @@ class Processor:
             Product.objects.filter(manufacturer=brandName).delete()
 
             products = brand.objects.all()
+
+            total = len(products)
+            success = 0
             for product in products:
+                if not product.statusP:
+                    continue
+
                 response = requests.request(
                     "GET",
                     f"https://www.decoratorsbestam.com/api/products/?sku={product.sku}",
@@ -500,8 +506,10 @@ class Processor:
                 handle = data.get("handle", "")
                 published = data.get("published", False)
 
-                if productId and handle and published:
-                    print(product.sku, productId, handle)
+                if productId and handle:
+                    success += 1
+                    print(
+                        f"{success}/{total} -- {product.sku}, {productId}, {handle}")
 
                     ###########
                     # Variant #
@@ -554,6 +562,9 @@ class Processor:
                         name=product.manufacturer)
 
                     type = Type.objects.get(name=product.type)
+
+                    # To-do: Tags
+                    #############
 
                     if manufacturer and type:
                         newProduct = Product.objects.create(

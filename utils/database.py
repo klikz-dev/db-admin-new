@@ -2,7 +2,7 @@ import environ
 
 from vendor.models import Product, Sync
 
-from utils import debug, const
+from utils import debug
 
 env = environ.Env()
 

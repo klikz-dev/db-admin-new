@@ -106,7 +106,7 @@ class Product(models.Model):
     consumer = models.FloatField(default=0)
     trade = models.FloatField(default=0)
     sample = models.FloatField(default=0)
-    compare = models.FloatField(default=0)
+    compare = models.FloatField(default=0, blank=True, null=True)
 
     weight = models.FloatField(default=0)
     barcode = models.CharField(
