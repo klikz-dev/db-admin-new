@@ -3,9 +3,41 @@ import json
 
 from django.core.management.base import BaseCommand
 
-from vendor.models import Type, Manufacturer, Tag, Product
-from feed.models import Tempaper
 from utils import common
+from vendor.models import Type, Manufacturer, Tag, Product
+
+from feed.models import Brewster
+from feed.models import Couture
+from feed.models import Covington
+from feed.models import DanaGibson
+from feed.models import ElaineSmith
+from feed.models import ExquisiteRugs
+from feed.models import HubbardtonForge
+from feed.models import JaipurLiving
+from feed.models import JamieYoung
+from feed.models import JFFabrics
+from feed.models import Kasmir
+from feed.models import Kravet
+from feed.models import Materialworks
+from feed.models import Maxwell
+from feed.models import MindTheGap
+from feed.models import NOIR
+from feed.models import PeninsulaHome
+from feed.models import PhillipJeffries
+from feed.models import PhillipsCollection
+from feed.models import Pindler
+from feed.models import Port68
+from feed.models import PremierPrints
+from feed.models import Scalamandre
+from feed.models import Schumacher
+from feed.models import Seabrook
+from feed.models import Stout
+from feed.models import Surya
+from feed.models import Tempaper
+from feed.models import WallsRepublic
+from feed.models import York
+from feed.models import Zoffany
+
 
 types = [
     ("Fabric", "Root"),
@@ -480,7 +512,37 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("Tempaper", Tempaper, True)  # Vendor Name, Vendor Model, Private
+            # ("Brewster", Brewster, False),
+            # ("Couture", Couture, False),
+            # ("Covington", Covington, False),
+            # ("Dana Gibson", DanaGibson, False),
+            # ("Elaine Smith", ElaineSmith, False),
+            ("Exquisite Rugs", ExquisiteRugs, False),
+            # ("Hubbardton Forge", HubbardtonForge, False),
+            # ("Jaipur Living", JaipurLiving, False),
+            # ("JamieYoung", JamieYoung, False),
+            # ("JF Fabrics", JFFabrics, False),
+            # ("Kasmir", Kasmir, False),
+            # ("Kravet", Kravet, False),
+            # ("Materialworks", Materialworks, False),
+            # ("Maxwell", Maxwell, False),
+            # ("MindTheGap", MindTheGap, False),
+            # ("NOIR", NOIR, False),
+            # ("Peninsula Home", PeninsulaHome, False),
+            # ("Phillip Jeffries", PhillipJeffries, False),
+            # ("Phillips Collection", PhillipsCollection, False),
+            # ("Pindler", Pindler, False),
+            # ("Port68", Port68, False),
+            # ("Premier Prints", PremierPrints, False),
+            # ("Scalamandre", Scalamandre, False),
+            # ("Schumacher", Schumacher, False),
+            # ("Seabrook", Seabrook, False),
+            # ("Stout", Stout, False),
+            # ("Surya", Surya, False),
+            ("Tempaper", Tempaper, False),
+            # ("Walls Republic", WallsRepublic, False),
+            # ("York", York, False),
+            # ("Zoffany", Zoffany, False),
         ]
 
         for brandName, brand, private in brands:

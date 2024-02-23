@@ -139,6 +139,7 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        'manufacturer__brand',
         'manufacturer',
         'type',
         'published'
