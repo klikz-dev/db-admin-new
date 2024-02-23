@@ -8,10 +8,10 @@ VARIANT_TYPES = [
 ]
 
 SYNC_TYPES = [
-    ("Product", "Product"),
+    ("Status", "Status"),
+    ("Content", "Content"),
     ("Price", "Price"),
     ("Tag", "Tag"),
-    ("Status", "Status"),
 ]
 
 
