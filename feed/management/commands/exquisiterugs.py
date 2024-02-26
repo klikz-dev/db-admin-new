@@ -26,8 +26,8 @@ class Command(BaseCommand):
                 fileSrc=True,
                 delete=False
             )
-            products = processor.fetchFeed()
-            processor.DatabaseManager.writeFeed(products=products)
+            feeds = processor.fetchFeed()
+            processor.DatabaseManager.writeFeed(feeds=feeds)
 
         if "validate" in options['functions']:
             processor = Processor()
@@ -54,8 +54,10 @@ class Command(BaseCommand):
             processor.DatabaseManager.addProducts()
 
         if "update" in options['functions']:
+            feeds = ExquisiteRugs.objects.filter(pattern="3153")
+
             processor = Processor()
-            processor.DatabaseManager.updateProducts()
+            processor.DatabaseManager.updateProducts(feeds=feeds)
 
         if "image" in options['functions']:
             processor = Processor()

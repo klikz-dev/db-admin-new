@@ -28,11 +28,40 @@ class Command(BaseCommand):
             )
             products = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(products=products)
-            # processor.DatabaseManager.validateFeed(products=products)
 
-        if "sync" in options['functions']:
+        if "validate" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.statusSync()
+            processor.DatabaseManager.validateFeed()
+
+        if "status" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.statusSync(fullSync=False)
+
+        if "content" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.contentSync()
+
+        if "price" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.priceSync()
+
+        if "tag" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.tagSync()
+
+        if "add" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.addProducts()
+
+        if "update" in options['functions']:
+            feeds = Tempaper.objects.filter(pattern="Owls")
+
+            processor = Processor()
+            processor.DatabaseManager.updateProducts(feeds=feeds)
+
+        if "image" in options['functions']:
+            processor = Processor()
+            processor.DatabaseManager.downloadImages()
 
 
 class Processor:

@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from utils import debug, const
+from vendor.models import Product
 
 env = environ.Env()
 
@@ -169,6 +170,13 @@ def toInt(value):
     return int(toFloat(value))
 
 
+def toHandle(text):
+    if text:
+        return str(text).replace("~", "").replace("!", "").replace("@", "").replace("#", "").replace("$", "").replace("%", "").replace("^", "").replace("&", "").replace("*", "").replace("(", "").replace(")", "").replace(" ", "-").replace("--", "-").strip().lower()
+    else:
+        return ""
+
+
 def markup(brand, product, format=True):
     def generatePrice(cost, multiplier, format):
         if format:
@@ -213,3 +221,39 @@ def markup(brand, product, format=True):
         debug.debug(brand, 1,
                     f"Price Error. Check if markups are defined properly. {str(e)}")
         return (0, 0, 0)
+
+
+def getOtherSizes(product):
+    samePatterns = Product.objects.filter(
+        manufacturer=product.manufacturer, pattern=product.pattern).exclude(shopifyId=product.shopifyId)
+
+    otherSizes = []
+    if product.width > 0 and product.height > 0:
+        currentSize = f"{round(product.width / 12, 2)}' x {round(product.length / 12, 2)}'"
+        for samePattern in samePatterns:
+            if samePattern.width > 0 and samePattern.length > 0:
+                size = f"{round(samePattern.width / 12, 2)}' x {round(samePattern.length / 12, 2)}'"
+                if currentSize != size:
+                    otherSizes.append({
+                        "size": size,
+                        "handle": samePattern.shopifyHandle
+                    })
+
+    return otherSizes
+
+
+def getOtherColors(product):
+    samePatterns = Product.objects.filter(
+        manufacturer=product.manufacturer, pattern=product.pattern).exclude(shopifyId=product.shopifyId)
+
+    otherColors = []
+    currentColor = product.color
+    for samePattern in samePatterns:
+        color = samePattern.color
+        if color != currentColor:
+            otherColors.append({
+                "color": color,
+                "handle": samePattern.shopifyHandle
+            })
+
+    return otherColors

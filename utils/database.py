@@ -2,7 +2,7 @@ import environ
 
 from vendor.models import Product, Sync, Type, Manufacturer
 
-from utils import debug
+from utils import debug, shopify
 
 env = environ.Env()
 
@@ -18,77 +18,77 @@ class DatabaseManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def writeFeed(self, products: list):
+    def writeFeed(self, feeds: list):
         self.Feed.objects.all().delete()
 
-        total = len(products)
+        total = len(feeds)
         success = 0
         failed = 0
-        for product in products:
+        for feed in feeds:
             try:
-                feed = self.Feed.objects.create(
-                    mpn=product.get('mpn'),
-                    sku=product.get('sku'),
-                    pattern=product.get('pattern'),
-                    color=product.get('color'),
-                    name=product.get('name', ""),
+                self.Feed.objects.create(
+                    mpn=feed.get('mpn'),
+                    sku=feed.get('sku'),
+                    pattern=feed.get('pattern'),
+                    color=feed.get('color'),
+                    name=feed.get('name', ""),
 
-                    brand=product.get('brand'),
-                    type=product.get('type'),
-                    manufacturer=product.get('manufacturer'),
-                    collection=product.get('collection', ""),
+                    brand=feed.get('brand'),
+                    type=feed.get('type'),
+                    manufacturer=feed.get('manufacturer'),
+                    collection=feed.get('collection', ""),
 
-                    description=product.get('description', ""),
-                    usage=product.get('usage', ""),
-                    disclaimer=product.get('disclaimer', ""),
-                    width=product.get('width', 0),
-                    length=product.get('length', 0),
-                    height=product.get('height', 0),
-                    repeatH=product.get('repeatH', 0),
-                    repeatV=product.get('repeatV', 0),
-                    specs=product.get('specs', []),
+                    description=feed.get('description', ""),
+                    usage=feed.get('usage', ""),
+                    disclaimer=feed.get('disclaimer', ""),
+                    width=feed.get('width', 0),
+                    length=feed.get('length', 0),
+                    height=feed.get('height', 0),
+                    repeatH=feed.get('repeatH', 0),
+                    repeatV=feed.get('repeatV', 0),
+                    specs=feed.get('specs', []),
 
-                    yardsPR=product.get('yardsPR', 0),
-                    content=product.get('content', ""),
-                    match=product.get('match', ""),
-                    material=product.get('material', ""),
-                    finish=product.get('finish', ""),
-                    care=product.get('care', ""),
-                    weight=product.get('weight', 5),
-                    country=product.get('country', ""),
-                    upc=product.get('upc', ""),
-                    features=product.get('features', []),
+                    yardsPR=feed.get('yardsPR', 0),
+                    content=feed.get('content', ""),
+                    match=feed.get('match', ""),
+                    material=feed.get('material', ""),
+                    finish=feed.get('finish', ""),
+                    care=feed.get('care', ""),
+                    weight=feed.get('weight', 5),
+                    country=feed.get('country', ""),
+                    upc=feed.get('upc', ""),
+                    features=feed.get('features', []),
 
-                    cost=product.get('cost'),
-                    msrp=product.get('msrp', 0),
-                    map=product.get('map', 0),
+                    cost=feed.get('cost'),
+                    msrp=feed.get('msrp', 0),
+                    map=feed.get('map', 0),
 
-                    uom=product.get('uom'),
-                    minimum=product.get('minimum', 1),
-                    increment=product.get('increment', 1),
+                    uom=feed.get('uom'),
+                    minimum=feed.get('minimum', 1),
+                    increment=feed.get('increment', 1),
 
-                    keywords=product.get('keywords', ""),
-                    colors=product.get('colors', ""),
+                    keywords=feed.get('keywords', ""),
+                    colors=feed.get('colors', ""),
 
-                    statusP=product.get('statusP', False),
-                    statusS=product.get('statusS', False),
-                    european=product.get('european', False),
-                    outlet=product.get('outlet', False),
-                    whiteGlove=product.get('whiteGlove', False),
-                    quickShip=product.get('quickShip', False),
-                    bestSeller=product.get('bestSeller', False),
+                    statusP=feed.get('statusP', False),
+                    statusS=feed.get('statusS', False),
+                    european=feed.get('european', False),
+                    outlet=feed.get('outlet', False),
+                    whiteGlove=feed.get('whiteGlove', False),
+                    quickShip=feed.get('quickShip', False),
+                    bestSeller=feed.get('bestSeller', False),
 
-                    stockP=product.get('stockP', 0),
-                    stockS=product.get('stockS', 0),
-                    stockNote=product.get('stockNote', ""),
+                    stockP=feed.get('stockP', 0),
+                    stockS=feed.get('stockS', 0),
+                    stockNote=feed.get('stockNote', ""),
 
-                    thumbnail=product.get('thumbnail', ""),
-                    roomsets=product.get('roomsets', []),
+                    thumbnail=feed.get('thumbnail', ""),
+                    roomsets=feed.get('roomsets', []),
 
-                    custom=product.get('custom', {}),
+                    custom=feed.get('custom', {}),
                 )
                 success += 1
-                debug.log(self.brand, f"Imported MPN: {feed.mpn}")
+                debug.log(self.brand, f"Imported MPN: {feed.get('mpn')}")
             except Exception as e:
                 failed += 1
                 debug.warn(self.brand, str(e))
@@ -239,8 +239,20 @@ class DatabaseManager:
     def addProducts(self):
         pass
 
-    def updateProducts(self):
-        pass
+    def updateProducts(self, feeds: list):
+        for feed in feeds:
+            try:
+                product = Product.objects.get(sku=feed.sku)
+            except Product.DoesNotExist:
+                continue
+
+            handle = shopify.updateProduct(product=product)
+
+            if handle:
+                product.shopifyHandle = handle
+                product.save()
+
+                debug.log(self.brand, f"Updated Product {product.sku}")
 
     def downloadImages(self):
         pass
