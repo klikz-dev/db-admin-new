@@ -159,11 +159,17 @@ def toText(text):
 def toFloat(value):
     if value and str(value).strip() != '':
         try:
-            return round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("in", "").replace("kg", "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "").strip()), 2)
+            value = round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("in", "").replace("kg",
+                          "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "").strip()), 2)
         except:
-            return 0
+            value = 0
     else:
-        return 0
+        value = 0
+
+    if value == int(value):
+        return int(value)
+    else:
+        return value
 
 
 def toInt(value):
@@ -223,37 +229,19 @@ def markup(brand, product, format=True):
         return (0, 0, 0)
 
 
-def getOtherSizes(product):
+def getRelatedProducts(product):
     samePatterns = Product.objects.filter(
-        manufacturer=product.manufacturer, pattern=product.pattern).exclude(shopifyId=product.shopifyId)
+        manufacturer=product.manufacturer, pattern=product.pattern)
 
-    otherSizes = []
-    if product.width > 0 and product.height > 0:
-        currentSize = f"{round(product.width / 12, 2)}' x {round(product.length / 12, 2)}'"
-        for samePattern in samePatterns:
-            if samePattern.width > 0 and samePattern.length > 0:
-                size = f"{round(samePattern.width / 12, 2)}' x {round(samePattern.length / 12, 2)}'"
-                if currentSize != size:
-                    otherSizes.append({
-                        "size": size,
-                        "handle": samePattern.shopifyHandle
-                    })
-
-    return otherSizes
-
-
-def getOtherColors(product):
-    samePatterns = Product.objects.filter(
-        manufacturer=product.manufacturer, pattern=product.pattern).exclude(shopifyId=product.shopifyId)
-
-    otherColors = []
-    currentColor = product.color
+    relatedProducts = []
     for samePattern in samePatterns:
         color = samePattern.color
-        if color != currentColor:
-            otherColors.append({
-                "color": color,
-                "handle": samePattern.shopifyHandle
-            })
+        size = f"{toFloat(samePattern.width / 12)}' x {toFloat(samePattern.length / 12)}'"
 
-    return otherColors
+        relatedProducts.append({
+            "color": color,
+            "size": size,
+            "handle": samePattern.shopifyHandle
+        })
+
+    return relatedProducts

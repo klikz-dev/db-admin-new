@@ -120,18 +120,12 @@ class Productmanager:
                 "value": value
             })
 
-        otherColors = common.getOtherColors(product)
-        otherSizes = common.getOtherSizes(product)
+        relatedProducts = common.getRelatedProducts(product)
 
         metafields.append({
             "namespace": "custom",
-            "key": "other_colors",
-            "value": json.dumps(otherColors)
-        })
-        metafields.append({
-            "namespace": "custom",
-            "key": "other_sizes",
-            "value": json.dumps(otherSizes)
+            "key": "related_products",
+            "value": json.dumps(relatedProducts)
         })
 
         return metafields

@@ -22,6 +22,8 @@ class Feed(models.Model):
     width = models.FloatField(default=0, null=True, blank=True)
     length = models.FloatField(default=0, null=True, blank=True)
     height = models.FloatField(default=0, null=True, blank=True)
+    size = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     repeatH = models.FloatField(default=0, null=True, blank=True)
     repeatV = models.FloatField(default=0, null=True, blank=True)
     specs = models.JSONField(default=None, null=True, blank=True)
