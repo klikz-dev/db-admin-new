@@ -106,6 +106,8 @@ class Processor:
                 length = common.toFloat(row[16])
                 height = common.toFloat(row[17])
 
+                size = f"{common.toFloat(width / 12)}' x {common.toFloat(length / 12)}'"
+
                 specs = [
                     ("Dimension", common.toText(row[18])),
                 ]
@@ -173,18 +175,19 @@ class Processor:
                 'width': width,
                 'length': length,
                 'height': height,
-                'disclaimer': disclaimer,
-                'upc': upc,
+                'size': size,
 
                 'material': material,
                 'care': care,
-                'weight': weight,
                 'country': country,
+                'weight': weight,
+                'upc': upc,
+                'disclaimer': disclaimer,
+
+                'uom': uom,
 
                 'cost': cost,
                 'map': map,
-
-                'uom': uom,
 
                 'keywords': keywords,
                 'colors': colors,

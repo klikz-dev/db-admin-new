@@ -26,8 +26,8 @@ class Command(BaseCommand):
                 fileSrc=True,
                 delete=False
             )
-            products = processor.fetchFeed()
-            processor.DatabaseManager.writeFeed(products=products)
+            feeds = processor.fetchFeed()
+            processor.DatabaseManager.writeFeed(feeds=feeds)
 
         if "validate" in options['functions']:
             processor = Processor()
@@ -173,15 +173,16 @@ class Processor:
 
                 'material': material,
                 'yardsPR': yardsPR,
-                'weight': weight,
-                'country': country,
                 'match': match,
                 'care': care,
                 'features': features,
+                'country': country,
+                'weight': weight,
+
+                'uom': uom,
 
                 'cost': cost,
                 'map': map,
-                'uom': uom,
 
                 'keywords': keywords,
                 'colors': colors,

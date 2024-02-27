@@ -3,7 +3,7 @@ import json
 
 from django.core.management.base import BaseCommand
 
-from utils import common
+from utils import common, debug
 from vendor.models import Type, Manufacturer, Tag, Product
 
 from feed.models import Brewster
@@ -548,8 +548,7 @@ class Processor:
         for brandName, brand, private in brands:
             Product.objects.filter(manufacturer=brandName).delete()
 
-            # products = brand.objects.all()
-            products = brand.objects.filter(pattern="Zaragoza")
+            products = brand.objects.all()
 
             total = len(products)
             success = 0
@@ -564,7 +563,11 @@ class Processor:
                         'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
                     }
                 )
-                data = json.loads(response.text)["results"][0]
+                try:
+                    data = json.loads(response.text)["results"][0]
+                except Exception as e:
+                    debug.warn("Migrator", str(e))
+
                 productId = data.get("productId", "")
                 handle = data.get("handle", "")
                 published = data.get("published", False)
