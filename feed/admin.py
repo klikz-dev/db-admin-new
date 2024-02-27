@@ -54,6 +54,7 @@ class FeedAdmin(admin.ModelAdmin):
             'width',
             'length',
             'height',
+            'size',
             'repeatH',
             'repeatV',
             'specs',

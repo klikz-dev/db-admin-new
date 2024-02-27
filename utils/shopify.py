@@ -104,7 +104,7 @@ class Productmanager:
         return [{**base_variant_info, **variant} for variant in variants_data]
 
     def getProductMetafields(self, product):
-        keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "repeatH", "repeatV", "specs", "yardsPR",
+        keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "repeatH", "repeatV", "specs", "yardsPR",
                 "content", "match", "material", "finish", "care", "country", "features", "usage", "disclaimer"]
 
         metafields = []

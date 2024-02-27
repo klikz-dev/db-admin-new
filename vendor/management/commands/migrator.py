@@ -650,6 +650,7 @@ class Processor:
                             width=product.width,
                             length=product.length,
                             height=product.height,
+                            size=product.size,
                             repeatH=product.repeatH,
                             repeatV=product.repeatV,
                             specs=product.specs,

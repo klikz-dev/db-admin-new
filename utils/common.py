@@ -236,7 +236,7 @@ def getRelatedProducts(product):
     relatedProducts = []
     for samePattern in samePatterns:
         color = samePattern.color
-        size = f"{toFloat(samePattern.width / 12)}' x {toFloat(samePattern.length / 12)}'"
+        size = samePattern.size
 
         relatedProducts.append({
             "color": color,
