@@ -633,53 +633,56 @@ class Processor:
                     #############
 
                     if manufacturer and type:
-                        newProduct = Product.objects.create(
-                            mpn=product.mpn,
-                            sku=product.sku,
+                        try:
+                            newProduct = Product.objects.create(
+                                mpn=product.mpn,
+                                sku=product.sku,
 
-                            shopifyId=productId,
-                            shopifyHandle=handle,
+                                shopifyId=productId,
+                                shopifyHandle=handle,
 
-                            title=title,
+                                title=title,
 
-                            pattern=product.pattern,
-                            color=product.color,
+                                pattern=product.pattern,
+                                color=product.color,
 
-                            manufacturer=manufacturer,
-                            type=type,
-                            collection=product.collection,
+                                manufacturer=manufacturer,
+                                type=type,
+                                collection=product.collection,
 
-                            description=product.description,
-                            width=product.width,
-                            length=product.length,
-                            height=product.height,
-                            size=product.size,
-                            repeatH=product.repeatH,
-                            repeatV=product.repeatV,
-                            specs=product.specs,
+                                description=product.description,
+                                width=product.width,
+                                length=product.length,
+                                height=product.height,
+                                size=product.size,
+                                repeatH=product.repeatH,
+                                repeatV=product.repeatV,
+                                specs=product.specs,
 
-                            yardsPR=product.yardsPR,
-                            content=product.content,
-                            match=product.match,
-                            material=product.material,
-                            finish=product.finish,
-                            care=product.care,
-                            country=product.country,
-                            features=product.features,
-                            usage=product.usage,
-                            disclaimer=product.disclaimer,
+                                yardsPR=product.yardsPR,
+                                content=product.content,
+                                match=product.match,
+                                material=product.material,
+                                finish=product.finish,
+                                care=product.care,
+                                country=product.country,
+                                features=product.features,
+                                usage=product.usage,
+                                disclaimer=product.disclaimer,
 
-                            consumerId=consumerId,
-                            tradeId=tradeId,
-                            sampleId=sampleId,
-                            freeSampleId=freeSampleId,
-                            cost=product.cost,
-                            consumer=consumerPrice,
-                            trade=tradePrice,
-                            sample=samplePrice,
-                            compare=None,
-                            weight=product.weight,
-                            barcode=product.upc,
+                                consumerId=consumerId,
+                                tradeId=tradeId,
+                                sampleId=sampleId,
+                                freeSampleId=freeSampleId,
+                                cost=product.cost,
+                                consumer=consumerPrice,
+                                trade=tradePrice,
+                                sample=samplePrice,
+                                compare=None,
+                                weight=product.weight,
+                                barcode=product.upc,
 
-                            published=published
-                        )
+                                published=published
+                            )
+                        except Exception as e:
+                            debug.warn("Migrator", str(e))
