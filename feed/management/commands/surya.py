@@ -54,7 +54,7 @@ class Command(BaseCommand):
             processor.DatabaseManager.addProducts()
 
         if "update" in options['functions']:
-            feeds = Surya.objects.filter(pattern="Zaragoza")
+            feeds = Surya.objects.filter(pattern="ZRZ-2317")
 
             processor = Processor()
             processor.DatabaseManager.updateProducts(feeds=feeds)
@@ -88,8 +88,8 @@ class Processor:
                 mpn = common.toText(row[2])
 
                 sku = f"SR {mpn}"
-                pattern = common.toText(row[5])
-                color = common.toText(row[3])
+                pattern = common.toText(row[3])
+                color = ' '.join(common.toText(row[12]).split(', ')[:2])
 
                 name = common.toText(row[4])
 
@@ -97,7 +97,7 @@ class Processor:
                 brand = BRAND
                 type = common.toText(row[0])
                 manufacturer = BRAND
-                collection = pattern
+                collection = common.toText(row[5])
 
                 # Main Information
                 description = common.toText(row[6])
@@ -191,6 +191,9 @@ class Processor:
 
                 if type in type_mapping:
                     type = type_mapping[type]
+
+                # Rewrite Name
+                name = f"{collection} {pattern} {color} {size} {type}"
 
             except Exception as e:
                 debug.warn(BRAND, str(e))

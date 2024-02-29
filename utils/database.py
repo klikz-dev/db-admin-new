@@ -44,7 +44,7 @@ class DatabaseManager:
                     width=feed.get('width', 0),
                     length=feed.get('length', 0),
                     height=feed.get('height', 0),
-                    size=feed.get('size', 0),
+                    size=feed.get('size', ""),
                     repeatH=feed.get('repeatH', 0),
                     repeatV=feed.get('repeatV', 0),
                     specs=feed.get('specs', []),

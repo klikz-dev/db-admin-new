@@ -6,8 +6,9 @@ class Feed(models.Model):
     sku = models.CharField(max_length=200, null=False, blank=False)
     pattern = models.CharField(max_length=200, null=False, blank=False)
     color = models.CharField(max_length=200, null=False, blank=False)
-    name = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
+    name = models.CharField(max_length=200, unique=True,
+                            null=False, blank=False)
+
     productId = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 

@@ -5,11 +5,12 @@ import environ
 import urllib
 import paramiko
 import math
+import re
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from utils import debug, const
+from utils import debug, const, common
 from vendor.models import Product
 
 env = environ.Env()
@@ -178,7 +179,11 @@ def toInt(value):
 
 def toHandle(text):
     if text:
-        return str(text).replace("~", "").replace("!", "").replace("@", "").replace("#", "").replace("$", "").replace("%", "").replace("^", "").replace("&", "").replace("*", "").replace("(", "").replace(")", "").replace(" ", "-").replace("--", "-").strip().lower()
+        handle = str(text).lower().replace(" ", "-")
+        handle = re.sub(r'[^a-z0-9-]', '', handle)
+        handle = re.sub(r'-+', '-', handle)
+
+        return handle.strip('-')
     else:
         return ""
 
@@ -237,11 +242,12 @@ def getRelatedProducts(product):
     for samePattern in samePatterns:
         color = samePattern.color
         size = samePattern.size
+        handle = common.toHandle(samePattern.title)
 
         relatedProducts.append({
             "color": color,
             "size": size,
-            "handle": samePattern.shopifyHandle
+            "handle": handle
         })
 
     return relatedProducts

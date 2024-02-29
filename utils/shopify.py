@@ -120,7 +120,7 @@ class Productmanager:
                 "value": value
             })
 
-        relatedProducts = common.getRelatedProducts(product)
+        relatedProducts = common.getRelatedProducts(product=product)
 
         metafields.append({
             "namespace": "custom",

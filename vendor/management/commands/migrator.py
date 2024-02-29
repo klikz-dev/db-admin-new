@@ -517,7 +517,7 @@ class Processor:
             # ("Covington", Covington, False),
             # ("Dana Gibson", DanaGibson, False),
             # ("Elaine Smith", ElaineSmith, False),
-            ("Exquisite Rugs", ExquisiteRugs, False),
+            # ("Exquisite Rugs", ExquisiteRugs, False),
             # ("Hubbardton Forge", HubbardtonForge, False),
             # ("Jaipur Living", JaipurLiving, False),
             # ("JamieYoung", JamieYoung, False),
@@ -539,7 +539,7 @@ class Processor:
             # ("Seabrook", Seabrook, False),
             # ("Stout", Stout, False),
             ("Surya", Surya, False),
-            ("Tempaper", Tempaper, False),
+            # ("Tempaper", Tempaper, False),
             # ("Walls Republic", WallsRepublic, False),
             # ("York", York, False),
             # ("Zoffany", Zoffany, False),
@@ -548,7 +548,8 @@ class Processor:
         for brandName, brand, private in brands:
             Product.objects.filter(manufacturer=brandName).delete()
 
-            products = brand.objects.all()
+            # products = brand.objects.all()
+            products = brand.objects.filter(pattern="ZRZ-2317")
 
             total = len(products)
             success = 0
