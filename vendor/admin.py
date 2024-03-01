@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Variant, Image, Sync
+from .models import Manufacturer, Type, Tag, Product, Image, Sync
 
 
 @admin.register(Manufacturer)
@@ -76,6 +76,8 @@ class TagAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Primary Keys', {'fields': [
+            'mpn',
+            'sku',
             'shopifyId',
             'shopifyHandle',
         ]}),
@@ -85,12 +87,14 @@ class ProductAdmin(admin.ModelAdmin):
         ]}),
         ('Data', {'fields': [
             'pattern',
+            'color',
             'collection',
             'usage',
             'disclaimer',
             'width',
             'length',
             'height',
+            'size',
             'repeatH',
             'repeatV',
             'yardsPR',
@@ -108,12 +112,26 @@ class ProductAdmin(admin.ModelAdmin):
             'type',
             'tags',
         ]}),
+        ('Variant', {'fields': [
+            'consumerId',
+            'tradeId',
+            'sampleId',
+            'freeSampleId',
+            'cost',
+            'consumer',
+            'trade',
+            'sample',
+            'compare',
+            'weight',
+            'barcode',
+        ]}),
         ("Status", {'fields': [
             'published',
         ]}),
     ]
 
     list_display = [
+        'sku',
         'shopifyId',
         'title',
         'manufacturer',
@@ -129,6 +147,8 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
+        'mpn',
+        'sku',
         'title',
         'description',
         'shopifyId',
@@ -140,63 +160,16 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(Variant)
-class VariantAdmin(admin.ModelAdmin):
-    fieldsets = [
-        ('Primary Keys', {'fields': [
-            'shopifyId',
-            'product',
-        ]}),
-        ('Option', {'fields': [
-            'color',
-            'size',
-            'type',
-        ]}),
-        ('Data', {'fields': [
-            'mpn',
-            'sku',
-            'cost',
-            'price',
-            'compare',
-            'weight',
-            'barcode',
-        ]}),
-    ]
-
-    list_display = [
-        'product',
-        'color',
-        'size',
-        'type',
-        'sku'
-    ]
-
-    list_filter = [
-        'type'
-    ]
-
-    search_fields = [
-        'shopifyId',
-        'product',
-        'color',
-        'size',
-        'type',
-        'mpn',
-        'sku',
-        'barcode',
-    ]
-
-
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
     fields = [
-        'variant',
+        'product',
         'url',
         'position'
     ]
 
     list_display = [
-        'variant',
+        'product',
         'url',
         'position'
     ]
@@ -206,7 +179,7 @@ class ImageAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
-        'variant',
+        'product',
         'url'
     ]
 
