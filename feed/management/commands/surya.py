@@ -54,10 +54,8 @@ class Command(BaseCommand):
             processor.DatabaseManager.addProducts()
 
         if "update" in options['functions']:
-            feeds = Surya.objects.filter(pattern="ZRZ-2317")
-
             processor = Processor()
-            processor.DatabaseManager.updateProducts(feeds=feeds)
+            processor.DatabaseManager.updateProducts(feeds=Surya.objects.all())
 
         if "image" in options['functions']:
             processor = Processor()
@@ -164,13 +162,7 @@ class Processor:
                 else:
                     whiteGlove = False
 
-                # Type Mapping & Exceptions
-                if cost == 0:
-                    continue
-
-                if not type or "Swatch" in type:
-                    continue
-
+                # Fine-tuning
                 type_mapping = {
                     "Rugs": "Rug",
                     "Wall Hangings": "Wall Hanging",
@@ -188,12 +180,14 @@ class Processor:
                     "Made to Order Rugs": "Rug",
                     "Printed Rug Set (3pc)": "Rug",
                 }
-
                 if type in type_mapping:
                     type = type_mapping[type]
 
-                # Rewrite Name
                 name = f"{collection} {pattern} {color} {size} {type}"
+
+                # Exceptions
+                if cost == 0 or not pattern or not color or not type or "Swatch" in type:
+                    continue
 
             except Exception as e:
                 debug.warn(BRAND, str(e))

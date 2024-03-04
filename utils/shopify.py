@@ -3,7 +3,6 @@ import requests
 import json
 
 from utils import debug, common
-from vendor.models import Product
 
 env = environ.Env()
 
@@ -14,9 +13,33 @@ SHOPIFY_API_SEC = env('SHOPIFY_API_SEC')
 SHOPIFY_API_TOKEN = env('SHOPIFY_API_TOKEN')
 
 
+VARIANT_OPTIONS = [
+    "Consumer",
+    "Trade",
+    "Sample",
+    "Free Sample"
+]
+
+
 class ShopifyManager:
-    def __init__(self):
-        pass
+    def __init__(self, product):
+        self.productId = product.shopifyId
+
+        if product.type.parent == "Root":
+            self.productType = product.type.name
+        else:
+            self.productType = product.type.parent
+
+        self.productManufacturer = product.manufacturer.name
+
+        self.variantsData = self.generateVariantsData(product=product)
+
+        self.productMetafields = self.generateProductMetafields(
+            product=product)
+
+        self.productTags = self.generateProductTags(product=product)
+
+        self.productData = self.generateProductData(product=product)
 
     def __enter__(self):
         return self
@@ -51,38 +74,7 @@ class ShopifyManager:
                 "Shopify", f"Shopify API Error for {url}. Error: {str(response.text)}")
             return {}
 
-
-class Productmanager:
-    def __init__(self, product):
-        self.tags = []
-
-        if product.type.parent == "Root":
-            self.type = product.type.name
-        else:
-            self.type = product.type.parent
-
-        self.manufacturer = product.manufacturer.name
-
-        self.handle = common.toHandle(product.title)
-
-        self.variantOptions = [
-            "Consumer",
-            "Trade",
-            "Sample",
-            "Free Sample"
-        ]
-
-        self.variantsData = self.getVariantsData(product)
-        self.productMetafields = self.getProductMetafields(product)
-        self.productData = self.getProductData(product)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def getVariantsData(self, product):
+    def generateVariantsData(self, product):
         base_variant_info = {
             "sku": product.sku,
             "cost": product.cost,
@@ -92,18 +84,19 @@ class Productmanager:
         }
 
         variants_data = [
-            {"title": "Consumer", "option1": "Consumer",
+            {"id": product.consumerId, "title": "Consumer", "option1": "Consumer",
                 "price": product.consumer, "compare_at_price": product.compare},
-            {"title": "Trade", "option1": "Trade", "price": product.trade},
-            {"title": "Sample", "option1": "Sample",
+            {"id": product.tradeId, "title": "Trade",
+                "option1": "Trade", "price": product.trade},
+            {"id": product.sampleId, "title": "Sample", "option1": "Sample",
                 "price": product.sample, "cost": 0, "weight": 5},
-            {"title": "Free Sample", "option1": "Free Sample",
+            {"id": product.freeSampleId, "title": "Free Sample", "option1": "Free Sample",
                 "price": 0, "cost": 0, "weight": 5}
         ]
 
-        return [{**base_variant_info, **variant} for variant in variants_data]
+        return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
 
-    def getProductMetafields(self, product):
+    def generateProductMetafields(self, product):
         keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "repeatH", "repeatV", "specs", "yardsPR",
                 "content", "match", "material", "finish", "care", "country", "features", "usage", "disclaimer"]
 
@@ -130,47 +123,71 @@ class Productmanager:
 
         return metafields
 
-    def getProductData(self, product):
+    def generateProductTags(self, product):
+        tags = []
+        size = ''
+        for tag in product.tags.all():
+            tags.append(f"{tag.type}:{tag.name}")
+
+            if tag.type == "Size":
+                size = tag.name
+
+        # Core value tagging
+        tags.append(f"Type:{product.type.name}")
+        tags.append(f"Brand:{product.manufacturer.brand}")
+
+        # Rebuy tagging
+        tags.append(
+            f"Rebuy_Recommendation_{product.collection}_{product.color}")
+        tags.append(f"Rebuy_Collection_{product.collection}")
+        tags.append(f"Rebuy_Color_{product.color}")
+        if product.type.name == "Rug" and size:
+            tags.append(f"Rebuy_Rug_Size_{size}")
+        if product.type.name == "Rug Pad" and size:
+            tags.append(f"Rebuy_Rug_Pad_Size_{size}")
+
+        return ",".join(tags)
+
+    def generateProductData(self, product):
         return {
             "product": {
                 "body_html": product.description,
                 "options": [
-                    {"name": "Type", "position": 1, "values": [
-                        "Consumer", "Trade", "Sample", "Free Sample"]},
+                    {"name": "Type", "position": 1, "values": VARIANT_OPTIONS},
                 ],
-                "product_type": self.type,
-                "tags": ",".join(self.tags),
+                "product_type": self.productType,
+                "tags": self.productTags,
                 "title": product.title.title(),
-                "handle": self.handle,
-                "vendor": self.manufacturer,
+                "handle": common.toHandle(product.title),
+                "vendor": self.productManufacturer,
                 "metafields": self.productMetafields
             }
         }
 
+    def updateProduct(self):
+        for variantId in self.variantsData.keys():
+            # Delete Variant Metafields
+            metafieldsData = self.requestAPI(
+                method="GET", url=f"/products/{self.productId}/variants/{variantId}/metafields.json")
 
-def getProductMetafields(product):
-    shopifyManager = ShopifyManager()
+            for metafield in metafieldsData["metafields"]:
+                self.requestAPI(
+                    method="DELETE", url=f"/metafields/{metafield['id']}.json")
 
-    return shopifyManager.requestAPI(
-        method="GET", url=f"/products/{product.shopifyId}/metafields.json")
+            # Update Variant
+            self.requestAPI(
+                method="PUT", url=f"/variants/{variantId}.json", payload=self.variantsData[variantId])
 
+        # Delete Product Metafields
+        metafieldsData = self.requestAPI(
+            method="GET", url=f"/products/{self.productId}/metafields.json")
 
-def deleteMetafields(product):
-    shopifyManager = ShopifyManager()
+        for metafield in metafieldsData["metafields"]:
+            self.requestAPI(
+                method="DELETE", url=f"/metafields/{metafield['id']}.json")
 
-    metafieldsData = getProductMetafields(product)
-    for metafield in metafieldsData["metafields"]:
-        shopifyManager.requestAPI(
-            method="DELETE", url=f"/metafields/{metafield['id']}.json")
+        # Update Product
+        productData = self.requestAPI(
+            method="PUT", url=f"/products/{self.productId}.json", payload=self.productData)
 
-
-def updateProduct(product):
-    shopifyManager = ShopifyManager()
-    productManager = Productmanager(product=product)
-
-    deleteMetafields(product)
-
-    productData = shopifyManager.requestAPI(
-        method="PUT", url=f"/products/{product.shopifyId}.json", payload=productManager.productData)
-
-    return productData["product"]["handle"]
+        return productData["product"]["handle"]

@@ -236,6 +236,7 @@ tags = [
     ('Coastal', 'Style'),
     ('Rustic', 'Style'),
     ('Global', 'Style'),
+
     ('Abstract', 'Category'),
     ('Animals', 'Category'),
     ('Birds', 'Category'),
@@ -291,6 +292,24 @@ tags = [
     ('Cork', 'Category'),
     ('Hinson', 'Category'),
     ('Performance', 'Category'),
+    ('Animal: Menagerie', 'Category'),
+    ('Animal: Jungle', 'Category'),
+    ('Animal: Safari', 'Category'),
+    ('Animal: Leopard', 'Category'),
+    ('Animal: Zebra', 'Category'),
+    ('Animal: Lion', 'Category'),
+    ('Animal: Tiger', 'Category'),
+    ('Animal: Cheetah', 'Category'),
+    ('Animal: Monkey', 'Category'),
+    ('Animal: Dog', 'Category'),
+    ('Animal: Cat', 'Category'),
+    ('Animal: Snake', 'Category'),
+    ('Animal: Lizard', 'Category'),
+    ('Animal: Crocodile', 'Category'),
+    ('Animal: Alligator', 'Category'),
+    ('Animal: Dragon', 'Category'),
+    ('Animal: Elephant', 'Category'),
+
     ('Black', 'Color'),
     ('Black/White', 'Color'),
     ('Blue', 'Color'),
@@ -307,6 +326,7 @@ tags = [
     ('Tan', 'Color'),
     ('White', 'Color'),
     ('Yellow', 'Color'),
+
     ('Leather', 'Content'),
     ('Wood', 'Content'),
     ('Chenille', 'Content'),
@@ -321,6 +341,7 @@ tags = [
     ('Velvet', 'Content'),
     ('Glass', 'Content'),
     ('Metal', 'Content'),
+
     ('12" Diameter Sphere', 'Size'),
     ('18" Square', 'Size'),
     ('14" Square', 'Size'),
@@ -336,9 +357,6 @@ tags = [
     ('3" to 4"', 'Size'),
     ('4" to 5"', 'Size'),
     ('5" and More', 'Size'),
-    ('Square', 'Shape'),
-    ('Round', 'Shape'),
-    ('Rectangle', 'Shape'),
     ("2' x 3'", 'Size'),
     ("3' x 5'", 'Size'),
     ("4' x 6'", 'Size'),
@@ -347,6 +365,20 @@ tags = [
     ("8' x 10'", 'Size'),
     ("9' x 12'", 'Size'),
     ("10' x 14'", 'Size'),
+
+    ('Square', 'Shape'),
+    ('Round', 'Shape'),
+    ('Rectangle', 'Shape'),
+
+    ('$0 - $25', 'Price'),
+    ('$25 - $50', 'Price'),
+    ('$50 - $100', 'Price'),
+    ('$100 - $200', 'Price'),
+    ('$200 - $300', 'Price'),
+    ('$300 - $400', 'Price'),
+    ('$400 - $500', 'Price'),
+    ('$500 & Up', 'Price'),
+
     ('Quick Ship', 'Group'),
     ('Outlet', 'Group'),
     ('Removable', 'Group'),
@@ -354,6 +386,8 @@ tags = [
     ('No Sample', 'Group'),
     ('Cut Fee', 'Group'),
     ('White Glove', 'Group'),
+    ('European', 'Group'),
+
     ('Aerin', 'Designer'),
     ('Alessandra Branca', 'Designer'),
     ('Alfred Shaheen', 'Designer'),
@@ -441,23 +475,6 @@ tags = [
     ('David Oliver', 'Designer'),
     ('Matthew Patrick Smythe', 'Designer'),
     ('Colette Cosentino', 'Designer'),
-    ('Menagerie', 'SubCategory: Animal'),
-    ('Jungle', 'SubCategory: Animal'),
-    ('Safari', 'SubCategory: Animal'),
-    ('Leopard', 'SubCategory: Animal'),
-    ('Zebra', 'SubCategory: Animal'),
-    ('Lion', 'SubCategory: Animal'),
-    ('Tiger', 'SubCategory: Animal'),
-    ('Cheetah', 'SubCategory: Animal'),
-    ('Monkey', 'SubCategory: Animal'),
-    ('Dog', 'SubCategory: Animal'),
-    ('Cat', 'SubCategory: Animal'),
-    ('Snake', 'SubCategory: Animal'),
-    ('Lizard', 'SubCategory: Animal'),
-    ('Crocodile', 'SubCategory: Animal'),
-    ('Alligator', 'SubCategory: Animal'),
-    ('Dragon', 'SubCategory: Animal'),
-    ('Elephant', 'SubCategory: Animal'),
 ]
 
 
@@ -538,7 +555,7 @@ class Processor:
             # ("Schumacher", Schumacher, False),
             # ("Seabrook", Seabrook, False),
             # ("Stout", Stout, False),
-            ("Surya", Surya, False),
+            # ("Surya", Surya, False),
             # ("Tempaper", Tempaper, False),
             # ("Walls Republic", WallsRepublic, False),
             # ("York", York, False),
@@ -548,8 +565,7 @@ class Processor:
         for brandName, brand, private in brands:
             Product.objects.filter(manufacturer=brandName).delete()
 
-            # products = brand.objects.all()
-            products = brand.objects.filter(pattern="ZRZ-2317")
+            products = brand.objects.all()
 
             total = len(products)
             success = 0

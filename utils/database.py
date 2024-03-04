@@ -1,8 +1,8 @@
 import environ
 
-from vendor.models import Product, Sync, Type, Manufacturer
+from vendor.models import Product, Sync, Type, Manufacturer, Tag
 
-from utils import debug, shopify
+from utils import debug, common, shopify, const
 
 env = environ.Env()
 
@@ -247,7 +247,12 @@ class DatabaseManager:
             except Product.DoesNotExist:
                 continue
 
-            handle = shopify.updateProduct(product=product)
+            tags = self.generateTags(feed=feed, price=product.consumer)
+            for tag in tags:
+                product.tags.add(tag)
+
+            shopifyManager = shopify.ShopifyManager(product=product)
+            handle = shopifyManager.updateProduct()
 
             if handle:
                 product.shopifyHandle = handle
@@ -257,3 +262,133 @@ class DatabaseManager:
 
     def downloadImages(self):
         pass
+
+    def generateTags(self, feed, price):
+        tags = []
+
+        # Generate Style tags
+        allStyles = Tag.objects.filter(
+            type="Style").values_list('name', flat=True)
+
+        for style in allStyles:
+            if style.lower() in feed.keywords.lower():
+                try:
+                    tag = Tag.objects.get(name=style, type="Style")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Category tags
+        allCategories = Tag.objects.filter(
+            type="Category").values_list('name', flat=True)
+
+        for category in allCategories:
+            if category.lower() in feed.keywords.lower():
+                try:
+                    tag = Tag.objects.get(name=category, type="Category")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Color tags
+        for key, color in const.colorDict.items():
+            if key.lower() in feed.colors.lower():
+                try:
+                    tag = Tag.objects.get(name=color, type="Color")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Size tags
+        for key, size in const.sizeDict.items():
+            sizeString = f"{feed.size.replace('W', '').replace('H', '').lower()} {common.toInt(feed.width / 12)}' x {common.toInt(feed.length / 12)}'"
+            if key.lower() in sizeString:
+                try:
+                    tag = Tag.objects.get(name=size, type="Size")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Content tags
+        allContents = Tag.objects.filter(
+            type="Content").values_list('name', flat=True)
+
+        for content in allContents:
+            if content.lower() in feed.keywords.lower():
+                try:
+                    tag = Tag.objects.get(name=content, type="Content")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Designer tags
+        allDesigners = Tag.objects.filter(
+            type="Designer").values_list('name', flat=True)
+
+        for designer in allDesigners:
+            if designer.lower() in feed.collection.lower():
+                try:
+                    tag = Tag.objects.get(name=designer, type="Designer")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Shape tags
+        allShapes = Tag.objects.filter(
+            type="Shape").values_list('name', flat=True)
+
+        for shape in allShapes:
+            if shape.lower() in feed.collection.lower():
+                try:
+                    tag = Tag.objects.get(name=shape, type="Shape")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        # Generate Price tag
+        price_ranges = [
+            (0, 25),
+            (25, 50),
+            (50, 100),
+            (100, 200),
+            (200, 300),
+            (300, 400),
+            (400, 500)
+        ]
+
+        for start, end in price_ranges:
+            if start <= price < end:
+                try:
+                    tag = Tag.objects.get(
+                        name=f"${start} - ${end}", type="Price")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    continue
+
+        else:
+            if price >= 500:
+                try:
+                    tag = Tag.objects.get(name="$500 & Up", type="Price")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    pass
+
+        # Generate Group tags
+        allGroups = {
+            'statusS': "No Sample",
+            'european': "European",
+            'quickShip': "Quick Ship",
+            'whiteGlove': "White Glove",
+            'bestSeller': "Best Selling",
+            'outlet': "Outlet"
+        }
+
+        for attr, tagName in allGroups.items():
+            if getattr(feed, attr, False) or (attr == "statusS" and not getattr(feed, attr, True)):
+                try:
+                    tag = Tag.objects.get(name=tagName, type="Group")
+                    tags.append(tag)
+                except Tag.DoesNotExist:
+                    pass
+
+        return tags

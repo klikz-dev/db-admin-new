@@ -10,8 +10,8 @@ import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from utils import debug, const, common
-from vendor.models import Product
+from utils import debug, const
+from vendor.models import Product, Tag
 
 env = environ.Env()
 
@@ -242,7 +242,7 @@ def getRelatedProducts(product):
     for samePattern in samePatterns:
         color = samePattern.color
         size = samePattern.size
-        handle = common.toHandle(samePattern.title)
+        handle = toHandle(samePattern.title)
 
         relatedProducts.append({
             "color": color,
