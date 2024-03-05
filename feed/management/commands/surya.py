@@ -85,8 +85,8 @@ class Processor:
             try:
                 # Primary Keys
                 mpn = common.toText(row[2])
-
                 sku = f"SR {mpn}"
+
                 pattern = common.toText(row[3])
                 color = ' '.join(common.toText(row[12]).split(', ')[:2])
 
@@ -100,6 +100,7 @@ class Processor:
 
                 # Main Information
                 description = common.toText(row[6])
+
                 width = common.toFloat(row[19])
                 length = common.toFloat(row[20])
                 height = common.toFloat(row[18])
@@ -136,6 +137,14 @@ class Processor:
 
                 colors = common.toText(row[12])
 
+                # Image
+                thumbnail = row[92]
+
+                roomsets = []
+                for id in range(93, 99):
+                    if row[id] != "":
+                        roomsets.append(row[id])
+
                 # Status
                 statusP = True
                 statusS = False
@@ -144,14 +153,6 @@ class Processor:
                     bestSeller = True
                 else:
                     bestSeller = False
-
-                # Image
-                thumbnail = row[92]
-
-                roomsets = []
-                for id in range(93, 99):
-                    if row[id] != "":
-                        roomsets.append(row[id])
 
                 # Shipping
                 shippingHeight = common.toFloat(row[24])

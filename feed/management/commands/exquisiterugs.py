@@ -95,7 +95,7 @@ class Processor:
                 # Categorization
                 brand = BRAND
                 type = "Rug"
-                manufacturer = brand
+                manufacturer = BRAND
                 collection = common.toText(row[1])
 
                 # Main Information
@@ -107,24 +107,25 @@ class Processor:
 
                 size = f"{common.toFloat(width / 12)}' x {common.toFloat(length / 12)}'"
 
-                specs = [
-                    ("Dimension", common.toText(row[18])),
-                ]
-
                 # Additional Information
                 material = common.toText(row[12])
                 care = common.toText(row[25])
-                weight = common.toFloat(row[14])
-                country = common.toText(row[35])
                 disclaimer = common.toText(row[24])
+                country = common.toText(row[35])
                 upc = common.toInt(row[13])
+                weight = common.toFloat(row[14])
+
+                specs = [
+                    ("Dimension", common.toText(row[18])),
+                    ("Weight", f"{weight} lbs"),
+                ]
+
+                # Measurement
+                uom = "Item"
 
                 # Pricing
                 cost = common.toFloat(row[7])
                 map = common.toFloat(row[8])
-
-                # Measurement
-                uom = "Item"
 
                 # Tagging
                 keywords = f"{row[11]}, {material}"
