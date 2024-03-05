@@ -1,4 +1,5 @@
 import environ
+from concurrent.futures import ThreadPoolExecutor
 
 from vendor.models import Product, Sync, Type, Manufacturer, Tag
 
@@ -241,24 +242,32 @@ class DatabaseManager:
         pass
 
     def updateProducts(self, feeds: list):
-        for feed in feeds:
+        total = len(feeds)
+
+        def updateProduct(feed, index):
             try:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
-                continue
+                return
 
             tags = self.generateTags(feed=feed, price=product.consumer)
             for tag in tags:
                 product.tags.add(tag)
 
-            shopifyManager = shopify.ShopifyManager(product=product)
+            shopifyManager = shopify.ShopifyManager(
+                product=product, thread=index)
+
             handle = shopifyManager.updateProduct()
 
             if handle:
                 product.shopifyHandle = handle
                 product.save()
+                debug.log(
+                    self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
 
-                debug.log(self.brand, f"Updated Product {product.sku}")
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for index, feed in enumerate(feeds):
+                executor.submit(updateProduct, feed, index)
 
     def downloadImages(self):
         pass

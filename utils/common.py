@@ -236,7 +236,7 @@ def markup(brand, product, format=True):
 
 def getRelatedProducts(product):
     samePatterns = Product.objects.filter(
-        manufacturer=product.manufacturer, pattern=product.pattern)
+        manufacturer=product.manufacturer, type=product.type, pattern=product.pattern)
 
     relatedProducts = []
     for samePattern in samePatterns:

@@ -8,9 +8,8 @@ env = environ.Env()
 
 SHOPIFY_API_BASE_URL = env('SHOPIFY_API_BASE_URL')
 SHOPIFY_API_VERSION = env('SHOPIFY_API_VERSION')
-SHOPIFY_API_KEY = env('SHOPIFY_API_KEY')
-SHOPIFY_API_SEC = env('SHOPIFY_API_SEC')
 SHOPIFY_API_TOKEN = env('SHOPIFY_API_TOKEN')
+SHOPIFY_API_THREAD_TOKENS = env('SHOPIFY_API_THREAD_TOKENS')
 
 
 VARIANT_OPTIONS = [
@@ -22,7 +21,12 @@ VARIANT_OPTIONS = [
 
 
 class ShopifyManager:
-    def __init__(self, product):
+    def __init__(self, product, thread=None):
+
+        self.apiToken = SHOPIFY_API_TOKEN
+        if thread != None:
+            self.apiToken = SHOPIFY_API_THREAD_TOKENS.split(",")[thread % 10]
+
         self.productId = product.shopifyId
 
         if product.type.parent == "Root":
@@ -53,7 +57,7 @@ class ShopifyManager:
                 method,
                 f"{SHOPIFY_API_BASE_URL}/{SHOPIFY_API_VERSION}{url}",
                 headers={
-                    'X-Shopify-Access-Token': SHOPIFY_API_TOKEN,
+                    'X-Shopify-Access-Token': self.apiToken,
                 }
             )
         else:
@@ -61,7 +65,7 @@ class ShopifyManager:
                 method,
                 f"{SHOPIFY_API_BASE_URL}/{SHOPIFY_API_VERSION}{url}",
                 headers={
-                    'X-Shopify-Access-Token': SHOPIFY_API_TOKEN,
+                    'X-Shopify-Access-Token': self.apiToken,
                     'Content-Type': 'application/json'
                 },
                 json=payload
