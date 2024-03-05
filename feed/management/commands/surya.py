@@ -55,7 +55,8 @@ class Command(BaseCommand):
 
         if "update" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.updateProducts(feeds=Surya.objects.all())
+            processor.DatabaseManager.updateProducts(
+                feeds=Surya.objects.all(), private=False)
 
         if "image" in options['functions']:
             processor = Processor()

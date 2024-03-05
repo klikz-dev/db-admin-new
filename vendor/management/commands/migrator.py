@@ -534,7 +534,7 @@ class Processor:
             # ("Covington", Covington, False),
             # ("Dana Gibson", DanaGibson, False),
             # ("Elaine Smith", ElaineSmith, False),
-            # ("Exquisite Rugs", ExquisiteRugs, False),
+            ("Exquisite Rugs", ExquisiteRugs, False),
             # ("Hubbardton Forge", HubbardtonForge, False),
             # ("Jaipur Living", JaipurLiving, False),
             # ("JamieYoung", JamieYoung, False),
@@ -555,7 +555,7 @@ class Processor:
             # ("Schumacher", Schumacher, False),
             # ("Seabrook", Seabrook, False),
             # ("Stout", Stout, False),
-            # ("Surya", Surya, False),
+            ("Surya", Surya, False),
             # ("Tempaper", Tempaper, False),
             # ("Walls Republic", WallsRepublic, False),
             # ("York", York, False),
@@ -675,6 +675,10 @@ class Processor:
                                 repeatH=product.repeatH,
                                 repeatV=product.repeatV,
                                 specs=product.specs,
+
+                                uom=product.uom,
+                                minimum=product.minimum,
+                                increment=product.increment,
 
                                 yardsPR=product.yardsPR,
                                 content=product.content,

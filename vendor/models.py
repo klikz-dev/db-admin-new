@@ -73,6 +73,11 @@ class Product(models.Model):
     repeatV = models.FloatField(default=0, null=True, blank=True)
     specs = models.JSONField(default=None, null=True, blank=True)
 
+    uom = models.CharField(
+        max_length=200, default="Item", null=True, blank=True)
+    minimum = models.IntegerField(default=1)
+    increment = models.IntegerField(default=1)
+
     yardsPR = models.FloatField(default=0, null=True, blank=True)
     content = models.CharField(
         max_length=200, default=None, null=True, blank=True)

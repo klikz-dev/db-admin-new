@@ -101,8 +101,8 @@ class ShopifyManager:
         return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
 
     def generateProductMetafields(self, product):
-        keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "repeatH", "repeatV", "specs", "yardsPR",
-                "content", "match", "material", "finish", "care", "country", "features", "usage", "disclaimer"]
+        keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "uom", "minimum", "increment", "repeatH",
+                "repeatV", "specs", "yardsPR", "content", "match", "material", "finish", "care", "country", "features", "usage", "disclaimer"]
 
         metafields = []
         for key in keys:

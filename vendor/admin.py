@@ -107,6 +107,11 @@ class ProductAdmin(admin.ModelAdmin):
             'specs',
             'features',
         ]}),
+        ('Pricing', {'fields': [
+            'uom',
+            'minimum',
+            'increment',
+        ]}),
         ('Category', {'fields': [
             'manufacturer',
             'type',
@@ -143,7 +148,8 @@ class ProductAdmin(admin.ModelAdmin):
         'manufacturer__brand',
         'manufacturer',
         'type',
-        'published'
+        'published',
+        'uom'
     ]
 
     search_fields = [

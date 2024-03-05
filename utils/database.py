@@ -1,5 +1,6 @@
 import environ
 from concurrent.futures import ThreadPoolExecutor
+from django.db import transaction
 
 from vendor.models import Product, Sync, Type, Manufacturer, Tag
 
@@ -241,7 +242,37 @@ class DatabaseManager:
     def addProducts(self):
         pass
 
-    def updateProducts(self, feeds: list):
+    def syncProduct(self, feed, product, private):
+        manufacturer_name = "DecoratorsBest" if private else product.manufacturer
+        title = f"{manufacturer_name} {product.name or f'{product.pattern} {product.color} {product.type}'}"
+
+        manufacturer, type = (
+            Manufacturer.objects.get(name=feed.manufacturer),
+            Type.objects.get(name=feed.type),
+        )
+
+        feed_to_product_attrs = {
+            'mpn': 'mpn', 'pattern': 'pattern', 'color': 'color',
+            'collection': 'collection', 'description': 'description', 'width': 'width',
+            'length': 'length', 'height': 'height', 'size': 'size', 'repeatH': 'repeatH',
+            'repeatV': 'repeatV', 'specs': 'specs', 'uom': 'uom', 'minimum': 'minimum',
+            'increment': 'increment', 'yardsPR': 'yardsPR', 'content': 'content',
+            'match': 'match', 'material': 'material', 'finish': 'finish', 'care': 'care',
+            'country': 'country', 'features': 'features', 'usage': 'usage',
+            'disclaimer': 'disclaimer', 'cost': 'cost', 'weight': 'weight', 'barcode': 'upc',
+        }
+
+        for product_attr, feed_attr in feed_to_product_attrs.items():
+            setattr(product, product_attr, getattr(feed, feed_attr))
+
+        product.title = title
+        product.manufacturer = manufacturer
+        product.type = type
+
+        with transaction.atomic():
+            product.save()
+
+    def updateProducts(self, feeds: list, private=False):
         total = len(feeds)
 
         def updateProduct(feed, index):

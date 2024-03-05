@@ -54,10 +54,9 @@ class Command(BaseCommand):
             processor.DatabaseManager.addProducts()
 
         if "update" in options['functions']:
-            feeds = ExquisiteRugs.objects.filter(pattern="3153")
-
             processor = Processor()
-            processor.DatabaseManager.updateProducts(feeds=feeds)
+            processor.DatabaseManager.updateProducts(
+                feeds=ExquisiteRugs.objects.all(), private=False)
 
         if "image" in options['functions']:
             processor = Processor()
