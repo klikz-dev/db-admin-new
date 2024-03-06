@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
-from feed.models import Surya
+from feed.models import JaipurLiving
 
 import os
 import openpyxl
 
 from utils import database, debug, common
 
-BRAND = "Surya"
+BRAND = "Jaipur Living"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
@@ -21,8 +21,8 @@ class Command(BaseCommand):
             processor = Processor()
             common.downloadFileFromSFTP(
                 brand=BRAND,
-                src="/surya/surya_masterlist_dbest.xlsx",
-                dst=f"{FILEDIR}/surya-master.xlsx",
+                src="/jaipur/Jaipur Living Master Data Template.xlsx",
+                dst=f"{FILEDIR}/jaipurliving-master.xlsx",
                 fileSrc=True,
                 delete=False
             )
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Surya.objects.all(), private=False)
+                feeds=JaipurLiving.objects.all(), private=False)
 
         if "image" in options['functions']:
             processor = Processor()
@@ -66,7 +66,7 @@ class Command(BaseCommand):
 class Processor:
     def __init__(self):
         self.DatabaseManager = database.DatabaseManager(
-            brand=BRAND, Feed=Surya)
+            brand=BRAND, Feed=JaipurLiving)
 
     def __enter__(self):
         return self
@@ -78,117 +78,115 @@ class Processor:
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/surya-master.xlsx")
+        wb = openpyxl.load_workbook(f"{FILEDIR}/jaipurliving-master.xlsx")
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
             try:
                 # Primary Keys
-                mpn = common.toText(row[2])
-                sku = f"SR {mpn}"
+                mpn = common.toText(row[7])
+                sku = f"JL {mpn}"
 
-                pattern = common.toText(row[3])
-                color = ' '.join(common.toText(row[12]).split(', ')[:2])
+                pattern = common.toText(row[13])
+                if common.toText(row[53]):
+                    pattern = f"{pattern} {common.toText(row[53])}"
 
-                name = common.toText(row[4])
+                color = common.toText(row[56])
+                if common.toText(row[57]):
+                    color = f"{color} / {common.toText(row[57])}"
+
+                name = common.toText(row[9]).title().replace(BRAND, "").strip()
 
                 # Categorization
                 brand = BRAND
-                type = common.toText(row[0])
                 manufacturer = BRAND
-                collection = common.toText(row[5])
+                type = common.toText(row[0]).title()
+                collection = common.toText(row[12])
 
                 # Main Information
-                description = common.toText(row[6])
+                description = row[25]
+                width = common.toFloat(row[21])
+                length = common.toFloat(row[22])
+                height = common.toFloat(row[24])
 
-                width = common.toFloat(row[19])
-                length = common.toFloat(row[20])
-                height = common.toFloat(row[18])
-
-                if length == 0 and height != 0:
-                    length = height
-                    height = 0
-
-                size = common.toText(row[16])
+                size = common.toText(row[18]).replace("X", " x ").replace(
+                    "Folded", "").replace("BOX", "").replace("  ", " ").strip()
 
                 # Additional Information
-                material = common.toText(row[13])
-                care = common.toText(row[71])
-                country = common.toText(row[28])
-                upc = common.toInt(row[8])
-                weight = common.toFloat(row[21]) or 5
+                front = common.toText(row[35])
+                back = common.toText(row[36])
+                filling = common.toText(row[37])
+
+                material = f"Front: {front}"
+                if back:
+                    material += f", Back: {back}"
+                if filling:
+                    material += f", Filling: {filling}"
+
+                care = common.toText(row[39])
+                country = common.toText(row[32])
+                upc = common.toInt(row[6])
+                weight = common.toFloat(row[88])
 
                 specs = [
-                    ("Colors", common.toText(row[12])),
+                    ("Dimension", common.toText(row[18])),
                     ("Weight", f"{weight} lbs"),
                 ]
+
+                features = []
+                for id in range(26, 32):
+                    if row[id]:
+                        features.append(common.toText(row[id]))
 
                 # Measurement
                 uom = "Item"
 
                 # Pricing
-                cost = common.toFloat(row[9])
-                map = common.toFloat(row[10])
+                cost = common.toFloat(row[15])
+                map = common.toFloat(row[16])
+                msrp = common.toFloat(row[17])
 
                 # Tagging
-                keywords = f"{common.toText(row[14])}, {common.toText(row[41])}, {type}, {collection}, {pattern}"
-                if common.toText(row[31]) == "Yes":
-                    keywords = f"{keywords}, Outdoor"
-
-                colors = common.toText(row[12])
+                keywords = ", ".join(
+                    (row[19], row[50], row[51], pattern, name, description, type, ", ".join(features)))
+                colors = color
 
                 # Image
-                thumbnail = row[92]
+                thumbnail = row[89]
+                if thumbnail == "http://cdn1-media.s3.us-east-1.amazonaws.com/product_links/Product_Images/":
+                    thumbnail = f"{thumbnail}{str(row[8]).strip()}.jpg"
 
                 roomsets = []
-                for id in range(93, 99):
-                    if row[id] != "":
+                for id in range(90, 104):
+                    if row[id]:
                         roomsets.append(row[id])
 
                 # Status
-                if "Swatch" in type:
+                if row[19] == "Swatches":
                     statusP = False
                 else:
                     statusP = True
                 statusS = False
 
-                if common.toText(row[30]) == "Yes":
-                    bestSeller = True
-                else:
-                    bestSeller = False
-
                 # Shipping
-                shippingHeight = common.toFloat(row[24])
-                shippingWidth = common.toFloat(row[25])
-                shippingDepth = common.toFloat(row[23])
-                shippingWeight = common.toFloat(row[22])
-                if shippingWidth > 95 or shippingHeight > 95 or shippingDepth > 95 or shippingWeight > 40:
+                shippingWidth = common.toFloat(row[86])
+                shippingLength = common.toFloat(row[85])
+                shippingHeight = common.toFloat(row[87])
+                shippingWeight = common.toFloat(row[88])
+                if shippingWidth > 95 or shippingLength > 95 or shippingHeight > 95 or shippingWeight > 40:
                     whiteGlove = True
                 else:
                     whiteGlove = False
 
                 # Fine-tuning
+                name = f"{collection} {pattern} {color} {size} {type}"
+
                 type_mapping = {
-                    "Rugs": "Rug",
-                    "Wall Hangings": "Wall Hanging",
-                    "Mirrors": "Mirror",
-                    "Bedding": "Bed",
-                    "Wall Art - Stock": "Wall Art",
-                    "Throws": "Throw",
-                    "Ceiling Lighting": "Lighting",
-                    "Accent and Lounge Chairs": "Accent Chair",
-                    "Decorative Accents": "Decorative Accent",
-                    "Sofas": "Sofa",
-                    "Wall Sconces": "Wall Sconce",
-                    "Rug Blanket": "Rug",
-                    "Bedding Inserts": "Bed",
-                    "Made to Order Rugs": "Rug",
-                    "Printed Rug Set (3pc)": "Rug",
+                    "Accent Furniture": "Furniture",
+                    "Décor": "Throw",
                 }
                 if type in type_mapping:
                     type = type_mapping[type]
-
-                name = f"{collection} {pattern} {color} {size} {type}"
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
@@ -227,6 +225,7 @@ class Processor:
 
                 'cost': cost,
                 'map': map,
+                'msrp': msrp,
 
                 'keywords': keywords,
                 'colors': colors,
@@ -237,7 +236,6 @@ class Processor:
                 'statusP': statusP,
                 'statusS': statusS,
                 'whiteGlove': whiteGlove,
-                'bestSeller': bestSeller
             }
             products.append(product)
 

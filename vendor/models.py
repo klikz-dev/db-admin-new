@@ -88,7 +88,7 @@ class Product(models.Model):
     finish = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     care = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
+        max_length=1000, default=None, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     features = models.JSONField(default=None, null=True, blank=True)

@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 import json
 
@@ -536,7 +537,7 @@ class Processor:
             # ("Elaine Smith", ElaineSmith, False),
             ("Exquisite Rugs", ExquisiteRugs, False),
             # ("Hubbardton Forge", HubbardtonForge, False),
-            # ("Jaipur Living", JaipurLiving, False),
+            ("Jaipur Living", JaipurLiving, False),
             # ("JamieYoung", JamieYoung, False),
             # ("JF Fabrics", JFFabrics, False),
             # ("Kasmir", Kasmir, False),
@@ -555,7 +556,7 @@ class Processor:
             # ("Schumacher", Schumacher, False),
             # ("Seabrook", Seabrook, False),
             # ("Stout", Stout, False),
-            ("Surya", Surya, False),
+            # ("Surya", Surya, False),
             # ("Tempaper", Tempaper, False),
             # ("Walls Republic", WallsRepublic, False),
             # ("York", York, False),
@@ -568,10 +569,10 @@ class Processor:
             products = brand.objects.all()
 
             total = len(products)
-            success = 0
-            for product in products:
+
+            def copyProduct(product, index):
                 if not product.statusP:
-                    continue
+                    return
 
                 response = requests.request(
                     "GET",
@@ -590,9 +591,8 @@ class Processor:
                 published = data.get("published", False)
 
                 if productId and handle:
-                    success += 1
                     print(
-                        f"{success}/{total} -- {product.sku}, {productId}, {handle}")
+                        f"{index}/{total} -- {product.sku}, {productId}, {handle}")
 
                     ###########
                     # Variant #
@@ -626,7 +626,7 @@ class Processor:
 
                     if not (consumerId and tradeId and sampleId and freeSampleId):
                         print(f"Variant Error. SKU: {newProduct.sku}")
-                        continue
+                        return
                     ###########
                     # Variant #
                     ###########
@@ -645,9 +645,6 @@ class Processor:
                         name=product.manufacturer)
 
                     type = Type.objects.get(name=product.type)
-
-                    # To-do: Tags
-                    #############
 
                     if manufacturer and type:
                         try:
@@ -707,3 +704,7 @@ class Processor:
                             )
                         except Exception as e:
                             debug.warn("Migrator", str(e))
+
+            with ThreadPoolExecutor(max_workers=100) as executor:
+                for index, product in enumerate(products):
+                    executor.submit(copyProduct, product, index)

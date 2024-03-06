@@ -154,6 +154,14 @@ class Processor:
                 else:
                     whiteGlove = False
 
+                # Fine-tuning
+                name = f"{name.replace('Area Rug', '')}{size} Area Rug".replace(
+                    color, f"{pattern} {color}")
+
+                # Exceptions
+                if cost == 0 or not pattern or not color or not type:
+                    continue
+
             except Exception as e:
                 debug.warn(BRAND, str(e))
                 continue

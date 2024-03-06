@@ -39,7 +39,7 @@ class Feed(models.Model):
     finish = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     care = models.CharField(
-        max_length=200, default=None, null=True, blank=True)
+        max_length=1000, default=None, null=True, blank=True)
     weight = models.FloatField(default=0, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
@@ -60,7 +60,7 @@ class Feed(models.Model):
     increment = models.IntegerField(default=1)
 
     keywords = models.CharField(
-        max_length=1000, default=None, null=True, blank=True)
+        max_length=2000, default=None, null=True, blank=True)
     colors = models.CharField(
         max_length=1000, default=None, null=True, blank=True)
 
