@@ -79,7 +79,8 @@ class Processor:
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/tempaper-master.xlsx")
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/tempaper-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):

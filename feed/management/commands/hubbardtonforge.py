@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
-from feed.models import Surya
+from feed.models import HubbardtonForge
 
 import os
 import openpyxl
 
 from utils import database, debug, common
 
-BRAND = "Surya"
+BRAND = "Hubbardton Forge"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
@@ -19,13 +19,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            common.downloadFileFromSFTP(
-                brand=BRAND,
-                src="/surya/surya_masterlist_dbest.xlsx",
-                dst=f"{FILEDIR}/surya-master.xlsx",
-                fileSrc=True,
-                delete=False
-            )
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -56,7 +49,7 @@ class Command(BaseCommand):
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Surya.objects.all(), private=False)
+                feeds=HubbardtonForge.objects.all(), private=False)
 
         if "image" in options['functions']:
             processor = Processor()
@@ -66,7 +59,7 @@ class Command(BaseCommand):
 class Processor:
     def __init__(self):
         self.DatabaseManager = database.DatabaseManager(
-            brand=BRAND, Feed=Surya)
+            brand=BRAND, Feed=HubbardtonForge)
 
     def __enter__(self):
         return self
@@ -75,120 +68,108 @@ class Processor:
         pass
 
     def fetchFeed(self):
+        # Price & Discontinued
+        prices = {}
+
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/hubbardtonforge-price.xlsx", data_only=True)
+        sh = wb.worksheets[2]
+        for row in sh.iter_rows(min_row=3, values_only=True):
+            mpn = common.toText(row[3])
+
+            cost = common.toFloat(row[5])
+            map = common.toFloat(row[6])
+
+            prices[mpn] = {
+                'cost': cost,
+                'map': map,
+            }
+
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/surya-master.xlsx")
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/hubbardtonforge-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
             try:
                 # Primary Keys
-                mpn = common.toText(row[2])
-                sku = f"SR {mpn}"
+                mpn = common.toText(row[1])
+                sku = f"HF {mpn}"
 
-                pattern = common.toText(row[3])
-                color = ' '.join(common.toText(row[12]).split(', ')[:2])
+                pattern = common.toInt(row[3])
 
-                name = common.toText(row[4])
+                colorOptions = [9, 10, 11, 12, 13]
+                color = ' '.join(common.toText(
+                    row[i]) for i in colorOptions if common.toText(row[i]))
+
+                name = f"{color} {common.toText(row[2])}"
 
                 # Categorization
                 brand = BRAND
-                type = common.toText(row[0])
+                type = common.toText(row[4])
                 manufacturer = BRAND
-                collection = common.toText(row[5])
+                collection = common.toText(row[7])
 
                 # Main Information
-                description = common.toText(row[6])
+                description = f"{common.toText(row[72])} {common.toText(row[73])}"
 
-                width = common.toFloat(row[19])
-                length = common.toFloat(row[20])
-                height = common.toFloat(row[18])
-
-                if length == 0 and height != 0:
-                    length = height
-                    height = 0
-
-                size = common.toText(row[16])
+                width = common.toFloat(row[21])
+                length = common.toFloat(row[22])
+                height = common.toFloat(row[20])
 
                 # Additional Information
-                material = common.toText(row[13])
-                care = common.toText(row[71])
-                country = common.toText(row[28])
-                upc = common.toInt(row[8])
-                weight = common.toFloat(row[21]) or 5
+                finish = ', '.join(common.toText(
+                    row[i]) for i in colorOptions if common.toText(row[i]))
 
-                specs = [
-                    ("Colors", common.toText(row[12])),
-                    ("Weight", f"{weight} lbs"),
-                ]
+                weight = common.toFloat(row[26])
+
+                features = []
+                for id in range(74, 79):
+                    if row[id]:
+                        features.append(common.toText(row[id]))
 
                 # Measurement
                 uom = "Item"
 
                 # Pricing
-                cost = common.toFloat(row[9])
-                map = common.toFloat(row[10])
+                cost = common.toFloat(row[17])
+                map = common.toFloat(row[18])
+                msrp = common.toFloat(row[19])
+
+                if mpn in prices:
+                    cost = prices[mpn]['cost']
+                    map = prices[mpn]['map']
 
                 # Tagging
-                keywords = f"{common.toText(row[14])}, {common.toText(row[41])}, {type}, {collection}, {pattern}"
-                if common.toText(row[31]) == "Yes":
-                    keywords = f"{keywords}, Outdoor"
-
-                colors = common.toText(row[12])
+                keywords = f"{row[79]}, {row[80]}, {row[89]}, {type}, {name}"
+                colors = color
 
                 # Image
-                thumbnail = row[92]
-
-                roomsets = []
-                for id in range(93, 99):
-                    if row[id] != "":
-                        roomsets.append(row[id])
+                thumbnail = row[90]
 
                 # Status
-                if "Swatch" in type:
-                    statusP = False
-                else:
-                    statusP = True
+                statusP = True
                 statusS = False
-
-                if common.toText(row[30]) == "Yes":
-                    bestSeller = True
-                else:
-                    bestSeller = False
-
-                # Shipping
-                shippingHeight = common.toFloat(row[24])
-                shippingWidth = common.toFloat(row[25])
-                shippingDepth = common.toFloat(row[23])
-                shippingWeight = common.toFloat(row[22])
-                if shippingWidth > 95 or shippingHeight > 95 or shippingDepth > 95 or shippingWeight > 40:
-                    whiteGlove = True
-                else:
-                    whiteGlove = False
 
                 # Fine-tuning
                 type_mapping = {
-                    "Rugs": "Rug",
-                    "Wall Hangings": "Wall Hanging",
-                    "Mirrors": "Mirror",
-                    "Bedding": "Bed",
-                    "Wall Art - Stock": "Wall Art",
-                    "Throws": "Throw",
-                    "Ceiling Lighting": "Lighting",
-                    "Accent and Lounge Chairs": "Accent Chair",
-                    "Decorative Accents": "Decorative Accent",
-                    "Sofas": "Sofa",
-                    "Wall Sconces": "Wall Sconce",
-                    "Rug Blanket": "Rug",
-                    "Bedding Inserts": "Bed",
-                    "Made to Order Rugs": "Rug",
-                    "Printed Rug Set (3pc)": "Rug",
+                    "Chandeliers": "Chandelier",
+                    "Kitchen Pendants": "Pendant",
+                    "Pendants": "Pendant",
+                    "Semi-Flush": "Semi-Flush Mount",
+                    "Large Scale Fixtures": "Accessory",
+                    "Sconces - Direct": "Wall Sconce",
+                    "Floor Lamps": "Floor Lamp",
+                    "Torchieres": "Torchier",
+                    "Table Lamps": "Table Lamp",
+                    "Sconces - Pinup": "Wall Sconce",
+                    "Outdoor": "Accessory",
+                    "Home Accessories": "Accessory"
                 }
                 if type in type_mapping:
                     type = type_mapping[type]
-
-                name = f"{collection} {pattern} {color} {size} {type}"
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
@@ -211,33 +192,27 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
-                'specs': specs,
                 'width': width,
                 'length': length,
                 'height': height,
-                'size': size,
 
-                'material': material,
-                'care': care,
-                'country': country,
+                'finish': finish,
                 'weight': weight,
-                'upc': upc,
+                'features': features,
 
                 'uom': uom,
 
                 'cost': cost,
                 'map': map,
+                'msrp': msrp,
 
                 'keywords': keywords,
                 'colors': colors,
 
                 'thumbnail': thumbnail,
-                'roomsets': roomsets,
 
                 'statusP': statusP,
                 'statusS': statusS,
-                'whiteGlove': whiteGlove,
-                'bestSeller': bestSeller
             }
             products.append(product)
 

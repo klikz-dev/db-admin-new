@@ -78,7 +78,8 @@ class Processor:
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/jaipurliving-master.xlsx")
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/jaipurliving-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
@@ -127,11 +128,6 @@ class Processor:
                 country = common.toText(row[32])
                 upc = common.toInt(row[6])
                 weight = common.toFloat(row[88])
-
-                specs = [
-                    ("Dimension", common.toText(row[18])),
-                    ("Weight", f"{weight} lbs"),
-                ]
 
                 features = []
                 for id in range(26, 32):
@@ -209,7 +205,6 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
-                'specs': specs,
                 'width': width,
                 'length': length,
                 'height': height,
@@ -220,6 +215,8 @@ class Processor:
                 'country': country,
                 'weight': weight,
                 'upc': upc,
+
+                'features': features,
 
                 'uom': uom,
 

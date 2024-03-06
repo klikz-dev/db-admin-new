@@ -78,7 +78,8 @@ class Processor:
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/surya-master.xlsx")
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/surya-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
@@ -120,7 +121,6 @@ class Processor:
 
                 specs = [
                     ("Colors", common.toText(row[12])),
-                    ("Weight", f"{weight} lbs"),
                 ]
 
                 # Measurement
@@ -211,7 +211,6 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
-                'specs': specs,
                 'width': width,
                 'length': length,
                 'height': height,
@@ -222,6 +221,8 @@ class Processor:
                 'country': country,
                 'weight': weight,
                 'upc': upc,
+
+                'specs': specs,
 
                 'uom': uom,
 

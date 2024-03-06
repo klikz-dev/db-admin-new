@@ -78,7 +78,8 @@ class Processor:
         # Get Product Feed
         products = []
 
-        wb = openpyxl.load_workbook(f"{FILEDIR}/exquisiterugs-master.xlsx")
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/exquisiterugs-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
@@ -117,7 +118,6 @@ class Processor:
 
                 specs = [
                     ("Dimension", common.toText(row[18])),
-                    ("Weight", f"{weight} lbs"),
                 ]
 
                 # Measurement
@@ -179,7 +179,6 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
-                'specs': specs,
                 'width': width,
                 'length': length,
                 'height': height,
@@ -191,6 +190,8 @@ class Processor:
                 'weight': weight,
                 'upc': upc,
                 'disclaimer': disclaimer,
+
+                'specs': specs,
 
                 'uom': uom,
 
