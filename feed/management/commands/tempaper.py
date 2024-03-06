@@ -54,10 +54,9 @@ class Command(BaseCommand):
             processor.DatabaseManager.addProducts()
 
         if "update" in options['functions']:
-            feeds = Tempaper.objects.filter(pattern="Owls")
-
             processor = Processor()
-            processor.DatabaseManager.updateProducts(feeds=feeds)
+            processor.DatabaseManager.updateProducts(
+                feeds=Tempaper.objects.all())
 
         if "image" in options['functions']:
             processor = Processor()
@@ -100,52 +99,51 @@ class Processor:
                 manufacturer = brand
                 collection = common.toText(row[2])
 
-                # Specs
+                # Main Information
                 description = common.toText(row[9])
 
                 width = common.toFloat(row[17])
                 length = common.toFloat(row[18]) * 12
 
+                # Additional Information
+                yardsPR = common.toInt(row[14])
+                match = common.toText(row[25])
+                material = common.toText(row[27])
+                care = common.toText(row[32])
+                weight = common.toFloat(row[22])
+                country = common.toText(row[33])
+
                 specs = [
                     ("Coverage", common.toText(row[21])),
                 ]
 
-                # Additional Information
-                yardsPR = common.toInt(row[14])
-                weight = common.toFloat(row[22])
-                match = common.toText(row[25])
-                material = common.toText(row[27])
-                care = common.toText(row[32])
-                country = common.toText(row[33])
                 features = []
                 for id in range(28, 30):
-                    feature = common.toText(row[id])
-                    if feature:
-                        features.append(feature)
+                    if row[id]:
+                        features.append(common.toText(row[id]))
+
+                # Measurement
+                uom = f"{common.toText(row[13])}"
 
                 # Pricing
                 cost = common.toFloat(row[10])
                 map = common.toFloat(row[11])
 
-                # Measurement
-                uom = f"{common.toText(row[13])}"
-
                 # Tagging
-                colors = color
                 keywords = f"{material}, {match}, {common.toText(row[28])}, {common.toText(row[29])}, {collection}, {pattern}, {description}"
+                colors = color
 
                 # Image
                 thumbnail = common.toText(row[34]).replace("dl=0", "dl=1")
 
                 roomsets = []
                 for id in range(35, 39):
-                    roomset = common.toText(row[id]).replace("dl=0", "dl=1")
-                    if roomset != "":
-                        roomsets.append(roomset)
+                    if row[id]:
+                        roomsets.append(common.toText(
+                            row[id]).replace("dl=0", "dl=1"))
 
                 # Status
                 statusP = True
-
                 if type == "Wallpaper":
                     statusS = True
                 else:
