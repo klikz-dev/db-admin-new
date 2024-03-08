@@ -703,17 +703,17 @@ class Processor:
         while True:
             print(f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
 
-            products_page = response.json()
+            product_ids = {str(product['id'])
+                           for product in response.json()['products']}
 
-            for product in products_page['products']:
-                productId = product['id']
+            existing_product_ids = set(Product.objects.filter(
+                manufacturer=vendor_name, shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
 
-                try:
-                    Product.objects.get(
-                        manufacturer=vendor_name, shopifyId=productId)
-                except Product.DoesNotExist:
-                    print(f"Delete: {productId}")
-                    shopifyManager.deleteProduct(productId)
+            products_to_delete = product_ids - existing_product_ids
+
+            for product_id in products_to_delete:
+                print(f"Delete: {product_id}")
+                shopifyManager.deleteProduct(product_id)
 
             if 'next' in response.links:
                 next_url = response.links['next']['url']
