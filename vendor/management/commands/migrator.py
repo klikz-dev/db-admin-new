@@ -1,10 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
 import requests
 import json
+import environ
 
 from django.core.management.base import BaseCommand
 
-from utils import common, debug
+from utils import common, debug, shopify
 from vendor.models import Type, Manufacturer, Tag, Product
 
 from feed.models import Brewster
@@ -39,6 +40,7 @@ from feed.models import WallsRepublic
 from feed.models import York
 from feed.models import Zoffany
 
+env = environ.Env()
 
 types = [
     ("Fabric", "Root"),
@@ -500,6 +502,9 @@ class Command(BaseCommand):
         if "shopify" in options['functions']:
             processor.shopify()
 
+        if "cleanup" in options['functions']:
+            processor.cleanup()
+
 
 class Processor:
     def __init__(self):
@@ -530,41 +535,11 @@ class Processor:
     def shopify(self):
 
         brands = [
-            # ("Brewster", Brewster, False),
-            # ("Couture", Couture, False),
-            # ("Covington", Covington, False),
-            # ("Dana Gibson", DanaGibson, False),
-            # ("Elaine Smith", ElaineSmith, False),
-            ("Exquisite Rugs", ExquisiteRugs, False),
-            ("Hubbardton Forge", HubbardtonForge, False),
-            ("Jaipur Living", JaipurLiving, False),
-            # ("JamieYoung", JamieYoung, False),
-            # ("JF Fabrics", JFFabrics, False),
-            # ("Kasmir", Kasmir, False),
-            # ("Kravet", Kravet, False),
-            # ("Materialworks", Materialworks, False),
-            # ("Maxwell", Maxwell, False),
-            # ("MindTheGap", MindTheGap, False),
-            # ("NOIR", NOIR, False),
-            # ("Peninsula Home", PeninsulaHome, False),
-            # ("Phillip Jeffries", PhillipJeffries, False),
-            # ("Phillips Collection", PhillipsCollection, False),
-            # ("Pindler", Pindler, False),
-            # ("Port68", Port68, False),
-            # ("Premier Prints", PremierPrints, False),
-            # ("Scalamandre", Scalamandre, False),
-            # ("Schumacher", Schumacher, False),
-            # ("Seabrook", Seabrook, False),
-            # ("Stout", Stout, False),
-            ("Surya", Surya, False),
-            # ("Tempaper", Tempaper, False),
-            # ("Walls Republic", WallsRepublic, False),
-            # ("York", York, False),
-            # ("Zoffany", Zoffany, False),
+            ("Tempaper", Tempaper, False),
         ]
 
         for brandName, brand, private in brands:
-            Product.objects.filter(manufacturer=brandName).delete()
+            Product.objects.filter(manufacturer__brand=brandName).delete()
 
             products = brand.objects.all()
 
@@ -708,3 +683,41 @@ class Processor:
             with ThreadPoolExecutor(max_workers=100) as executor:
                 for index, product in enumerate(products):
                     executor.submit(copyProduct, product, index)
+
+    def cleanup(self):
+
+        shopifyManager = shopify.ShopifyManager()
+
+        vendor_name = "Surya"
+
+        base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
+        params = {'vendor': vendor_name, 'limit': 250, 'fields': 'id'}
+        headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
+
+        session = requests.Session()
+        session.headers.update(headers)
+
+        response = session.get(base_url, params=params)
+
+        page = 1
+        while True:
+            print(f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
+
+            products_page = response.json()
+
+            for product in products_page['products']:
+                productId = product['id']
+
+                try:
+                    Product.objects.get(
+                        manufacturer=vendor_name, shopifyId=productId)
+                except Product.DoesNotExist:
+                    print(f"Delete: {productId}")
+                    shopifyManager.deleteProduct(productId)
+
+            if 'next' in response.links:
+                next_url = response.links['next']['url']
+                response = session.get(next_url)
+                page += 1
+            else:
+                break

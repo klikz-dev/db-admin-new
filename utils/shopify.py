@@ -21,29 +21,31 @@ VARIANT_OPTIONS = [
 
 
 class ShopifyManager:
-    def __init__(self, product, thread=None):
+    def __init__(self, product=None, thread=None):
 
         self.apiToken = SHOPIFY_API_TOKEN
         if thread != None:
             self.apiToken = SHOPIFY_API_THREAD_TOKENS.split(",")[thread % 10]
 
-        self.productId = product.shopifyId
+        if product:
 
-        if product.type.parent == "Root":
-            self.productType = product.type.name
-        else:
-            self.productType = product.type.parent
+            self.productId = product.shopifyId
 
-        self.productManufacturer = product.manufacturer.name
+            if product.type.parent == "Root":
+                self.productType = product.type.name
+            else:
+                self.productType = product.type.parent
 
-        self.variantsData = self.generateVariantsData(product=product)
+            self.productManufacturer = product.manufacturer.name
 
-        self.productMetafields = self.generateProductMetafields(
-            product=product)
+            self.variantsData = self.generateVariantsData(product=product)
 
-        self.productTags = self.generateProductTags(product=product)
+            self.productMetafields = self.generateProductMetafields(
+                product=product)
 
-        self.productData = self.generateProductData(product=product)
+            self.productTags = self.generateProductTags(product=product)
+
+            self.productData = self.generateProductData(product=product)
 
     def __enter__(self):
         return self
@@ -195,3 +197,10 @@ class ShopifyManager:
             method="PUT", url=f"/products/{self.productId}.json", payload=self.productData)
 
         return productData["product"]["handle"]
+
+    def deleteProduct(self, productId):
+        # Delete Product
+        productData = self.requestAPI(
+            method="DELETE", url=f"/products/{productId}.json")
+
+        return productData
