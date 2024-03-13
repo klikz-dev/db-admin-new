@@ -1,4 +1,5 @@
 import environ
+import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from django.db import transaction
 
@@ -237,7 +238,19 @@ class DatabaseManager:
         pass
 
     def tagSync(self):
-        pass
+        feeds = self.Feed.objects.all()
+        for feed in tqdm(feeds, desc="Processing"):
+            try:
+                product = Product.objects.get(sku=feed.sku)
+            except Product.DoesNotExist:
+                continue
+
+            newTags = set(self.generateTags(feed=feed, price=product.consumer))
+            currentTags = set(product.tags.all())
+
+            if newTags != currentTags:
+                Sync.objects.get_or_create(
+                    productId=product.shopifyId, type="Tag")
 
     def addProducts(self):
         pass
