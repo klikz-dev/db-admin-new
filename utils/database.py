@@ -1,5 +1,5 @@
 import environ
-import tqdm
+from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from django.db import transaction
 
@@ -27,7 +27,7 @@ class DatabaseManager:
         total = len(feeds)
         success = 0
         failed = 0
-        for feed in feeds:
+        for feed in tqdm(feeds):
             try:
                 self.Feed.objects.create(
                     mpn=feed.get('mpn'),
@@ -92,7 +92,7 @@ class DatabaseManager:
                     custom=feed.get('custom', {}),
                 )
                 success += 1
-                debug.log(self.brand, f"Imported MPN: {feed.get('mpn')}")
+                # debug.log(self.brand, f"Imported MPN: {feed.get('mpn')}")
             except Exception as e:
                 failed += 1
                 debug.warn(self.brand, str(e))

@@ -130,9 +130,9 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
 
 
 def downloadFileFromFTP(brand, src, dst):
-    host = const.sftp[brand]["host"]
-    username = const.sftp[brand]["user"]
-    password = const.sftp[brand]["pass"]
+    host = const.ftp[brand]["host"]
+    username = const.ftp[brand]["user"]
+    password = const.ftp[brand]["pass"]
 
     try:
         urllib.request.urlretrieve(

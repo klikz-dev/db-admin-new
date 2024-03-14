@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
         if "content" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.contentSync()
+            processor.DatabaseManager.contentSync(private=True)
 
         if "price" in options['functions']:
             processor = Processor()
@@ -51,12 +51,12 @@ class Command(BaseCommand):
 
         if "add" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.addProducts()
+            processor.DatabaseManager.addProducts(private=True)
 
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Tempaper.objects.all())
+                feeds=Tempaper.objects.all(), private=True)
 
         if "image" in options['functions']:
             processor = Processor()
@@ -97,7 +97,7 @@ class Processor:
                 brand = BRAND
                 type = common.toText(row[0])
                 manufacturer = brand
-                collection = common.toText(row[2])
+                collection = common.toText(row[2].replace("Tempaper", ""))
 
                 # Main Information
                 description = common.toText(row[9])
@@ -113,8 +113,9 @@ class Processor:
                 weight = common.toFloat(row[22])
                 country = common.toText(row[33])
 
+                coverage = common.toText(row[21])
                 specs = [
-                    ("Coverage", common.toText(row[21])),
+                    ("Coverage", coverage),
                 ]
 
                 features = []
@@ -149,6 +150,13 @@ class Processor:
                 else:
                     statusS = False
 
+                # Fine-tuning
+                name = f"{collection} {pattern} {color} {type}"
+
+                # Exceptions
+                if cost == 0 or not pattern or not color or not type:
+                    continue
+
             except Exception as e:
                 debug.warn(BRAND, str(e))
                 continue
@@ -166,17 +174,18 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
-                'specs': specs,
                 'width': width,
                 'length': length,
 
-                'material': material,
                 'yardsPR': yardsPR,
+                'material': material,
                 'match': match,
                 'care': care,
-                'features': features,
                 'country': country,
                 'weight': weight,
+
+                'specs': specs,
+                'features': features,
 
                 'uom': uom,
 

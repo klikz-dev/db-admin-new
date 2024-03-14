@@ -168,6 +168,7 @@ manufacturers = [
     ("Brunschwig & Fils", "Kravet", False),
     ("Clarke & Clarke", "Kravet", False),
     ("Cole & Son", "Kravet", False),
+    ("Donghia", "Kravet", False),
     ("G P & J Baker", "Kravet", False),
     ("Gaston Y Daniela", "Kravet", False),
     ("Lee Jofa", "Kravet", False),
