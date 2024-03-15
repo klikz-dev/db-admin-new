@@ -236,7 +236,7 @@ class Processor:
                     repeat = common.toFloat(row[ids["repeatId"]])
 
                     # Additional Information
-                    yardsPR = common.toFloat(round(length / 3, 2))
+                    yardsPR = common.toFloat(length / 3)
                     match = common.toText(row[ids["matchId"]])
                     material = common.toText(row[ids["materialId"]])
                     usage = common.toText(row[ids["usageId"]])
