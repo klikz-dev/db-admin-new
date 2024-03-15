@@ -200,7 +200,7 @@ class Processor:
                     "MISSONI HOME WALLCOVERINGS 04",
                 ]
                 if collection in blockCollections and type == "Wallpaper":
-                    statusP = False
+                    continue
 
             except Exception as e:
                 debug.warn(BRAND, str(e))
