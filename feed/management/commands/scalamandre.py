@@ -4,7 +4,6 @@ from feed.models import Scalamandre
 import os
 import requests
 import json
-import re
 import environ
 
 from utils import database, debug, common
@@ -173,7 +172,7 @@ class Processor:
                     "PILLOWS": "Pillow",
                     "FABRIC": "Fabric"
                 }
-                type = TYPE_DICT.get(type, "").title()
+                type = TYPE_DICT.get(type, type)
 
                 MANUFACTURER_DICT = {
                     "The House of Scalamandré": "Scalamandre",

@@ -160,7 +160,7 @@ def toText(text):
 def toFloat(value):
     if value and str(value).strip() != '':
         try:
-            value = round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("in", "").replace(",", "").replace("kg",
+            value = round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("'", "").replace("in", "").replace(",", "").replace("kg",
                           "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "").strip()), 2)
         except:
             value = 0
