@@ -5,8 +5,11 @@ import os
 import requests
 import json
 import re
+import environ
 
 from utils import database, debug, common
+
+env = environ.Env()
 
 BRAND = "York"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
@@ -74,9 +77,8 @@ class Processor:
         pass
 
     def requestAPI(self, url):
-        baseURL = "http://yorkapi.yorkwall.com:10090/pcsiapi"
         try:
-            responseData = requests.get(f"{baseURL}/{url}")
+            responseData = requests.get(f"{env('YORK_API_URL')}/{url}")
             responseJSON = json.loads(responseData.text)
             result = responseJSON['results']
 
@@ -104,9 +106,9 @@ class Processor:
 
             debug.log(BRAND, f"Fetch Collection {collectionName}")
 
-            products = self.requestAPI(f"collection.php/{collectionID}")
+            productsData = self.requestAPI(f"collection.php/{collectionID}")
 
-            for product in products:
+            for product in productsData:
                 productID = product['productID']
 
                 productData = self.requestAPI(f"product.php/{productID}")

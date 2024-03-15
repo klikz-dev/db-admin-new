@@ -154,7 +154,7 @@ class Processor:
                 statusS = False
 
                 # Fine-tuning
-                type_mapping = {
+                TYPE_DICT = {
                     "Chandeliers": "Chandelier",
                     "Kitchen Pendants": "Pendant",
                     "Pendants": "Pendant",
@@ -168,8 +168,7 @@ class Processor:
                     "Outdoor": "Accessory",
                     "Home Accessories": "Accessory"
                 }
-                if type in type_mapping:
-                    type = type_mapping[type]
+                type = TYPE_DICT.get(type, type)
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:

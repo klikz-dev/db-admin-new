@@ -177,12 +177,11 @@ class Processor:
                 # Fine-tuning
                 name = f"{collection} {pattern} {color} {size} {type}"
 
-                type_mapping = {
+                TYPE_DICT = {
                     "Accent Furniture": "Furniture",
                     "Décor": "Throw",
                 }
-                if type in type_mapping:
-                    type = type_mapping[type]
+                type = TYPE_DICT.get(type, type)
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:

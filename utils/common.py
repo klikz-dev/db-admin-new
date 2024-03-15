@@ -151,9 +151,6 @@ def downloadFileFromLink(src, dst):
 
 
 def toText(text):
-    if text == int(text):
-        return int(text)
-
     if text:
         return str(text).replace("N/A", "").replace("n/a", "").replace('', '').replace('¥', '').replace('…', '').replace('„', '').strip()
     else:

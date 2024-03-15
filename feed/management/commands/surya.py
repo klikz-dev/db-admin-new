@@ -168,7 +168,7 @@ class Processor:
                     whiteGlove = False
 
                 # Fine-tuning
-                type_mapping = {
+                TYPE_DICT = {
                     "Rugs": "Rug",
                     "Wall Hangings": "Wall Hanging",
                     "Mirrors": "Mirror",
@@ -185,8 +185,7 @@ class Processor:
                     "Made to Order Rugs": "Rug",
                     "Printed Rug Set (3pc)": "Rug",
                 }
-                if type in type_mapping:
-                    type = type_mapping[type]
+                type = TYPE_DICT.get(type, type)
 
                 name = f"{collection} {pattern} {color} {size} {type}"
 

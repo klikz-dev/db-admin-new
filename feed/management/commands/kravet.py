@@ -141,21 +141,21 @@ class Processor:
                                "LIZZO", "ANDREW MARTIN", "BLITHFIELD", "JAGTAR", "JOSEPHINE MUNSEY", "MISSONI HOME", "PAOLO MOSCHINO"})
 
                 # Fine-tuning
-                type_mapping = {
+                TYPE_DICT = {
                     "WALLCOVERING": "Wallpaper",
                     "TRIM": "Trim",
                     "UPHOLSTERY": "Fabric",
                     "DRAPERY": "Fabric",
                     "MULTIPURPOSE": "Fabric"
                 }
-                type = type_mapping.get(type, type)
+                type = TYPE_DICT.get(type, type)
 
                 if "LIZZO" in collection:
                     manufacturer = "LIZZO"
                 elif "ANDREW MARTIN" in collection:
                     manufacturer = "ANDREW MARTIN"
 
-                manufacturer_mapping = {
+                MANUFACTURER_DICT = {
                     "PARKERTEX": "Lee Jofa",
                     "KRAVET DESIGN": "Kravet",
                     "KRAVET BASICS": "Kravet",
@@ -167,7 +167,7 @@ class Processor:
                     "FIRED EARTH": "Lee Jofa",
                     "SEACLOTH": "Lee Jofa",
                 }
-                manufacturer = manufacturer_mapping.get(
+                manufacturer = MANUFACTURER_DICT.get(
                     manufacturer, manufacturer).title()
 
                 uom = "Item" if uom == "Each" else uom
