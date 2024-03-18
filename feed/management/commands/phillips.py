@@ -238,11 +238,6 @@ class Processor:
                         }
                         type = TYPE_DICT.get(type, type)
 
-                        UOM_DICT = {
-                            "Each": "Item",
-                        }
-                        uom = UOM_DICT.get(uom, uom)
-
                         pattern = pattern.replace(type, "").strip()
 
                         name = f"{pattern} {color} {type}"

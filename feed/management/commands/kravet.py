@@ -170,8 +170,6 @@ class Processor:
                 manufacturer = MANUFACTURER_DICT.get(
                     manufacturer, manufacturer).title()
 
-                uom = "Item" if uom == "Each" else uom
-
                 name = f"{pattern} {color} {type}"
 
                 # Exceptions

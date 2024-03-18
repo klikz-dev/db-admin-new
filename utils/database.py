@@ -154,7 +154,7 @@ class DatabaseManager:
 
         uoms = self.Feed.objects.values_list('uom', flat=True).distinct()
         for uom in uoms:
-            if uom not in ['Roll', 'Double Roll', 'Yard', 'Item', 'Panel', 'Square Foot', 'Set', 'Tile', 'Spool', 'Meter']:
+            if uom not in ['Roll', 'Double Roll', 'Yard', 'Each', 'Item', 'Panel', 'Square Foot', 'Set', 'Tile', 'Spool', 'Meter']:
                 unknownUOMs.append(uom)
 
         if len(unknownUOMs) == 0:
