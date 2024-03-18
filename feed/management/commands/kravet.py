@@ -307,9 +307,8 @@ class Processor:
                 whiteGlove = "White Glove" in row[17]
 
                 # Fine-tuning
-                type = type[:-1] if type.endswith('s') else type
+                type = common.pluralToSingular(type)
                 TYPE_DICT = {
-                    "Boxe": "Box",
                     "Benches & Ottoman": "Ottoman"
                 }
                 type = TYPE_DICT.get(type, type)

@@ -1,12 +1,12 @@
 from django.core.management.base import BaseCommand
-from feed.models import Surya
+from feed.models import NOIR
 
 import os
 import openpyxl
 
 from utils import database, debug, common
 
-BRAND = "Surya"
+BRAND = "NOIR"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
@@ -21,8 +21,8 @@ class Command(BaseCommand):
             processor = Processor()
             common.downloadFileFromSFTP(
                 brand=BRAND,
-                src="/surya/surya_masterlist_dbest.xlsx",
-                dst=f"{FILEDIR}/surya-master.xlsx",
+                src="/noir/NOIR_MASTER.xlsx",
+                dst=f"{FILEDIR}/noir-master.xlsx",
                 fileSrc=True,
                 delete=False
             )
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Surya.objects.all(), private=False)
+                feeds=NOIR.objects.all(), private=False)
 
         if "image" in options['functions']:
             processor = Processor()
@@ -66,7 +66,7 @@ class Command(BaseCommand):
 class Processor:
     def __init__(self):
         self.DatabaseManager = database.DatabaseManager(
-            brand=BRAND, Feed=Surya)
+            brand=BRAND, Feed=NOIR)
 
     def __enter__(self):
         return self
@@ -79,90 +79,70 @@ class Processor:
         products = []
 
         wb = openpyxl.load_workbook(
-            f"{FILEDIR}/surya-master.xlsx", data_only=True)
+            f"{FILEDIR}/noir-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
-            try:
+            # try:
+            if True:
                 # Primary Keys
                 mpn = common.toText(row[2])
-                sku = f"SR {mpn}"
+                sku = f"NOIR {mpn}"
 
-                pattern = common.toText(row[3])
-                color = ' '.join(common.toText(row[12]).split(', ')[:2])
+                pattern = common.toText(row[6])
+                color = common.toText(row[20])
 
-                name = common.toText(row[4])
+                name = common.toText(row[6])
 
                 # Categorization
                 brand = BRAND
-                type = common.toText(row[0])
                 manufacturer = BRAND
-                collection = common.toText(row[5])
+                type = common.toText(row[5]).title()
+                collection = f"{brand} {type}"
 
                 # Main Information
-                description = common.toText(row[6])
-
-                width = common.toFloat(row[19])
-                length = common.toFloat(row[20])
-                height = common.toFloat(row[18])
-
-                if length == 0 and height != 0:
-                    length = height
-                    height = 0
-
-                size = common.toText(row[16])
+                description = common.toText(row[19])
+                width = common.toFloat(row[16])
+                length = common.toFloat(row[15])
+                height = common.toFloat(row[17])
 
                 # Additional Information
-                material = common.toText(row[13])
-                care = common.toText(row[71])
-                country = common.toText(row[28])
-                upc = common.toInt(row[8])
-                weight = common.toFloat(row[21]) or 5
+                material = common.toText(row[12])
+                country = common.toText(row[35])
+                weight = common.toFloat(row[14])
+                upc = common.toInt(row[13])
 
+                dimension = common.toText(row[18])
                 specs = [
-                    ("Colors", common.toText(row[12])),
+                    ("Dimension", dimension),
                 ]
+
+                # Pricing
+                cost = common.toFloat(row[7])
+                map = common.toFloat(row[8])
 
                 # Measurement
                 uom = "Item"
 
-                # Pricing
-                cost = common.toFloat(row[9])
-                map = common.toFloat(row[10])
-
                 # Tagging
-                keywords = f"{common.toText(row[14])}, {common.toText(row[41])}, {type}, {collection}, {pattern}"
-                if common.toText(row[31]) == "Yes":
-                    keywords = f"{keywords}, Outdoor"
-
-                colors = common.toText(row[12])
+                keywords = f"{color}, {material}, {description}, {name}"
+                colors = color
 
                 # Image
-                thumbnail = row[92]
-
-                roomsets = []
-                for id in range(93, 99):
-                    if row[id] != "":
-                        roomsets.append(row[id])
+                thumbnail = row[51].replace("dl=0", "dl=1")
+                roomsets = [row[id].replace("dl=0", "dl=1")
+                            for id in range(52, 65) if row[id]]
 
                 # Status
-                if "Swatch" in type:
-                    statusP = False
-                else:
-                    statusP = True
+                statusP = True
                 statusS = False
 
-                if common.toText(row[30]) == "Yes":
-                    bestSeller = True
-                else:
-                    bestSeller = False
-
                 # Shipping
-                shippingHeight = common.toFloat(row[24])
-                shippingWidth = common.toFloat(row[25])
-                shippingDepth = common.toFloat(row[23])
-                shippingWeight = common.toFloat(row[22])
-                if shippingWidth > 95 or shippingHeight > 95 or shippingDepth > 95 or shippingWeight > 40:
+                boxHeight = common.toFloat(row[43])
+                boxWidth = common.toFloat(row[44])
+                boxDepth = common.toFloat(row[45])
+                boxWeight = common.toFloat(row[42])
+                if boxWidth > 95 or boxHeight > 95 or boxDepth > 95 or boxWeight > 40 or weight > 40:
                     whiteGlove = True
                 else:
                     whiteGlove = False
@@ -170,24 +150,31 @@ class Processor:
                 # Fine-tuning
                 type = common.pluralToSingular(type)
                 TYPE_DICT = {
-                    "Bedding": "Bed",
-                    "Wall Art - Stock": "Wall Art",
-                    "Ceiling Lighting": "Lighting",
-                    "Accent and Lounge Chair": "Accent Chair",
-                    "Rug Blanket": "Rug",
-                    "Printed Rug Set (3pc)": "Rug",
+                    "Occasional Chair": "Chair",
+                    "Ocassional Chair": "Chair",
+                    "Desks, Accent Table": "Accent Table",
+                    "Stools, Accent Table": "Accent Table",
+                    "Cocktail Tables, Accent Table": "Accent Table",
+                    "Bar & Counter": "Bar Stool",
+                    "Sideboard": "Side Table",
+                    "Console/Accent Table": "Accent Table",
+                    "Sconce": "Wall Sconce",
                 }
                 type = TYPE_DICT.get(type, type)
 
-                name = f"{collection} {pattern} {color} {size} {type}"
+                if "," in pattern:
+                    pattern, color = [item.strip()
+                                      for item in name.split(",", 1)]
+
+                name = name.replace(",", "")
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
                     continue
 
-            except Exception as e:
-                debug.warn(BRAND, str(e))
-                continue
+            # except Exception as e:
+            #     debug.warn(BRAND, str(e))
+            #     continue
 
             product = {
                 'mpn': mpn,
@@ -205,10 +192,8 @@ class Processor:
                 'width': width,
                 'length': length,
                 'height': height,
-                'size': size,
 
                 'material': material,
-                'care': care,
                 'country': country,
                 'weight': weight,
                 'upc': upc,
@@ -228,8 +213,8 @@ class Processor:
 
                 'statusP': statusP,
                 'statusS': statusS,
+
                 'whiteGlove': whiteGlove,
-                'bestSeller': bestSeller
             }
             products.append(product)
 

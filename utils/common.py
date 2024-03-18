@@ -6,6 +6,7 @@ import urllib
 import paramiko
 import math
 import re
+import inflect
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,6 +15,7 @@ from utils import debug, const
 from vendor.models import Product, Tag
 
 env = environ.Env()
+p = inflect.engine()
 
 PROCESS = "Common"
 
@@ -186,6 +188,11 @@ def toHandle(text):
         return handle.strip('-')
     else:
         return ""
+
+
+def pluralToSingular(word):
+    singular = p.singular_noun(word)
+    return singular if singular else word
 
 
 def markup(brand, product, format=True):
