@@ -108,7 +108,7 @@ class Processor:
                     sku = f"MW {mpn}"
 
                     pattern = common.toText(row['style'])
-                    color = common.toText(row['color'].replace("# ", "#"))
+                    color = common.toText(row['color']).replace("# ", "#")
 
                     # Categorization
                     brand = BRAND
