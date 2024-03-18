@@ -14,6 +14,7 @@ from feed.models import Covington
 from feed.models import DanaGibson
 from feed.models import ElaineSmith
 from feed.models import ExquisiteRugs
+from feed.models import Galerie
 from feed.models import HubbardtonForge
 from feed.models import JaipurLiving
 from feed.models import JamieYoung
@@ -536,7 +537,29 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("Tempaper", Tempaper, False),
+            ("Tempaper", Brewster, False),
+            ("Tempaper", Couture, False),
+            ("Tempaper", Covington, True),
+            ("Tempaper", DanaGibson, False),
+            ("Tempaper", ElaineSmith, False),
+            # ("Tempaper", ExquisiteRugs, False),
+            ("Tempaper", Galerie, False),
+            # ("Tempaper", HubbardtonForge, False),
+            # ("Tempaper", JaipurLiving, False),
+            ("Tempaper", JamieYoung, False),
+            ("Tempaper", JFFabrics, False),
+            ("Tempaper", Kasmir, False),
+            ("Tempaper", Kravet, False),
+            ("Tempaper", Materialworks, True),
+            ("Tempaper", Maxwell, False),
+            ("Tempaper", MindTheGap, False),
+            ("Tempaper", PhillipsCollection, False),
+            ("Tempaper", Scalamandre, False),
+            ("Tempaper", Schumacher, False),
+            # ("Tempaper", Surya, False),
+            ("Tempaper", Tempaper, True),
+            ("Tempaper", York, False),
+            ("Tempaper", Zoffany, False),
         ]
 
         for brandName, brand, private in brands:
