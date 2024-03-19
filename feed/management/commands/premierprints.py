@@ -1,15 +1,12 @@
 from django.core.management.base import BaseCommand
-from feed.models import Poppy
+from feed.models import PremierPrints
 
 import os
-import environ
 import openpyxl
 
 from utils import database, debug, common
 
-env = environ.Env()
-
-BRAND = "Poppy"
+BRAND = "Premier Prints"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
@@ -35,7 +32,7 @@ class Command(BaseCommand):
 
         if "content" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.contentSync()
+            processor.DatabaseManager.contentSync(private=True)
 
         if "price" in options['functions']:
             processor = Processor()
@@ -47,12 +44,12 @@ class Command(BaseCommand):
 
         if "add" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.addProducts()
+            processor.DatabaseManager.addProducts(private=True)
 
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Poppy.objects.all())
+                feeds=PremierPrints.objects.all(), private=True)
 
         if "image" in options['functions']:
             processor = Processor()
@@ -62,7 +59,7 @@ class Command(BaseCommand):
 class Processor:
     def __init__(self):
         self.DatabaseManager = database.DatabaseManager(
-            brand=BRAND, Feed=Poppy)
+            brand=BRAND, Feed=PremierPrints)
 
     def __enter__(self):
         return self
@@ -75,75 +72,43 @@ class Processor:
         products = []
 
         wb = openpyxl.load_workbook(
-            f"{FILEDIR}/poppy-master.xlsx", data_only=True)
+            f"{FILEDIR}/premierprints-master.xlsx", data_only=True)
         sh = wb.worksheets[0]
 
-        for row in sh.iter_rows(min_row=3, values_only=True):
+        for row in sh.iter_rows(min_row=2, values_only=True):
             try:
                 # Primary Keys
-                mpn = common.toText(row[2])
-                sku = f"PP {mpn}"
-
-                pattern = common.toText(row[3])
-                color = common.toText(row[4])
+                mpn = common.toText(row[0])
+                sku = f"DBP {mpn}"
+                pattern = common.toText(row[4])
+                color = common.toText(row[5])
 
                 # Categorization
                 brand = BRAND
-                manufacturer = "Poppy Print Studio"
+                manufacturer = BRAND
 
-                type = "Wallpaper"
-
-                collection = common.toText(row[1])
+                type = common.toText(row[3])
+                collection = common.toText(row[2])
 
                 # Main Information
-                description = common.toText(row[8])
-
-                width = common.toFloat(row[16])
-                length = common.toFloat(row[17]) * 12
-
-                repeatV = common.toFloat(row[20])
-                repeatH = common.toFloat(row[21])
+                description = common.toText(row[9])
+                width = common.toFloat(row[10])
+                repeatH = common.toFloat(row[14])
+                repeatV = common.toFloat(row[13])
 
                 # Additional Information
-                yardsPR = common.toInt(row[13])
-                match = common.toText(row[22])
-                material = common.toText(row[24])
-                weight = common.toFloat(row[19])
-                country = common.toText(row[29])
-
-                coverage = common.toText(row[18])
-                paste = common.toText(row[23])
-                washability = common.toText(row[25])
-                removability = common.toText(row[26])
-                specs = [
-                    ("Coverage", coverage),
-                    ("Paste", paste),
-                    ("Washability", washability),
-                    ("Removability", removability),
-                ]
+                usage = common.toText(row[20])
 
                 # Measurement
-                uom = common.toText(row[12])
+                uom = common.toText(row[19])
+                minimum = 2
 
                 # Pricing
-                cost = common.toFloat(row[9])
-                map = common.toFloat(row[10])
+                cost = common.toFloat(row[8])
 
                 # Tagging
-                keywords = f"{match} {paste} {material} {washability} {removability} {common.toText(row[27])} {collection} {pattern} {description}"
-                colors = color
-
-                # Image
-                if row[30]:
-                    thumbnail = f'https://drive.google.com/u/0/uc?id={row[30].replace("https://drive.google.com/file/d/", "").split("/")[0]}&export=download'
-                else:
-                    thumbnail = ""
-
-                roomsets = []
-                for id in range(31, 35):
-                    if row[id]:
-                        roomset = f'https://drive.google.com/u/0/uc?id={row[id].replace("https://drive.google.com/file/d/", "").split("/")[0]}&export=download'
-                        roomsets.append(roomset)
+                keywords = f"{row[20]} {row[25]} {pattern}"
+                colors = row[24]
 
                 # Status
                 statusP = True
@@ -174,28 +139,18 @@ class Processor:
 
                 'description': description,
                 'width': width,
-                'length': length,
-                'repeatV': repeatV,
                 'repeatH': repeatH,
+                'repeatV': repeatV,
 
-                'yardsPR': yardsPR,
-                'match': match,
-                'material': material,
-                'weight': weight,
-                'country': country,
-
-                'specs': specs,
+                'usage': usage,
 
                 'uom': uom,
+                'minimum': minimum,
 
                 'cost': cost,
-                'map': map,
 
                 'keywords': keywords,
                 'colors': colors,
-
-                'thumbnail': thumbnail,
-                'roomsets': roomsets,
 
                 'statusP': statusP,
                 'statusS': statusS,
