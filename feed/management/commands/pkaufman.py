@@ -1,17 +1,15 @@
 from django.core.management.base import BaseCommand
-from feed.models import Pindler
+from feed.models import PKaufmann
 
 import os
 import environ
-import requests
-import csv
-import codecs
+import openpyxl
 
 from utils import database, debug, common
 
 env = environ.Env()
 
-BRAND = "Pindler"
+BRAND = "P/Kaufmann"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
@@ -24,7 +22,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            processor.downloadFeed()
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -55,7 +52,7 @@ class Command(BaseCommand):
         if "update" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.updateProducts(
-                feeds=Pindler.objects.all())
+                feeds=PKaufmann.objects.all())
 
         if "image" in options['functions']:
             processor = Processor()
@@ -65,7 +62,7 @@ class Command(BaseCommand):
 class Processor:
     def __init__(self):
         self.DatabaseManager = database.DatabaseManager(
-            brand=BRAND, Feed=Pindler)
+            brand=BRAND, Feed=PKaufmann)
 
     def __enter__(self):
         return self
@@ -73,70 +70,69 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def downloadFeed(self):
-        try:
-            r = requests.get(
-                "https://trade.pindler.com/dataexport/DecoratorBest/DECORBEST.csv",
-                auth=(env('PINDLER_UN'), env('PINDLER_PW'))
-            )
-
-            with open(f"{FILEDIR}/pindler-master.csv", "wb") as out:
-                for bits in r.iter_content():
-                    out.write(bits)
-
-            debug.log(BRAND, "Downloaded Pindler FTP Master CSV")
-
-        except Exception as e:
-            debug.warn(BRAND, str(e))
-
     def fetchFeed(self):
         # Get Product Feed
         products = []
 
-        f = open(f"{FILEDIR}/pindler-master.csv", "rb")
-        cr = csv.reader(codecs.iterdecode(f, 'utf-8'))
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/pk-master.xlsx", data_only=True)
+        sh = wb.worksheets[0]
 
-        for row in cr:
+        for row in sh.iter_rows(min_row=3, values_only=True):
             try:
-                if row[0] == "Inventory Number" or row[0] == "Text":
-                    continue
-
                 # Primary Keys
-                mpn = row[0]
-                sku = f"PDL {row[20]}-{row[18]}".replace("'", "")
+                mpn = common.toText(row[2])
+                sku = f"PK {mpn}"
 
-                pattern = common.toText(row[19])
-                color = common.toText(row[18])
+                pattern = common.toText(row[3])
+                color = common.toText(row[4])
 
                 # Categorization
                 brand = BRAND
-                manufacturer = BRAND
+                manufacturer = common.toText(row[0]).title()
 
-                type = "Trim" if "T" in row[20] else "Fabric"
+                type = "Wallpaper"
 
-                collection = row[1] or row[3]
+                collection = common.toText(row[1])
 
                 # Main Information
-                width = common.toText(row[26])
-                repeatV = common.toFloat(row[24])
-                repeatH = common.toFloat(row[9])
+                description = common.toText(row[8])
+                description = description.replace("*", "<br>*")
+
+                width = common.toFloat(row[16])
+                length = common.toFloat(row[17]) * 12
+
+                repeatV = common.toFloat(row[20])
+                repeatH = common.toFloat(row[21])
 
                 # Additional Information
-                content = common.toText(row[4])
+                yardsPR = common.toInt(row[13])
+                match = common.toText(row[22])
+                material = common.toText(row[24])
+                weight = common.toFloat(row[19])
+                country = common.toText(row[29])
+
+                coverage = common.toText(row[18])
+                paste = common.toText(row[23])
+                washability = common.toText(row[25])
+                removability = common.toText(row[26])
+                specs = [
+                    ("Coverage", coverage),
+                    ("Paste", paste),
+                    ("Washability", washability),
+                    ("Removability", removability),
+                ]
 
                 # Measurement
-                uom = "Yard"
+                uom = common.toText(row[12])
 
                 # Pricing
-                cost = common.toFloat(row[25])
+                cost = common.toFloat(row[9])
+                map = common.toFloat(row[10])
 
                 # Tagging
-                keywords = " ".join(
-                    [row[12], row[13], row[14], row[15], row[16], row[17]])
-                colors = row[12]
-
-                # Image
-                thumbnail = common.toText(row[10])
+                keywords = f"{match} {paste} {material} {washability} {removability} {common.toText(row[27])} {collection} {pattern} {description}"
+                colors = color
 
                 # Status
                 statusP = True
@@ -165,20 +161,27 @@ class Processor:
                 'manufacturer': manufacturer,
                 'collection': collection,
 
+                'description': description,
                 'width': width,
+                'length': length,
                 'repeatV': repeatV,
                 'repeatH': repeatH,
 
-                'content': content,
+                'yardsPR': yardsPR,
+                'match': match,
+                'material': material,
+                'weight': weight,
+                'country': country,
+
+                'specs': specs,
 
                 'uom': uom,
 
                 'cost': cost,
+                'map': map,
 
                 'keywords': keywords,
                 'colors': colors,
-
-                'thumbnail': thumbnail,
 
                 'statusP': statusP,
                 'statusS': statusS,
