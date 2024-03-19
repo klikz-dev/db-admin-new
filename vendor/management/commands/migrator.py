@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 import json
 import environ
+from urllib.parse import quote
 
 from django.core.management.base import BaseCommand
 
@@ -25,10 +26,13 @@ from feed.models import Materialworks
 from feed.models import Maxwell
 from feed.models import MindTheGap
 from feed.models import NOIR
+from feed.models import OliviaQuinn
+from feed.models import PKaufmann
 from feed.models import PeninsulaHome
 from feed.models import PhillipJeffries
 from feed.models import PhillipsCollection
 from feed.models import Pindler
+from feed.models import Poppy
 from feed.models import Port68
 from feed.models import PremierPrints
 from feed.models import Scalamandre
@@ -536,29 +540,40 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("Brewster", Brewster, False),
+            # ("Brewster", Brewster, False),
             ("Couture", Couture, False),
             ("Covington", Covington, True),
-            ("Dana Gibson", DanaGibson, False),
-            ("Elaine Smith", ElaineSmith, False),
+            # ("Dana Gibson", DanaGibson, False),
+            # ("Elaine Smith", ElaineSmith, False),
             # ("Exquisite Rugs", ExquisiteRugs, False),
             ("Galerie", Galerie, False),
             # ("Hubbardton Forge", HubbardtonForge, False),
             # ("Jaipur Living", JaipurLiving, False),
-            ("Jamie Young", JamieYoung, False),
-            ("JF Fabrics", JFFabrics, False),
-            ("Kasmir", Kasmir, False),
-            ("Kravet", Kravet, False),
-            ("Materialworks", Materialworks, True),
-            ("Maxwell", Maxwell, False),
-            ("MindTheGap", MindTheGap, False),
+            # ("Jamie Young", JamieYoung, False),
+            # ("JF Fabrics", JFFabrics, False),
+            # ("Kasmir", Kasmir, False),
+            # ("Kravet", Kravet, False),
+            # ("Materialworks", Materialworks, True),
+            # ("Maxwell", Maxwell, False),
+            # ("MindTheGap", MindTheGap, False),
+            ("NOIR", NOIR, False),
+            ("Olivia & Quinn", OliviaQuinn, False),
+            ("P/Kaufmann", PKaufmann, False),
+            ("Peninsula Home", PeninsulaHome, False),
+            ("Phillip Jeffries", PhillipJeffries, False),
             ("Phillips Collection", PhillipsCollection, False),
-            ("Scalamandre", Scalamandre, False),
-            ("Schumacher", Schumacher, False),
+            ("Pindler", Pindler, False),
+            ("Poppy", Poppy, False),
+            ("Port 68", Port68, False),
+            ("Premier Prints", PremierPrints, True),
+            # ("Scalamandre", Scalamandre, False),
+            # ("Schumacher", Schumacher, False),
+            ("Seabrook", Seabrook, False),
+            ("Stout", Stout, False),
             # ("Surya", Surya, False),
-            ("Tempaper", Tempaper, True),
+            # ("Tempaper", Tempaper, True),
             ("York", York, False),
-            ("Zoffany", Zoffany, False),
+            # ("Zoffany", Zoffany, False),s
         ]
 
         for brandName, brand, private in brands:
@@ -574,7 +589,7 @@ class Processor:
 
                 response = requests.request(
                     "GET",
-                    f"https://www.decoratorsbestam.com/api/products/?sku={product.sku}",
+                    f"https://www.decoratorsbestam.com/api/products/?sku={quote(product.sku)}",
                     headers={
                         'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
                     }
