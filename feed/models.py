@@ -285,12 +285,6 @@ class Tempaper(Feed):
         verbose_name_plural = "Tempaper"
 
 
-class WallsRepublic(Feed):
-    class Meta:
-        verbose_name = "Walls Republic"
-        verbose_name_plural = "Walls Republic"
-
-
 class York(Feed):
     class Meta:
         verbose_name = "York"

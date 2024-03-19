@@ -32,7 +32,6 @@ from .models import Seabrook
 from .models import Stout
 from .models import Surya
 from .models import Tempaper
-from .models import WallsRepublic
 from .models import York
 from .models import Zoffany
 
@@ -308,11 +307,6 @@ class SuryaAdmin(FeedAdmin):
 
 @admin.register(Tempaper)
 class TempaperAdmin(FeedAdmin):
-    pass
-
-
-@admin.register(WallsRepublic)
-class WallsRepublicAdmin(FeedAdmin):
     pass
 
 

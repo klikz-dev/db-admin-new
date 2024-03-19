@@ -37,7 +37,6 @@ from feed.models import Seabrook
 from feed.models import Stout
 from feed.models import Surya
 from feed.models import Tempaper
-from feed.models import WallsRepublic
 from feed.models import York
 from feed.models import Zoffany
 
