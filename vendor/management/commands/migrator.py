@@ -7,7 +7,7 @@ from urllib.parse import quote
 from django.core.management.base import BaseCommand
 
 from utils import common, debug, shopify
-from vendor.models import Type, Manufacturer, Tag, Product
+from vendor.models import Type, Manufacturer, Tag, Product, Image
 
 from feed.models import Brewster
 from feed.models import Couture
@@ -507,6 +507,9 @@ class Command(BaseCommand):
         if "shopify" in options['functions']:
             processor.shopify()
 
+        if "image" in options['functions']:
+            processor.image()
+
         if "cleanup" in options['functions']:
             processor.cleanup()
 
@@ -721,6 +724,50 @@ class Processor:
             with ThreadPoolExecutor(max_workers=100) as executor:
                 for index, product in enumerate(products):
                     executor.submit(copyProduct, product, index)
+
+    def requestAPI(self, url):
+        responseData = requests.get(
+            url,
+            headers={
+                'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
+            }
+        )
+        responseJson = json.loads(responseData.text)
+
+        return responseJson
+
+    def image(self):
+        Image.objects.all().delete()
+
+        def importImage(page):
+            imagesData = self.requestAPI(
+                f"https://www.decoratorsbestam.com/api/images/?limit=1000&offset={page * 1000}")
+
+            images = imagesData['results']
+
+            for image in images:
+                try:
+                    productId = image['productId']
+                    imageIndex = image['imageIndex']
+                    imageURL = image['imageURL']
+
+                    product = Product.objects.get(shopifyId=productId)
+
+                    Image.objects.update_or_create(
+                        url=imageURL,
+                        position=imageIndex,
+                        product=product,
+                    )
+
+                    debug.log(
+                        "Migrator", f"Page {page + 1} - {product} image {imageURL}")
+
+                except Exception as e:
+                    print(e)
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            for index in range(0, 900):
+                executor.submit(importImage, index)
 
     def cleanup(self):
 
