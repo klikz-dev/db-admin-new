@@ -4,6 +4,8 @@ from feed.models import Materialworks
 import os
 import environ
 import openpyxl
+import csv
+import codecs
 
 from utils import database, debug, common
 
@@ -57,6 +59,20 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="/materialworks",
+                dst=f"{FILEDIR}/materialworks-inventory.csv",
+                fileSrc=False,
+                delete=True
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -173,3 +189,40 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/materialworks-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            if row[0] == "ValdeseMaterial":
+                continue
+
+            mpn = common.toText(row[0])
+
+            try:
+                product = Materialworks.objects.get(mpn=mpn)
+            except Materialworks.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[5])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': ""
+            }
+            stocks.append(stock)
+
+        pillows = Materialworks.objects.filter(type="Pillow")
+        for pillow in pillows:
+            stock = {
+                'sku': pillow.sku,
+                'quantity': 5,
+                'note': "Ships in 3 weeks"
+            }
+            stocks.append(stock)
+
+        return stocks

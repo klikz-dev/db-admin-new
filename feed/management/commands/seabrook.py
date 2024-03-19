@@ -4,6 +4,8 @@ from feed.models import Seabrook
 import os
 import environ
 import openpyxl
+import requests
+import json
 
 from utils import database, debug, common
 
@@ -58,6 +60,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -69,6 +77,17 @@ class Processor:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
+
+    def requestAPI(self, mpn):
+        responseData = requests.get(
+            f"https://stock.wallcovering.info/v1/api/item/{mpn}",
+            headers={
+                'x-api-key': env('SEABROOK_KEY')
+            }
+        )
+        responseJson = json.loads(responseData.text)
+
+        return responseJson
 
     def fetchFeed(self):
         # Get Product Feed
@@ -214,3 +233,29 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        products = Seabrook.objects.filter(statusP=True)
+        for product in products:
+            mpn = product.mpn
+            sku = product.sku
+
+            try:
+                data = self.requestAPI(mpn)
+
+                stockP = common.toInt(data["stock"]["units"])
+
+                print(sku, stockP)
+
+                stock = {
+                    'sku': sku,
+                    'quantity': stockP,
+                    'note': ""
+                }
+                stocks.append(stock)
+            except Exception as e:
+                continue
+
+        return stocks

@@ -3,7 +3,7 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from django.db import transaction
 
-from vendor.models import Product, Sync, Type, Manufacturer, Tag
+from vendor.models import Product, Sync, Type, Manufacturer, Tag, Inventory
 
 from utils import debug, common, shopify, const
 
@@ -315,6 +315,29 @@ class DatabaseManager:
 
     def downloadImages(self):
         pass
+
+    def updateInventory(self, stocks, type=1, reset=True):
+        if reset:
+            Inventory.objects.filter(brand=self.brand).delete()
+
+        for stock in stocks:
+            if not stock['sku']:
+                continue
+
+            try:
+                Inventory.objects.update_or_create(
+                    sku=stock['sku'],
+                    quantity=stock['quantity'],
+                    type=type,
+                    note=stock['note'],
+                    brand=self.brand
+                )
+
+                debug.log(
+                    self.brand, f"Update Inventory. {stock['sku']} : {stock['quantity']}")
+
+            except Exception as e:
+                debug.warn(self.brand, str(e))
 
     def generateTags(self, feed, price):
         tags = []

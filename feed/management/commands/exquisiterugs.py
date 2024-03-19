@@ -3,6 +3,8 @@ from feed.models import ExquisiteRugs
 
 import os
 import openpyxl
+import csv
+import codecs
 
 from utils import database, debug, common
 
@@ -61,6 +63,20 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="/exquisiterugs/decoratorsbestam.csv",
+                dst=f"{FILEDIR}/exquisiterugs-inventory.csv",
+                fileSrc=True,
+                delete=False
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -211,3 +227,29 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/exquisiterugs-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = common.toText(row[1]).replace("'", "")
+
+            try:
+                product = ExquisiteRugs.objects.get(mpn=mpn)
+            except ExquisiteRugs.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[2])
+            stockNote = common.toInt(row[3])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

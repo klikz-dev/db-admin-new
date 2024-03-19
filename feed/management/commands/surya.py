@@ -3,6 +3,8 @@ from feed.models import Surya
 
 import os
 import openpyxl
+import csv
+import codecs
 
 from utils import database, debug, common
 
@@ -61,6 +63,20 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="/surya/inventory_dbest.csv",
+                dst=f"{FILEDIR}/surya-inventory.csv",
+                fileSrc=True,
+                delete=False
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -235,3 +251,29 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/surya-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = common.toText(row[0])
+
+            try:
+                product = Surya.objects.get(mpn=mpn)
+            except Surya.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[1])
+            stockNote = common.toText(row[2])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

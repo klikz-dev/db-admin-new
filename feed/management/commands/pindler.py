@@ -4,6 +4,7 @@ from feed.models import Pindler
 import os
 import environ
 import requests
+import json
 import csv
 import codecs
 
@@ -61,6 +62,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -88,6 +95,12 @@ class Processor:
 
         except Exception as e:
             debug.warn(BRAND, str(e))
+
+    def requestAPI(self, mpn):
+        responseData = requests.get(
+            f"{env('PINDLER_API_URL')}?w3exec=checkstock&w3serverpool=checkstock&token={env('PINDLER_API_KEY')}&yards=10&item={mpn}"
+        )
+        return responseData.text
 
     def fetchFeed(self):
         # Get Product Feed
@@ -186,3 +199,32 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        products = Pindler.objects.filter(statusP=True)
+        for product in products:
+            mpn = product.mpn
+            sku = product.sku
+
+            try:
+                data = self.requestAPI(mpn)
+
+                if "INSTOCK" in data.upper():
+                    stockP = 10
+                else:
+                    stockP = 0
+
+                print(sku, stockP)
+
+                stock = {
+                    'sku': sku,
+                    'quantity': stockP,
+                    'note': ""
+                }
+                stocks.append(stock)
+            except Exception as e:
+                continue
+
+        return stocks

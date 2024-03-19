@@ -64,6 +64,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -202,3 +208,30 @@ class Processor:
                 products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        products = Maxwell.objects.filter(statusP=True)
+        for product in products:
+            mpn = product.mpn
+            sku = product.sku
+
+            try:
+                data = self.requestAPI(f"lookup?sku={mpn}")
+
+                stockP = common.toInt(data["inventory"]["on_hand"])
+
+                print(sku, stockP)
+
+                stock = {
+                    'sku': sku,
+                    'quantity': stockP,
+                    'note': ""
+                }
+                stocks.append(stock)
+
+            except Exception as e:
+                continue
+
+        return stocks

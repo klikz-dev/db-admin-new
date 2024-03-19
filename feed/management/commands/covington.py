@@ -3,6 +3,8 @@ from feed.models import Covington
 
 import os
 import openpyxl
+import csv
+import codecs
 
 from utils import database, debug, common
 
@@ -54,6 +56,12 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -169,3 +177,28 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/covington-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = row[0]
+
+            try:
+                product = Covington.objects.get(mpn=mpn)
+            except Covington.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[5])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': ""
+            }
+            stocks.append(stock)
+
+        return stocks

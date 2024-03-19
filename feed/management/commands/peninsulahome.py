@@ -55,6 +55,23 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            files = common.browseSFTP(brand=BRAND, src="/peninsulahome/")
+            for file in files:
+                if "xlsx" in file:
+                    common.downloadFileFromSFTP(
+                        brand=BRAND,
+                        src=f"/peninsulahome/{file}",
+                        dst=f"{FILEDIR}/peninsulahome-inventory.xlsx",
+                        fileSrc=True,
+                        delete=True
+                    )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -177,18 +194,6 @@ class Processor:
                     stockNote = ""
 
                 # Fine-tuning
-                # type = common.pluralToSingular(type)
-                # TYPE_DICT = {
-                #     "Bedding": "Bed",
-                #     "Wall Art - Stock": "Wall Art",
-                #     "Ceiling Lighting": "Lighting",
-                #     "Accent and Lounge Chair": "Accent Chair",
-                #     "Rug Blanket": "Rug",
-                #     "Printed Rug Set (3pc)": "Rug",
-                #     "Made to Order Rugs": "Rug",
-                # }
-                # type = TYPE_DICT.get(type, type)
-
                 if "," in name:
                     pattern = name.split(",")[0].strip()
                     color = name.split(",")[1].strip()
@@ -196,8 +201,8 @@ class Processor:
                 name = f"{pattern} {color} {type}"
 
                 # Exceptions
-                # if cost == 0 or not pattern or not color or not type:
-                #     continue
+                if cost == 0 or not pattern or not color or not type:
+                    continue
 
             except Exception as e:
                 debug.warn(BRAND, str(e))
@@ -250,3 +255,31 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/peninsulahome-inventory.xlsx", data_only=True)
+        sh = wb.worksheets[0]
+
+        for row in sh.iter_rows(min_row=2, values_only=True):
+            mpn = common.toText(row[0])
+
+            try:
+                product = PeninsulaHome.objects.get(mpn=mpn)
+            except PeninsulaHome.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[1])
+            stockNote = common.toText(row[2])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

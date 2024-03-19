@@ -60,6 +60,20 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="/jamieyoung",
+                dst=f"{FILEDIR}/jamieyoung-inventory.csv",
+                fileSrc=False,
+                delete=True
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -299,3 +313,33 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/jamieyoung-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = common.toText(row[1])
+
+            try:
+                product = JamieYoung.objects.get(mpn=mpn)
+            except JamieYoung.DoesNotExist:
+                continue
+
+            sku = product.sku
+
+            stockP = common.toInt(row[2])
+
+            stockNote = common.toText(row[4])
+            if "-" in stockNote:
+                stockNote = ""
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

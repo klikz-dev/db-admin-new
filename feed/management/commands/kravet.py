@@ -21,7 +21,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if "feed" in options['functions']:
-            processor = Processor()
             common.downloadFileFromFTP(
                 brand=BRAND,
                 src="decbest.zip",
@@ -33,6 +32,7 @@ class Command(BaseCommand):
             os.rename(f"{FILEDIR}/item_info.csv",
                       f"{FILEDIR}/kravet-master.csv")
 
+            processor = Processor()
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -68,6 +68,34 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            common.downloadFileFromFTP(
+                brand=BRAND,
+                src="decbest.zip",
+                dst=f"{FILEDIR}/kravet-master.zip"
+            )
+            z = zipfile.ZipFile(f"{FILEDIR}/kravet-master.zip", "r")
+            z.extractall(FILEDIR)
+            z.close()
+            os.rename(f"{FILEDIR}/item_info.csv",
+                      f"{FILEDIR}/kravet-master.csv")
+
+            common.downloadFileFromFTP(
+                brand=BRAND,
+                src="curated_onhand_info.zip",
+                dst=f"{FILEDIR}/kravet-decor-inventory.zip"
+            )
+            z = zipfile.ZipFile(f"{FILEDIR}/kravet-decor-inventory.zip", "r")
+            z.extractall(FILEDIR)
+            z.close()
+            os.rename(f"{FILEDIR}/curated_onhand_info.csv",
+                      f"{FILEDIR}/kravetdecor-inventory.csv")
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -369,3 +397,50 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/kravet-master.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = common.toText(row[0])
+
+            try:
+                product = Kravet.objects.get(mpn=mpn)
+            except Kravet.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[46])
+            stockNote = f"{common.toText(row[47])} days"
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        f = open(f"{FILEDIR}/kravetdecor-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = common.toText(row[0])
+
+            try:
+                product = Kravet.objects.get(mpn=mpn)
+            except Kravet.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[1])
+            stockNote = f"{common.toText(row[2])} days"
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

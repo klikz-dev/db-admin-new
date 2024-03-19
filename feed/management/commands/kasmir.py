@@ -64,6 +64,18 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            common.downloadFileFromFTP(
+                brand=BRAND,
+                src="Current-Inventory_Int.xls",
+                dst=f"{FILEDIR}/kasmir-master.xls"
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -185,3 +197,34 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        wb = xlrd.open_workbook(f"{FILEDIR}/kasmir-master.xls")
+        sh = wb.sheet_by_index(0)
+
+        for i in range(1, sh.nrows):
+            row = sh.row_values(i)
+
+            pattern = common.toText(row[0])
+            color = common.toText(row[1])
+
+            mpn = f"{pattern}/{color}"
+
+            try:
+                product = Kasmir.objects.get(mpn=mpn)
+            except Kasmir.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(sh.cell_value(i, 58))
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': ""
+            }
+            stocks.append(stock)
+
+        return stocks

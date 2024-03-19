@@ -157,7 +157,7 @@ class Sync(models.Model):
 class Inventory(models.Model):
     sku = models.CharField(max_length=200, primary_key=True)
     quantity = models.IntegerField(default=0)
-    type = models.IntegerField(choices=SYNC_TYPES, default=1)
+    type = models.IntegerField(choices=STOCK_TYPES, default=1)
     note = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     brand = models.CharField(max_length=200, blank=False, null=False)

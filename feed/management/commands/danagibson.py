@@ -56,6 +56,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -204,3 +210,30 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/danagibson-inventory.xlsx", data_only=True)
+        sh = wb.worksheets[0]
+
+        for row in sh.iter_rows(min_row=2, values_only=True):
+            mpn = row[1]
+
+            try:
+                product = DanaGibson.objects.get(mpn=mpn)
+            except DanaGibson.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[3])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': "6 days"
+            }
+            stocks.append(stock)
+
+        return stocks

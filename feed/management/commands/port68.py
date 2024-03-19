@@ -62,6 +62,20 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="/port68",
+                dst=f"{FILEDIR}/port68-inventory.xlsx",
+                fileSrc=False,
+                delete=True
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -206,3 +220,31 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/port68-inventory.xlsx", data_only=True)
+        sh = wb.worksheets[0]
+
+        for row in sh.iter_rows(min_row=2, values_only=True):
+            mpn = common.toText(row[0])
+
+            try:
+                product = Port68.objects.get(mpn=mpn)
+            except Port68.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[2])
+            stockNote = common.toText(row[3])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

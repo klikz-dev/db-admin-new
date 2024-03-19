@@ -4,6 +4,8 @@ from feed.models import Brewster
 import os
 import openpyxl
 import paramiko
+import csv
+import codecs
 
 from utils import database, debug, common, const
 
@@ -56,6 +58,20 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "inventory" in options['functions']:
+            common.downloadFileFromSFTP(
+                brand=BRAND,
+                src="",
+                dst=f"{FILEDIR}/brewster-inventory.csv",
+                fileSrc=False,
+                delete=True
+            )
+
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
 
 
 class Processor:
@@ -337,3 +353,28 @@ class Processor:
                 products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/brewster-inventory.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            mpn = row[0]
+
+            try:
+                product = Brewster.objects.get(mpn=mpn)
+            except Brewster.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[3])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': ""
+            }
+            stocks.append(stock)
+
+        return stocks

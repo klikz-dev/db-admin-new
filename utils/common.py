@@ -100,6 +100,7 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
 
         if fileSrc:
             try:
+                sftp.stat(src)
                 sftp.get(src, dst)
                 debug.log(brand, f"Download SFTP file From {src} To {dst}")
 
@@ -118,6 +119,7 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
                     if "EDI" in file:
                         continue
 
+                    sftp.stat(file)
                     sftp.get(file, dst)
                     debug.log(brand, f"Download SFTP file From {src} To {dst}")
 

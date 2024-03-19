@@ -55,6 +55,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=3, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -216,3 +222,17 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        feeds = HubbardtonForge.objects.all()
+        for feed in feeds:
+            stock = {
+                'sku': feed.sku,
+                'quantity': 5,
+                'note': "Made To Order: This product will ship in 3-4 weeks."
+            }
+            stocks.append(stock)
+
+        return stocks

@@ -60,6 +60,12 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -245,3 +251,39 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        productsData = self.requestAPI("ScalaFeedAPI/FetchProductsFeed")
+
+        for row in productsData['FEEDPRODUCTS']:
+            mpn = row['ITEMID']
+
+            try:
+                product = Scalamandre.objects.get(mpn=mpn)
+            except Scalamandre.DoesNotExist:
+                continue
+
+            sku = product.sku
+            
+            if row.get('STOCKINVENTORY') != 'N':
+                stockP = common.toInt(row.get('AVAILABLE'))
+            else:
+                stockP = 0
+
+            stockNote = common.toText(row.get('LEAD TIME', ''))
+            if not stockNote and product.type == "Pillow":
+                stockNote = "2-3 Weeks (Custom Order)"
+
+            if product.type == "Pillow" and stockP == 0:
+                stockP = 5
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': stockNote
+            }
+            stocks.append(stock)
+
+        return stocks

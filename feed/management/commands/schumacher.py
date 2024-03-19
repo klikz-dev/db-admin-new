@@ -61,6 +61,13 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.downloadImages()
 
+        if "inventory" in options['functions']:
+            processor = Processor()
+            processor.downloadFeed()
+            stocks = processor.inventory()
+            processor.DatabaseManager.updateInventory(
+                stocks=stocks, type=1, reset=True)
+
 
 class Processor:
     def __init__(self):
@@ -254,3 +261,31 @@ class Processor:
             products.append(product)
 
         return products
+
+    def inventory(self):
+        stocks = []
+
+        f = open(f"{FILEDIR}/schumacher-master.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+        for row in cr:
+            if row[0] == "Category":
+                continue
+
+            mpn = common.toText(row[3])
+
+            try:
+                product = Schumacher.objects.get(mpn=mpn)
+            except Schumacher.DoesNotExist:
+                continue
+
+            sku = product.sku
+            stockP = common.toInt(row[19])
+
+            stock = {
+                'sku': sku,
+                'quantity': stockP,
+                'note': ""
+            }
+            stocks.append(stock)
+
+        return stocks
