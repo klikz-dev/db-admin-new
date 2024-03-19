@@ -23,6 +23,7 @@ from .models import PhillipsCollection
 from .models import PhillipJeffries
 from .models import Pindler
 from .models import PKaufmann
+from .models import Poppy
 from .models import Port68
 from .models import PremierPrints
 from .models import Scalamandre
@@ -262,6 +263,11 @@ class PindlerAdmin(FeedAdmin):
 
 @admin.register(PKaufmann)
 class PKaufmannAdmin(FeedAdmin):
+    pass
+
+
+@admin.register(Poppy)
+class PoppyAdmin(FeedAdmin):
     pass
 
 
