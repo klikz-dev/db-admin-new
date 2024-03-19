@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory
 
 
 @admin.register(Manufacturer)
@@ -208,4 +208,34 @@ class SyncAdmin(admin.ModelAdmin):
 
     search_fields = [
         'productId',
+    ]
+
+
+@admin.register(Inventory)
+class InventoryAdmin(admin.ModelAdmin):
+    fields = [
+        'sku',
+        'quantity',
+        'type',
+        'note',
+        'brand'
+    ]
+
+    list_display = [
+        'sku',
+        'quantity',
+        'type',
+        'note',
+        'brand'
+    ]
+
+    list_filter = [
+        'type',
+        'brand'
+    ]
+
+    search_fields = [
+        'sku',
+        'note',
+        'brand'
     ]

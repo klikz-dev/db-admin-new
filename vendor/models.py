@@ -14,6 +14,12 @@ SYNC_TYPES = [
     ("Tag", "Tag"),
 ]
 
+STOCK_TYPES = [
+    (1, "Show Stock & Note"),
+    (2, "Show Stock & Hide Stock Note"),
+    (3, "Hide Stock & Show Note"),
+]
+
 
 class Manufacturer(models.Model):
     name = models.CharField(max_length=200, primary_key=True)
@@ -146,3 +152,15 @@ class Sync(models.Model):
 
     def __str__(self):
         return self.productId
+
+
+class Inventory(models.Model):
+    sku = models.CharField(max_length=200, primary_key=True)
+    quantity = models.IntegerField(default=0)
+    type = models.IntegerField(choices=SYNC_TYPES, default=1)
+    note = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    brand = models.CharField(max_length=200, blank=False, null=False)
+
+    def __str__(self):
+        return self.sku
