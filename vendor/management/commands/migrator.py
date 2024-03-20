@@ -780,11 +780,15 @@ class Processor:
             existing_product_ids = set(Product.objects.filter(
                 manufacturer=vendor_name, shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
 
-            products_to_delete = product_ids - existing_product_ids
+            products_to_remove = product_ids - existing_product_ids
 
-            for product_id in products_to_delete:
-                print(f"Delete: {product_id}")
-                shopifyManager.deleteProduct(product_id)
+            for product_id in products_to_remove:
+                print(f"Unpublish: {product_id}")
+
+                shopifyManager.updateProductStatus(
+                    productId=product_id, status=False)
+
+                # shopifyManager.deleteProduct(product_id)
 
             if 'next' in response.links:
                 next_url = response.links['next']['url']
