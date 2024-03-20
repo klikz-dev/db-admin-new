@@ -77,7 +77,7 @@ class Processor:
         for product in tqdm(products):
             mpn = product.mpn
             sku = product.sku
-            title = product.title
+            title = f"{product.title} - {sku}"
 
             shopifyId = product.shopifyId
             shopifyHandle = product.shopifyHandle
@@ -87,7 +87,7 @@ class Processor:
             type = product.type
 
             pattern = product.pattern
-            description = product.description
+            description = product.description or product.title
             weight = product.weight
             barcode = product.barcode
 
@@ -108,19 +108,61 @@ class Processor:
                 'name', flat=True).distinct()
             color = colors[0] if len(colors) > 0 else product.color
 
-            # Check Stock
-            try:
-                inventory = Inventory.objects.get(sku=sku, brand=brand)
+            # Hide Private Brand names
+            privateBrands = [
+                "Covington",
+                "Premier Prints",
+                "Materialworks",
+                "Tempaper"
+            ]
+            if brand in privateBrands:
+                manufacturer = "DB By DecoratorsBest"
 
-                if inventory.quantity < 3:
-                    debug.log(
-                        PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
-                    skipped += 1
-                    continue
+            # Price Range
+            price_thresholds = [
+                (300, "300+"),
+                (250, "250-300"),
+                (200, "200-250"),
+                (150, "150-200"),
+                (100, "100-150"),
+                (50, "50-100"),
+                (25, "25-50"),
+                (10, "10-25")
+            ]
+            priceRange = None
 
-            except Inventory.DoesNotExist:
-                debug.log(
-                    PROCESS, f"IGNORED SKU {sku}. Inventory not found")
+            for threshold, label in price_thresholds:
+                if price > threshold:
+                    priceRange = label
+                    break
+
+            # Additional Info
+            margin = common.toInt((consumer - cost) / cost * 100)
+
+            if type == "Fabric":
+                productCategory = "Arts & Entertainment > Hobbies & Creative Arts > Arts & Crafts > Art & Crafting Materials > Textiles > Fabric"
+                productType = "Home & Garden > Bed and Living Room > Home Fabric"
+            elif type == "Wallpaper":
+                productCategory = "Home & Garden > Decor > Wallpaper"
+                productType = "Home & Garden > Bed and Living Room > Home Wallpaper"
+            elif type == "Pillow":
+                productCategory = "Home & Garden > Decor > Throw Pillows"
+                productType = "Home & Garden > Bed and Living Room > Home Pillow"
+            elif type == "Trim":
+                productCategory = "Arts & Entertainment > Hobbies & Creative Arts > Arts & Crafts > Art & Crafting Materials > Embellishments & Trims"
+                productType = "Home & Garden > Bed and Living Room > Home Trim"
+            elif type == "Furniture":
+                productCategory = "Furniture"
+                productType = "Home & Garden > Bed and Living Room > Home Furniture"
+            else:
+                productCategory = "Home & Garden > Decor"
+                productType = "Home & Garden > Decor"
+
+            material = product.material
+
+            # Exceptions
+            if not imageURL:
+                debug.log(PROCESS, f"IGNORED SKU {sku}. No Image")
                 skipped += 1
                 continue
 
@@ -163,66 +205,26 @@ class Processor:
                 skipped += 1
                 continue
 
-            # Fine-tune
-            description = description or title
-            title = f"{title} - {sku}"
-
-            # Hide Private Brand names
-            privateBrands = [
-                "Covington",
-                "Premier Prints",
-                "Materialworks",
-                "Tempaper"
-            ]
-            if brand in privateBrands:
-                manufacturer = "DB By DecoratorsBest"
-
-            # Price Range
-            price_thresholds = [
-                (300, "300+"),
-                (250, "250-300"),
-                (200, "200-250"),
-                (150, "150-200"),
-                (100, "100-150"),
-                (50, "50-100"),
-                (25, "25-50"),
-                (10, "10-25")
-            ]
-            priceRange = None
-
-            for threshold, label in price_thresholds:
-                if price > threshold:
-                    priceRange = label
-                    break
-
             if priceRange is None:
                 debug.log(PROCESS, f"IGNORED SKU {sku}. Price issue")
                 skipped += 1
                 continue
 
-            # Additional Info
-            margin = common.toInt((consumer - cost) / cost * 100)
+            # Inventory
+            try:
+                inventory = Inventory.objects.get(sku=sku, brand=brand)
 
-            if type == "Fabric":
-                productCategory = "Arts & Entertainment > Hobbies & Creative Arts > Arts & Crafts > Art & Crafting Materials > Textiles > Fabric"
-                productType = "Home & Garden > Bed and Living Room > Home Fabric"
-            elif type == "Wallpaper":
-                productCategory = "Home & Garden > Decor > Wallpaper"
-                productType = "Home & Garden > Bed and Living Room > Home Wallpaper"
-            elif type == "Pillow":
-                productCategory = "Home & Garden > Decor > Throw Pillows"
-                productType = "Home & Garden > Bed and Living Room > Home Pillow"
-            elif type == "Trim":
-                productCategory = "Arts & Entertainment > Hobbies & Creative Arts > Arts & Crafts > Art & Crafting Materials > Embellishments & Trims"
-                productType = "Home & Garden > Bed and Living Room > Home Trim"
-            elif type == "Furniture":
-                productCategory = "Furniture"
-                productType = "Home & Garden > Bed and Living Room > Home Furniture"
-            else:
-                productCategory = "Home & Garden > Decor"
-                productType = "Home & Garden > Decor"
+                if inventory.quantity < 3:
+                    debug.log(
+                        PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
+                    skipped += 1
+                    continue
 
-            material = product.material
+            except Inventory.DoesNotExist:
+                debug.log(
+                    PROCESS, f"IGNORED SKU {sku}. Inventory not found")
+                skipped += 1
+                continue
 
             # Write Row
             item = ET.SubElement(channel, "item")

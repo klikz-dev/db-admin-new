@@ -165,7 +165,7 @@ class DatabaseManager:
     def statusSync(self, fullSync=False):
         products = Product.objects.filter(manufacturer__brand=self.brand)
 
-        for product in products:
+        for product in tqdm(products):
             try:
                 feed = self.Feed.objects.get(sku=product.sku)
 
