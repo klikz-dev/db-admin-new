@@ -108,7 +108,9 @@ class Processor:
                 'name', flat=True).distinct()
             color = colors[0] if len(colors) > 0 else product.color
 
-            # Hide Private Brand names
+            # Fine Tuning
+            barcode = barcode if re.match(r'^\d{11,14}$', barcode) else ""
+
             privateBrands = [
                 "Covington",
                 "Premier Prints",
@@ -118,7 +120,6 @@ class Processor:
             if brand in privateBrands:
                 manufacturer = "DB By DecoratorsBest"
 
-            # Price Range
             price_thresholds = [
                 (300, "300+"),
                 (250, "250-300"),
@@ -136,7 +137,6 @@ class Processor:
                     priceRange = label
                     break
 
-            # Additional Info
             margin = common.toInt((consumer - cost) / cost * 100)
 
             if type == "Fabric":
@@ -172,11 +172,11 @@ class Processor:
                 skipped += 1
                 continue
 
-            if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
-                debug.log(
-                    PROCESS, f"IGNORED SKU {sku}. 'Get' word in the description")
-                skipped += 1
-                continue
+            # if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
+            #     debug.log(
+            #         PROCESS, f"IGNORED SKU {sku}. 'Get' word in the description")
+            #     skipped += 1
+            #     continue
 
             nonMAPSurya = [
                 "Rodos",
@@ -239,8 +239,6 @@ class Processor:
                 item, "g:link").text = f"https://www.decoratorsbest.com/products/{shopifyHandle}"
             ET.SubElement(item, "g:image_link").text = f"{imageURL}"
             ET.SubElement(item, "g:availability").text = "in stock"
-            # ET.SubElement(
-            #     item, "g:quantity_to_sell_on_facebook").text = f"{inventory.quantity}"
             ET.SubElement(item, "g:gtin").text = f"{barcode}"
             ET.SubElement(item, "g:price").text = f"{price}"
             ET.SubElement(item, "g:brand").text = f"{manufacturer}"
