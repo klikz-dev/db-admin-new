@@ -93,7 +93,7 @@ class Processor:
 
             cost = product.cost
             consumer = product.consumer
-            minimum = product.minimum
+            minimum = product.minimum or 1
             price = consumer * minimum
 
             images = product.images.filter(position=1).values_list(
@@ -211,20 +211,20 @@ class Processor:
                 continue
 
             # Inventory
-            try:
-                inventory = Inventory.objects.get(sku=sku, brand=brand)
+            # try:
+            #     inventory = Inventory.objects.get(sku=sku, brand=brand)
 
-                if inventory.quantity < minimum:
-                    debug.log(
-                        PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
-                    skipped += 1
-                    continue
+            #     if inventory.quantity < minimum:
+            #         debug.log(
+            #             PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
+            #         skipped += 1
+            #         continue
 
-            except Inventory.DoesNotExist:
-                debug.log(
-                    PROCESS, f"IGNORED SKU {sku}. Inventory not found")
-                skipped += 1
-                continue
+            # except Inventory.DoesNotExist:
+            #     debug.log(
+            #         PROCESS, f"IGNORED SKU {sku}. Inventory not found")
+            #     skipped += 1
+            #     continue
 
             # Write Row
             item = ET.SubElement(channel, "item")
@@ -239,8 +239,8 @@ class Processor:
                 item, "g:link").text = f"https://www.decoratorsbest.com/products/{shopifyHandle}"
             ET.SubElement(item, "g:image_link").text = f"{imageURL}"
             ET.SubElement(item, "g:availability").text = "in stock"
-            ET.SubElement(
-                item, "g:quantity_to_sell_on_facebook").text = f"{inventory.quantity}"
+            # ET.SubElement(
+            #     item, "g:quantity_to_sell_on_facebook").text = f"{inventory.quantity}"
             ET.SubElement(item, "g:gtin").text = f"{barcode}"
             ET.SubElement(item, "g:price").text = f"{price}"
             ET.SubElement(item, "g:brand").text = f"{manufacturer}"
