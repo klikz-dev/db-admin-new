@@ -145,10 +145,10 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        'published',
+        'type',
         'manufacturer__brand',
         'manufacturer',
-        'type',
-        'published',
         'uom'
     ]
 
@@ -189,7 +189,11 @@ class ImageAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
-        'product',
+        'product__shopifyId',
+        'product__shopifyHandle',
+        'product__sku',
+        'product__mpn',
+        'product__title',
         'url'
     ]
 
