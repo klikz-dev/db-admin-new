@@ -214,7 +214,7 @@ class Processor:
             try:
                 inventory = Inventory.objects.get(sku=sku, brand=brand)
 
-                if inventory.quantity < 3:
+                if inventory.quantity < minimum:
                     debug.log(
                         PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
                     skipped += 1
