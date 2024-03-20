@@ -98,7 +98,7 @@ class Processor:
 
             images = product.images.filter(position=1).values_list(
                 'url', flat=True).distinct()
-            imageURL = images[0] if len(images) > 0 else ""
+            imageURL = images[0] if len(images) > 0 else None
 
             styles = product.tags.filter(type="Category").values_list(
                 'name', flat=True).distinct()
