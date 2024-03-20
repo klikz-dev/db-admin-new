@@ -204,3 +204,19 @@ class ShopifyManager:
             method="DELETE", url=f"/products/{productId}.json")
 
         return productData
+
+    def updateProductStatus(self, productId, status):
+        productData = self.requestAPI(
+            method="PUT",
+            url=f"/products/{productId}.json",
+            payload={
+                "product":
+                {
+                    'id': productId,
+                    'published': status,
+                    'status': 'active'
+                }
+            }
+        )
+
+        return productData["product"]["handle"]

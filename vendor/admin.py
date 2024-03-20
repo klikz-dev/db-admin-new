@@ -171,17 +171,21 @@ class ImageAdmin(admin.ModelAdmin):
     fields = [
         'product',
         'url',
-        'position'
+        'position',
+        'hires',
     ]
 
     list_display = [
         'product',
         'url',
-        'position'
+        'position',
+        'hires',
     ]
 
     list_filter = [
-        'position'
+        'product__manufacturer__brand',
+        'position',
+        'hires',
     ]
 
     search_fields = [

@@ -6,6 +6,7 @@ import re
 import boto3
 import xml.etree.ElementTree as ET
 import xml.dom.minidom as MD
+from tqdm import tqdm
 
 from utils import debug, common
 
@@ -73,7 +74,7 @@ class Processor:
 
         total = len(products)
         skipped = 0
-        for index, product in enumerate(products):
+        for product in tqdm(products):
             mpn = product.mpn
             sku = product.sku
             title = product.title
@@ -112,20 +113,26 @@ class Processor:
                 inventory = Inventory.objects.get(sku=sku, brand=brand)
 
                 if inventory.quantity < 3:
+                    debug.log(
+                        PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
+                    skipped += 1
                     continue
 
             except Inventory.DoesNotExist:
+                debug.log(
+                    PROCESS, f"IGNORED SKU {sku}. Inventory not found")
+                skipped += 1
                 continue
 
             if brand == "Brewster" and "Peel & Stick" in title:
                 debug.log(
-                    PROCESS, f"{index}/{total}: IGNORED SKU {sku}. Brewster Peel & Stick")
+                    PROCESS, f"IGNORED SKU {sku}. Brewster Peel & Stick")
                 skipped += 1
                 continue
 
             if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
                 debug.log(
-                    PROCESS, f"{index}/{total}: IGNORED SKU {sku}. 'Get' word in the description")
+                    PROCESS, f"IGNORED SKU {sku}. 'Get' word in the description")
                 skipped += 1
                 continue
 
@@ -152,8 +159,7 @@ class Processor:
                 "Zidane",
             ]
             if brand == "Surya" and product.collection in nonMAPSurya:
-                debug.log(
-                    PROCESS, f"{index}/{total}: IGNORED SKU {sku}. Non MAP Surya")
+                debug.log(PROCESS, f"IGNORED SKU {sku}. Non MAP Surya")
                 skipped += 1
                 continue
 
@@ -190,6 +196,8 @@ class Processor:
                     break
 
             if priceRange is None:
+                debug.log(PROCESS, f"IGNORED SKU {sku}. Price issue")
+                skipped += 1
                 continue
 
             # Additional Info
@@ -246,8 +254,8 @@ class Processor:
             ET.SubElement(item, "g:custom_label_2").text = f"{priceRange}"
             ET.SubElement(item, "g:custom_label_3").text = f"{margin}"
 
-            debug.log(
-                PROCESS, f"{index}/{total}: Success for SKU {sku}. skipped {skipped} SKUs")
+        debug.log(
+            PROCESS, f"Completed GS Feed Generation. skipped {skipped} out of {total} SKUs")
 
         tree_str = ET.tostring(root, encoding='utf-8')
         tree_dom = MD.parseString(tree_str)
@@ -256,8 +264,8 @@ class Processor:
         with open(GS_FEED_DIR, 'w', encoding="UTF-8") as file:
             file.write(pretty_tree)
 
-        # if skipped < total * 0.3:
-        #     self.uploadToGS()
+        if skipped < total * 0.3:
+            self.uploadToGS()
 
     def uploadToGS(self):
         self.s3.upload_file(GS_FEED_DIR, self.bucket, "DecoratorsBestGS.xml", ExtraArgs={

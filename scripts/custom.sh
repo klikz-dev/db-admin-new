@@ -1,3 +1,5 @@
+#!/bin/bash
+
 python3 manage.py brewster status
 python3 manage.py couture status
 python3 manage.py covington status

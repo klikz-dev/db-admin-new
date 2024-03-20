@@ -3,11 +3,12 @@ import requests
 import json
 import environ
 from urllib.parse import quote
+from tqdm import tqdm
 
 from django.core.management.base import BaseCommand
 
 from utils import common, debug, shopify
-from vendor.models import Type, Manufacturer, Tag, Product, Image
+from vendor.models import Type, Manufacturer, Tag, Product, Image, Sync
 
 from feed.models import Brewster
 from feed.models import Couture
@@ -513,6 +514,9 @@ class Command(BaseCommand):
         if "cleanup" in options['functions']:
             processor.cleanup()
 
+        if "sync" in options['functions']:
+            processor.sync()
+
 
 class Processor:
     def __init__(self):
@@ -543,40 +547,7 @@ class Processor:
     def shopify(self):
 
         brands = [
-            # ("Brewster", Brewster, False),
-            # ("Couture", Couture, False),
-            # ("Covington", Covington, True),
-            # ("Dana Gibson", DanaGibson, False),
-            # ("Elaine Smith", ElaineSmith, False),
-            # ("Exquisite Rugs", ExquisiteRugs, False),
-            # ("Galerie", Galerie, False),
-            # ("Hubbardton Forge", HubbardtonForge, False),
-            # ("Jaipur Living", JaipurLiving, False),
-            # ("Jamie Young", JamieYoung, False),
-            # ("JF Fabrics", JFFabrics, False),
-            # ("Kasmir", Kasmir, False),
-            # ("Kravet", Kravet, False),
-            # ("Materialworks", Materialworks, True),
-            # ("Maxwell", Maxwell, False),
-            # ("MindTheGap", MindTheGap, False),
-            # ("NOIR", NOIR, False),
-            # ("Olivia & Quinn", OliviaQuinn, False),
-            # ("P/Kaufmann", PKaufmann, False),
-            # ("Peninsula Home", PeninsulaHome, False),
-            # ("Phillip Jeffries", PhillipJeffries, False),
-            # ("Phillips Collection", PhillipsCollection, False),
-            # ("Pindler", Pindler, False),
-            # ("Poppy", Poppy, False),
-            # ("Port 68", Port68, False),
-            # ("Premier Prints", PremierPrints, True),
-            # ("Scalamandre", Scalamandre, False),
-            # ("Schumacher", Schumacher, False),
-            # ("Seabrook", Seabrook, False),
-            # ("Stout", Stout, False),
-            # ("Surya", Surya, False),
-            # ("Tempaper", Tempaper, True),
             ("York", York, False),
-            # ("Zoffany", Zoffany, False),s
         ]
 
         for brandName, brand, private in brands:
@@ -739,35 +710,50 @@ class Processor:
     def image(self):
         Image.objects.all().delete()
 
-        def importImage(page):
+        products = Product.objects.all()
+        total = len(products)
+
+        def importImage(index, product):
             imagesData = self.requestAPI(
-                f"https://www.decoratorsbestam.com/api/images/?limit=1000&offset={page * 1000}")
+                f"https://www.decoratorsbestam.com/api/images/?product={product.shopifyId}")
 
-            images = imagesData['results']
+            imagesArray = imagesData['results']
 
-            for image in images:
-                try:
-                    productId = image['productId']
-                    imageIndex = image['imageIndex']
-                    imageURL = image['imageURL']
+            # Use hi-res Image
+            hiresImage = None
+            for image in imagesArray:
+                if image['imageIndex'] == 20:
+                    hiresImage = image
+                    break
+            if hiresImage:
+                for i, image in enumerate(imagesArray):
+                    if image['imageIndex'] == 1:
+                        imagesArray[i] = hiresImage
+                        break
 
-                    product = Product.objects.get(shopifyId=productId)
+            for image in imagesArray:
+                imageURL = image['imageURL']
+                imageIndex = image['imageIndex']
 
-                    Image.objects.update_or_create(
-                        url=imageURL,
-                        position=imageIndex,
-                        product=product,
-                    )
+                if imageIndex == 20:
+                    imageIndex = 1
+                    hires = True
+                else:
+                    hires = False
 
-                    debug.log(
-                        "Migrator", f"Page {page + 1} - {product} image {imageURL}")
+                Image.objects.update_or_create(
+                    url=imageURL,
+                    position=imageIndex,
+                    product=product,
+                    hires=hires,
+                )
 
-                except Exception as e:
-                    print(e)
+                debug.log(
+                    "Migrator", f"{index}/{total} - {product} image {imageURL}")
 
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            for index in range(0, 900):
-                executor.submit(importImage, index)
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            for index, product in enumerate(products):
+                executor.submit(importImage, index, product)
 
     def cleanup(self):
 
@@ -806,3 +792,16 @@ class Processor:
                 page += 1
             else:
                 break
+
+    def sync(self):
+
+        products = Product.objects.all()
+
+        for product in tqdm(products):
+            try:
+                Sync.objects.update_or_create(
+                    productId=product.shopifyId,
+                    type="Status"
+                )
+            except Exception as e:
+                print(e)
