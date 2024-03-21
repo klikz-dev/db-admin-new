@@ -1,30 +1,24 @@
 from django.core.management.base import BaseCommand
-
-from concurrent.futures import ThreadPoolExecutor
-import time
+from tqdm import tqdm
 
 from utils import debug, shopify
 
 from vendor.models import Sync, Product, Image
 
-PROCESS = "Status Sync"
+PROCESS = "Sync-Status"
 
 
 class Command(BaseCommand):
-    help = f"Run {PROCESS} processor"
+    help = f"Run {PROCESS}"
 
     def add_arguments(self, parser):
         pass
 
     def handle(self, *args, **options):
 
-        while True:
-            with Processor() as processor:
-                processor.status()
-                processor.noImage()
-
-            print("Finished process. Waiting for next run.")
-            time.sleep(3600)
+        with Processor() as processor:
+            processor.status()
+            processor.noImage()
 
 
 class Processor:
@@ -40,7 +34,7 @@ class Processor:
     def status(self):
         syncs = Sync.objects.filter(type="Status")
 
-        def updateStatus(index, sync):
+        for sync in tqdm(syncs):
             productId = sync.productId
             sync.delete()
 
@@ -58,7 +52,7 @@ class Processor:
                 product.save()
 
             try:
-                shopifyManager = shopify.ShopifyManager(thread=index)
+                shopifyManager = shopify.ShopifyManager()
                 shopifyManager.updateProductStatus(
                     productId=productId, status=product.published)
 
@@ -66,10 +60,6 @@ class Processor:
             except Exception as e:
                 debug.warn(PROCESS, str(e))
                 return
-
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            for index, sync in enumerate(syncs):
-                executor.submit(updateStatus, index, sync)
 
     def noImage(self):
 
@@ -87,5 +77,6 @@ class Processor:
 
                 debug.log(
                     PROCESS, f"Set Status of Product to Inactive: {product.shopifyId}. Image missing.")
-            except:
+            except Exception as e:
+                debug.warn(PROCESS, str(e))
                 return

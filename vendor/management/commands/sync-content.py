@@ -1,22 +1,22 @@
-import requests
-import json
-
 from django.core.management.base import BaseCommand
+from tqdm import tqdm
 
-from utils import debug, common, shopify
-from vendor.models import Product, Sync
+from utils import debug, shopify
+
+from vendor.models import Sync, Product, Image
+
+PROCESS = "Sync-Content"
 
 
 class Command(BaseCommand):
-    help = f"Sync Content"
+    help = f"Run {PROCESS}"
 
     def add_arguments(self, parser):
-        parser.add_argument('functions', nargs='+', type=str)
+        pass
 
     def handle(self, *args, **options):
-        processor = Processor()
 
-        if "content" in options['functions']:
+        with Processor() as processor:
             processor.content()
 
 
@@ -31,23 +31,7 @@ class Processor:
         pass
 
     def content(self):
-        productIds = Sync.objects.filter(type="Content")
-        for productId in productIds:
-            try:
-                product = Product.objects.get(shopifyId=productId)
-            except Product.DoesNotExist:
-                debug.warn("Sync Content", f"{productId} Not Found")
-                continue
+        syncs = Sync.objects.filter(type="Content")
 
-            try:
-                handle = shopify.updateProduct(product)
-            except Exception as e:
-                debug.warn("Sync Content",
-                           f"{productId} Update Error: {str(e)}")
-                continue
-
-            product.shopifyHandle = handle
-            product.save()
-
-            debug.log("Sync Content",
-                      f"Product {productId} has been updated successfully")
+        for sync in tqdm(syncs):
+            pass

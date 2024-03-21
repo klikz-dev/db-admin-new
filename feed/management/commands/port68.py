@@ -19,13 +19,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            common.downloadFileFromSFTP(
-                brand=BRAND,
-                src="/surya/surya_masterlist_dbest.xlsx",
-                dst=f"{FILEDIR}/surya-master.xlsx",
-                fileSrc=True,
-                delete=False
-            )
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 

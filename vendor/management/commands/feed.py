@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         if "google" in options['functions']:
             with Processor() as processor:
-                processor.gsFeed()
+                processor.google()
 
 
 class Processor:
@@ -51,7 +51,7 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def gsFeed(self):
+    def google(self):
 
         if os.path.isfile(GS_FEED_DIR):
             os.remove(GS_FEED_DIR)
