@@ -56,7 +56,8 @@ class Processor:
                 shopifyManager.updateProductStatus(
                     productId=productId, status=product.published)
 
-                debug.log(PROCESS, f"Updated Status of Product: {productId}")
+                debug.log(
+                    PROCESS, f"Updated Status of Product: {productId} to {product.published}")
             except Exception as e:
                 debug.warn(PROCESS, str(e))
                 return

@@ -96,7 +96,7 @@ class Processor:
             try:
                 # Primary Keys
                 mpn = common.toText(row[2])
-                sku = f"TP {mpn}"
+                sku = f"PP {mpn}"
 
                 pattern = common.toText(row[3])
                 color = common.toText(row[4])

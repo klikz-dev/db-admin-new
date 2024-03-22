@@ -547,7 +547,7 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("York", York, False),
+            ("Kravet", Kravet, False),
         ]
 
         for brandName, brand, private in brands:
@@ -563,7 +563,7 @@ class Processor:
 
                 response = requests.request(
                     "GET",
-                    f"https://www.decoratorsbestam.com/api/products/?sku={quote(product.sku)}",
+                    f"https://www.decoratorsbestam.com/api/products/?pattern={quote(product.pattern)}&color={quote(product.color)}",
                     headers={
                         'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
                     }
