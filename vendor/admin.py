@@ -145,9 +145,9 @@ class ProductAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [
+        'manufacturer__brand',
         'published',
         'type',
-        'manufacturer__brand',
         'manufacturer',
         'uom'
     ]

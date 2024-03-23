@@ -3,7 +3,8 @@ from django.db import models
 
 class Feed(models.Model):
     mpn = models.CharField(max_length=200, primary_key=True)
-    sku = models.CharField(max_length=200, null=False, blank=False)
+    sku = models.CharField(max_length=200, unique=True,
+                           null=False, blank=False)
     pattern = models.CharField(max_length=200, null=False, blank=False)
     color = models.CharField(max_length=200, null=False, blank=False)
     name = models.CharField(max_length=200, unique=True,

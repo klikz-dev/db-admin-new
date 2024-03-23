@@ -167,6 +167,7 @@ class DatabaseManager:
 
         for product in tqdm(products):
             try:
+                print(product.sku)
                 feed = self.Feed.objects.get(sku=product.sku)
 
                 feed.productId = product.shopifyId
