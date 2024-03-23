@@ -171,6 +171,12 @@ class Kravet(Feed):
         verbose_name_plural = "Kravet"
 
 
+class KravetDecor(Feed):
+    class Meta:
+        verbose_name = "Kravet Decor"
+        verbose_name_plural = "Kravet Decor"
+
+
 class Materialworks(Feed):
     class Meta:
         verbose_name = "Materialworks"

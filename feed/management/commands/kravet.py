@@ -81,17 +81,6 @@ class Command(BaseCommand):
             os.rename(f"{FILEDIR}/item_info.csv",
                       f"{FILEDIR}/kravet-master.csv")
 
-            common.downloadFileFromFTP(
-                brand=BRAND,
-                src="curated_onhand_info.zip",
-                dst=f"{FILEDIR}/kravet-decor-inventory.zip"
-            )
-            z = zipfile.ZipFile(f"{FILEDIR}/kravet-decor-inventory.zip", "r")
-            z.extractall(FILEDIR)
-            z.close()
-            os.rename(f"{FILEDIR}/curated_onhand_info.csv",
-                      f"{FILEDIR}/kravetdecor-inventory.csv")
-
             processor = Processor()
             stocks = processor.inventory()
             processor.DatabaseManager.updateInventory(
@@ -277,125 +266,6 @@ class Processor:
             }
             products.append(product)
 
-        f = open(f"{FILEDIR}/kravetdecor-master.csv", "rb")
-        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
-        for row in cr:
-            if row[0] == "sku":
-                continue
-
-            try:
-                # Primary Keys
-                mpn = common.toText(row[0])
-                sku = f"KD {mpn.replace('.0', '').replace('.', '-')}"
-
-                pattern = common.toText(row[1]).replace(",", "")
-                color = sku.split("-")[2].title()
-
-                # Categorization
-                brand = BRAND
-                manufacturer = f"{BRAND} Decor"
-                type = common.toText(row[6]).title()
-                collection = common.toText(row[3])
-
-                # Main Information
-                description = common.toText(row[2])
-                width = common.toFloat(row[11])
-                length = common.toFloat(row[10])
-                height = common.toFloat(row[12])
-
-                # Additional Information
-                usage = common.toText(row[5])
-                material = common.toText(row[20])
-                care = common.toText(row[24])
-                country = common.toText(row[21])
-                weight = common.toFloat(row[14])
-                upc = common.toText(row[34])
-
-                features = [row[25]] if row[25] else []
-
-                # Measurement
-                uom = "Item"
-
-                # Pricing
-                cost = common.toFloat(row[15])
-
-                # Tagging
-                keywords = f"{row[6]} {usage} {pattern} {collection} {description}"
-                colors = row[7]
-
-                # Image
-                thumbnail = row[35]
-
-                roomsets = [row[id] for id in range(36, 40) if row[id]]
-
-                # Status
-                statusP = row[4] == "Active"
-                statusS = False
-
-                whiteGlove = "White Glove" in row[17]
-
-                # Fine-tuning
-                type = common.pluralToSingular(type)
-                TYPE_DICT = {
-                    "Benches & Ottoman": "Ottoman"
-                }
-                type = TYPE_DICT.get(type, type)
-
-                pattern = re.sub(
-                    r'\s+', ' ', pattern.replace(type, "")).strip()
-
-                name = f"{pattern} {color} {type}"
-
-                # Exceptions
-                if cost == 0 or not pattern or not color or not type:
-                    continue
-
-            except Exception as e:
-                debug.warn(BRAND, str(e))
-                continue
-
-            product = {
-                'mpn': mpn,
-                'sku': sku,
-                'pattern': pattern,
-                'color': color,
-                'name': name,
-
-                'brand': brand,
-                'type': type,
-                'manufacturer': manufacturer,
-                'collection': collection,
-
-                'description': description,
-                'width': width,
-                'length': length,
-                'length': length,
-
-                'usage': usage,
-                'material': material,
-                'care': care,
-                'country': country,
-                'weight': weight,
-                'upc': upc,
-
-                'features': features,
-
-                'uom': uom,
-
-                'cost': cost,
-
-                'keywords': keywords,
-                'colors': colors,
-
-                'thumbnail': thumbnail,
-                'roomsets': roomsets,
-
-                'statusP': statusP,
-                'statusS': statusS,
-                'whiteGlove': whiteGlove,
-            }
-            products.append(product)
-
         return products
 
     def inventory(self):
@@ -414,27 +284,6 @@ class Processor:
             sku = product.sku
             stockP = common.toInt(row[46])
             stockNote = f"{common.toText(row[47])} days"
-
-            stock = {
-                'sku': sku,
-                'quantity': stockP,
-                'note': stockNote
-            }
-            stocks.append(stock)
-
-        f = open(f"{FILEDIR}/kravetdecor-inventory.csv", "rb")
-        cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
-        for row in cr:
-            mpn = common.toText(row[0])
-
-            try:
-                product = Kravet.objects.get(mpn=mpn)
-            except Kravet.DoesNotExist:
-                continue
-
-            sku = product.sku
-            stockP = common.toInt(row[1])
-            stockNote = f"{common.toText(row[2])} days"
 
             stock = {
                 'sku': sku,

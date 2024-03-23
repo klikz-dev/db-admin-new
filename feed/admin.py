@@ -13,6 +13,7 @@ from .models import JamieYoung
 from .models import JFFabrics
 from .models import Kasmir
 from .models import Kravet
+from .models import KravetDecor
 from .models import Materialworks
 from .models import Maxwell
 from .models import MindTheGap
@@ -212,6 +213,11 @@ class KasmirAdmin(FeedAdmin):
 
 @admin.register(Kravet)
 class KravetAdmin(FeedAdmin):
+    pass
+
+
+@admin.register(KravetDecor)
+class KravetDecorAdmin(FeedAdmin):
     pass
 
 

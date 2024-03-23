@@ -180,8 +180,8 @@ class Processor:
                     name = f"{pattern} {color} {type}"
 
                     # Exceptions
-                    if cost == 0 or not pattern or not color or not type or not uom:
-                        continue
+                    # if cost == 0 or not pattern or not color or not type or not uom:
+                    #     continue
 
                 except Exception as e:
                     debug.warn(BRAND, str(e))
