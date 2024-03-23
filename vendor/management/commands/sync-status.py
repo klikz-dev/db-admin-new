@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 from utils import debug, shopify
 
@@ -32,11 +33,11 @@ class Processor:
         pass
 
     def status(self):
-        shopifyManager = shopify.ShopifyManager()
 
         syncs = Sync.objects.filter(type="Status")
 
-        for sync in tqdm(syncs):
+        # for index, sync in tqdm(syncs):
+        def syncStatus(index, sync):
             productId = sync.productId
             sync.delete()
 
@@ -54,6 +55,7 @@ class Processor:
                 product.save()
 
             try:
+                shopifyManager = shopify.ShopifyManager(thread=index)
                 shopifyManager.updateProductStatus(
                     productId=productId, status=product.published)
 
@@ -62,6 +64,10 @@ class Processor:
             except Exception as e:
                 debug.warn(PROCESS, str(e))
                 return
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for index, sync in enumerate(syncs):
+                executor.submit(syncStatus, index, sync)
 
     def noImage(self):
         shopifyManager = shopify.ShopifyManager()

@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 from utils import debug, shopify
 
-from vendor.models import Sync, Product, Image
+from vendor.models import Sync, Product
 
 PROCESS = "Sync-Price"
 
@@ -31,11 +32,11 @@ class Processor:
         pass
 
     def price(self):
-        shopifyManager = shopify.ShopifyManager()
 
         syncs = Sync.objects.filter(type="Price")
 
-        for sync in tqdm(syncs):
+        # for index, sync in tqdm(syncs):
+        def syncPrice(index, sync):
             productId = sync.productId
             sync.delete()
 
@@ -46,6 +47,7 @@ class Processor:
                 return
 
             try:
+                shopifyManager = shopify.ShopifyManager(thread=index)
                 shopifyManager.updateProductPrice(product=product)
 
                 debug.log(
@@ -53,3 +55,7 @@ class Processor:
             except Exception as e:
                 debug.warn(PROCESS, str(e))
                 return
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            for index, sync in enumerate(syncs):
+                executor.submit(syncPrice, index, sync)
