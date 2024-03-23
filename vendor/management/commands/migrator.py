@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from django.core.management.base import BaseCommand
 
-from utils import common, debug, shopify
+from utils import common, debug, shopify, const
 from vendor.models import Type, Manufacturer, Tag, Product, Image, Sync
 
 from feed.models import Brewster
@@ -593,7 +593,9 @@ class Processor:
 
             total = len(products)
 
-            def copyProduct(product, index):
+            # for index, product in enumerate(products):
+            def copyProduct(index, product):
+
                 if not product.statusP:
                     return
 
@@ -634,8 +636,16 @@ class Processor:
                     sampleId = ""
                     freeSampleId = ""
 
-                    consumerPrice, tradePrice, samplePrice = common.markup(
-                        brand=brandName, product=product, format=True)
+                    markup = const.markup[product.brand]
+                    if product.type in markup:
+                        markup = markup[product.type]
+                    if product.european and "European" in markup:
+                        markup = markup["European"]
+
+                    cost = product.cost
+                    consumer = common.toPrice(cost, markup['consumer'])
+                    trade = common.toPrice(cost, markup['trade'])
+                    sample = 15 if product.type == "Rug" else 5
 
                     for result in results:
                         if "Free Sample -" in result['name']:
@@ -715,10 +725,10 @@ class Processor:
                                 tradeId=tradeId,
                                 sampleId=sampleId,
                                 freeSampleId=freeSampleId,
-                                cost=product.cost,
-                                consumer=consumerPrice,
-                                trade=tradePrice,
-                                sample=samplePrice,
+                                cost=cost,
+                                consumer=consumer,
+                                trade=trade,
+                                sample=sample,
                                 compare=None,
                                 weight=product.weight,
                                 barcode=product.upc,
@@ -730,7 +740,7 @@ class Processor:
 
             with ThreadPoolExecutor(max_workers=100) as executor:
                 for index, product in enumerate(products):
-                    executor.submit(copyProduct, product, index)
+                    executor.submit(copyProduct, index, product)
 
     def requestAPI(self, url):
         responseData = requests.get(

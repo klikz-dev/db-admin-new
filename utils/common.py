@@ -206,52 +206,6 @@ def pluralToSingular(word):
     return singular if singular else word
 
 
-def markup(brand, product, format=True):
-    def generatePrice(cost, multiplier, format):
-        if format:
-            price = math.ceil(cost * multiplier * 4) / 4
-            if price == int(price):
-                price -= 0.01
-        else:
-            price = round(cost * multiplier, 2)
-
-        return float(price)
-
-    try:
-        useMAP = const.markup[brand]["useMAP"]
-
-        consumerMarkup = const.markup[brand]["consumer"]
-        tradeMarkup = const.markup[brand]["trade"]
-
-        if product.type == "Pillow" and "consumer_pillow" in const.markup[brand]:
-            consumerMarkup = const.markup[brand]["consumer_pillow"]
-            tradeMarkup = const.markup[brand]["trade_pillow"]
-
-        if product.european and "consumer_european" in const.markup[brand]:
-            consumerMarkup = const.markup[brand]["consumer_european"]
-            tradeMarkup = const.markup[brand]["trade_european"]
-
-        if useMAP and product.map > 0:
-            priceConsumer = generatePrice(product.map, 1, format)
-        else:
-            priceConsumer = generatePrice(product.cost, consumerMarkup, format)
-
-        priceTrade = generatePrice(product.cost, tradeMarkup, format)
-
-        if priceConsumer < 19.99:
-            priceConsumer = 19.99
-            priceTrade = 16.99
-
-        priceSample = 5
-
-        return (priceConsumer, priceTrade, priceSample)
-
-    except Exception as e:
-        debug.debug(brand, 1,
-                    f"Price Error. Check if markups are defined properly. {str(e)}")
-        return (0, 0, 0)
-
-
 def getRelatedProducts(product):
     samePatterns = Product.objects.filter(
         manufacturer=product.manufacturer, type=product.type, pattern=product.pattern)
