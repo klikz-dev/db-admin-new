@@ -31,7 +31,25 @@ class Processor:
         pass
 
     def price(self):
+        shopifyManager = shopify.ShopifyManager()
+
         syncs = Sync.objects.filter(type="Price")
 
         for sync in tqdm(syncs):
-            pass
+            productId = sync.productId
+            sync.delete()
+
+            try:
+                product = Product.objects.get(shopifyId=productId)
+            except Product.DoesNotExist:
+                debug.warn(PROCESS, f"Product Not Found: {productId}")
+                return
+
+            try:
+                shopifyManager.updateProductPrice(product=product)
+
+                debug.log(
+                    PROCESS, f"{productId} Price updated: {product.consumer} / {product.trade} / {product.cost}")
+            except Exception as e:
+                debug.warn(PROCESS, str(e))
+                return

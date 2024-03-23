@@ -199,7 +199,6 @@ class ShopifyManager:
         return productData["product"]["handle"]
 
     def deleteProduct(self, productId):
-        # Delete Product
         productData = self.requestAPI(
             method="DELETE", url=f"/products/{productId}.json")
 
@@ -220,3 +219,23 @@ class ShopifyManager:
         )
 
         return productData["product"]["handle"]
+
+    def updateProductPrice(self, product):
+        consumerVariant = {
+            'id': product.consumerId,
+            'cost': product.cost,
+            'price': product.consumer,
+            'compare_at_price': product.compare
+        }
+        self.requestAPI(
+            method="PUT", url=f"/variants/{product.consumerId}.json", payload={"variant": consumerVariant})
+
+        tradeVariant = {
+            'id': product.tradeId,
+            'cost': product.cost,
+            'price': product.trade,
+        }
+        self.requestAPI(
+            method="PUT", url=f"/variants/{product.tradeId}.json", payload={"variant": tradeVariant})
+
+        return True

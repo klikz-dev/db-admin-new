@@ -23,6 +23,7 @@ from feed.models import JamieYoung
 from feed.models import JFFabrics
 from feed.models import Kasmir
 from feed.models import Kravet
+from feed.models import KravetDecor
 from feed.models import Materialworks
 from feed.models import Maxwell
 from feed.models import MindTheGap
@@ -514,8 +515,11 @@ class Command(BaseCommand):
         if "cleanup" in options['functions']:
             processor.cleanup()
 
-        if "sync" in options['functions']:
-            processor.sync()
+        if "sync-status" in options['functions']:
+            processor.syncStatus()
+
+        if "sync-price" in options['functions']:
+            processor.syncPrice()
 
 
 class Processor:
@@ -547,7 +551,7 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("Kravet", Kravet, False),
+            ("York", York, False),
         ]
 
         for brandName, brand, private in brands:
@@ -563,7 +567,7 @@ class Processor:
 
                 response = requests.request(
                     "GET",
-                    f"https://www.decoratorsbestam.com/api/products/?pattern={quote(product.pattern)}&color={quote(product.color)}",
+                    f"https://www.decoratorsbestam.com/api/products/?mpn={quote(product.mpn)}",
                     headers={
                         'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
                     }
@@ -735,11 +739,15 @@ class Processor:
                 imageURL = image['imageURL']
                 imageIndex = image['imageIndex']
 
+                # if imageIndex == 20:
+                #     imageIndex = 1
+                #     hires = True
+                # else:
+                #     hires = False
+
+                hires = False
                 if imageIndex == 20:
-                    imageIndex = 1
-                    hires = True
-                else:
-                    hires = False
+                    continue
 
                 Image.objects.update_or_create(
                     url=imageURL,
@@ -797,7 +805,7 @@ class Processor:
             else:
                 break
 
-    def sync(self):
+    def syncStatus(self):
 
         products = Product.objects.all()
 
@@ -806,6 +814,19 @@ class Processor:
                 Sync.objects.update_or_create(
                     productId=product.shopifyId,
                     type="Status"
+                )
+            except Exception as e:
+                print(e)
+
+    def syncPrice(self):
+
+        products = Product.objects.all()
+
+        for product in tqdm(products):
+            try:
+                Sync.objects.update_or_create(
+                    productId=product.shopifyId,
+                    type="Price"
                 )
             except Exception as e:
                 print(e)

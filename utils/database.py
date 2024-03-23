@@ -235,7 +235,40 @@ class DatabaseManager:
                     productId=product.shopifyId, type="Content")
 
     def priceSync(self):
-        pass
+        feeds = self.Feed.objects.all()
+        for feed in feeds:
+            try:
+                product = Product.objects.get(sku=feed.sku)
+            except Product.DoesNotExist:
+                continue
+
+            markup = const.markup[self.brand]
+            if feed.type in markup:
+                markup = markup[feed.type]
+            if feed.european and "European" in markup:
+                markup = markup["European"]
+
+            cost = feed.cost
+            consumer = common.toPrice(cost, markup['consumer'])
+            trade = common.toPrice(cost, markup['trade'])
+
+            if consumer < 20:
+                consumer = 19.99
+            if trade < 17:
+                trade = 16.99
+
+            if cost == product.cost and consumer == product.consumer and trade == product.trade:
+                return
+            else:
+                product.cost = cost
+                product.consumer = consumer
+                product.trade = trade
+                product.save()
+
+                Sync.objects.get_or_create(
+                    productId=product.shopifyId, type="Price")
+                debug.log(
+                    self.brand, f"{product.shopifyId} Price updated: {consumer} / {trade}")
 
     def tagSync(self):
         feeds = self.Feed.objects.all()

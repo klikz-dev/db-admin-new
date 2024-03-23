@@ -32,6 +32,8 @@ class Processor:
         pass
 
     def status(self):
+        shopifyManager = shopify.ShopifyManager()
+
         syncs = Sync.objects.filter(type="Status")
 
         for sync in tqdm(syncs):
@@ -52,7 +54,6 @@ class Processor:
                 product.save()
 
             try:
-                shopifyManager = shopify.ShopifyManager()
                 shopifyManager.updateProductStatus(
                     productId=productId, status=product.published)
 
@@ -63,6 +64,7 @@ class Processor:
                 return
 
     def noImage(self):
+        shopifyManager = shopify.ShopifyManager()
 
         noImageProducts = Product.objects.exclude(
             images__position=1).filter(published=True)
@@ -72,7 +74,6 @@ class Processor:
             product.save()
 
             try:
-                shopifyManager = shopify.ShopifyManager()
                 shopifyManager.updateProductStatus(
                     productId=product.shopifyId, status=False)
 

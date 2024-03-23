@@ -103,9 +103,9 @@ class Processor:
 
         collections = self.requestAPI("collections.php")
 
-        for collection in collections:
-            collectionID = collection['collectionID']
-            collectionName = collection['name']
+        for collectionData in collections:
+            collectionID = collectionData['collectionID']
+            collectionName = collectionData['name']
 
             if collectionID == "":
                 continue
@@ -133,7 +133,7 @@ class Processor:
                     brand = BRAND
                     type = "Wallpaper"
                     manufacturer = common.toText(row['CategoryName'])
-                    collectionName = common.toText(row['CollectionName'])
+                    collection = common.toText(row['CollectionName'])
 
                     # Main Information
                     description_parts = [common.toText(row[key]) for key in [
@@ -176,56 +176,75 @@ class Processor:
                     quickShip = row['QuickShip'] == 'Y'
 
                     # Fine-tuning
+                    MANUFACTURER_DICT = {
+                        "Ron Redding Designs": "Ronald Redding Designs",
+                        "Ronald Redding": "Ronald Redding Designs",
+                        "Cary Lind Designs": "Carey Lind Designs",
+                        "Rifle": "Rifle Paper Co.",
+                        "Lemieux et Cie": "RoomMates",
+                        "CatCoq": "RoomMates",
+                        "Jane Dixon": "RoomMates",
+                        "Rose Lindo": "RoomMates",
+                        "Nikki Chu": "RoomMates",
+                    }
+                    manufacturer = MANUFACTURER_DICT.get(
+                        manufacturer, manufacturer)
+
+                    UOM_DICT = {
+                        "Single Roll": "Roll"
+                    }
+                    uom = UOM_DICT.get(uom, uom)
+
                     statusS = False
                     name = f"{pattern} {color} {type}"
 
                     # Exceptions
-                    # if cost == 0 or not pattern or not color or not type or not uom:
-                    #     continue
+                    if cost == 0 or not pattern or not color or not type or not uom:
+                        continue
 
                 except Exception as e:
                     debug.warn(BRAND, str(e))
                     continue
 
-            product = {
-                'mpn': mpn,
-                'sku': sku,
-                'pattern': pattern,
-                'color': color,
-                'name': name,
+                product = {
+                    'mpn': mpn,
+                    'sku': sku,
+                    'pattern': pattern,
+                    'color': color,
+                    'name': name,
 
-                'brand': brand,
-                'type': type,
-                'manufacturer': manufacturer,
-                'collection': collection,
+                    'brand': brand,
+                    'type': type,
+                    'manufacturer': manufacturer,
+                    'collection': collection,
 
-                'description': description,
+                    'description': description,
 
-                'match': match,
-                'usage': usage,
-                'features': features,
-                'specs': specs,
-                'usage': usage,
-                'country': country,
-                'upc': upc,
+                    'match': match,
+                    'usage': usage,
+                    'features': features,
+                    'specs': specs,
+                    'usage': usage,
+                    'country': country,
+                    'upc': upc,
 
-                'uom': uom,
-                'minimum': minimum,
-                'increment': increment,
+                    'uom': uom,
+                    'minimum': minimum,
+                    'increment': increment,
 
-                'cost': cost,
-                'msrp': msrp,
-                'map': map,
+                    'cost': cost,
+                    'msrp': msrp,
+                    'map': map,
 
-                'keywords': keywords,
-                'colors': colors,
+                    'keywords': keywords,
+                    'colors': colors,
 
-                'statusP': statusP,
-                'statusS': statusS,
-                'outlet': outlet,
-                'quickShip': quickShip,
-            }
-            products.append(product)
+                    'statusP': statusP,
+                    'statusS': statusS,
+                    'outlet': outlet,
+                    'quickShip': quickShip,
+                }
+                products.append(product)
 
         return products
 

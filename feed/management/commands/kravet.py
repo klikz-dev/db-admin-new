@@ -5,7 +5,6 @@ import os
 import csv
 import codecs
 import zipfile
-import re
 
 from utils import database, debug, common
 

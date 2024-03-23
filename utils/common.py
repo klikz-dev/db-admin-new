@@ -181,6 +181,15 @@ def toInt(value):
     return int(toFloat(value))
 
 
+def toPrice(value, markup):
+    price = math.ceil(value * markup * 4) / 4
+
+    if price == int(price):
+        price -= 0.01
+
+    return price
+
+
 def toHandle(text):
     if text:
         handle = str(text).lower().replace(" ", "-")

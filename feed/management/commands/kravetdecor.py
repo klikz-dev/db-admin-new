@@ -107,7 +107,7 @@ class Processor:
 
                 # Categorization
                 brand = BRAND
-                manufacturer = f"{BRAND} Decor"
+                manufacturer = BRAND
                 type = common.toText(row[6]).title()
                 collection = common.toText(row[3])
 
