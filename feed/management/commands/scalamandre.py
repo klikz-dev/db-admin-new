@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
         if "status" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.statusSync(fullSync=False)
+            processor.DatabaseManager.statusSync(fullSync=True)
 
         if "content" in options['functions']:
             processor = Processor()
@@ -266,7 +266,7 @@ class Processor:
                 continue
 
             sku = product.sku
-            
+
             if row.get('STOCKINVENTORY') != 'N':
                 stockP = common.toInt(row.get('AVAILABLE'))
             else:

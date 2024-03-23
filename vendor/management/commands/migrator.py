@@ -755,29 +755,10 @@ class Processor:
 
             imagesArray = imagesData['results']
 
-            # Use hi-res Image
-            hiresImage = None
-            for image in imagesArray:
-                if image['imageIndex'] == 20:
-                    hiresImage = image
-                    break
-            if hiresImage:
-                for i, image in enumerate(imagesArray):
-                    if image['imageIndex'] == 1:
-                        imagesArray[i] = hiresImage
-                        break
-
             for image in imagesArray:
                 imageURL = image['imageURL']
                 imageIndex = image['imageIndex']
 
-                if imageIndex == 20:
-                    imageIndex = 1
-                    hires = True
-                else:
-                    hires = False
-
-                hires = False
                 if imageIndex == 20:
                     continue
 
@@ -785,7 +766,7 @@ class Processor:
                     url=imageURL,
                     position=imageIndex,
                     product=product,
-                    hires=hires,
+                    hires=False,
                 )
 
                 debug.log(
