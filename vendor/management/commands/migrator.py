@@ -550,35 +550,35 @@ class Processor:
 
         brands = [
             ("Brewster", Brewster, False),
-            ("Couture", Couture, False),
-            ("Covington", Covington, True),
-            ("Dana Gibson", DanaGibson, False),
-            ("Elaine Smith", ElaineSmith, False),
-            ("Exquisite Rugs", ExquisiteRugs, False),
-            ("Galerie", Galerie, False),
-            ("Hubbardton Forge", HubbardtonForge, False),
-            ("Jaipur Living", JaipurLiving, False),
-            ("Jamie Young", JamieYoung, False),
-            ("JF Fabrics", JFFabrics, False),
-            ("Kasmir", Kasmir, False),
-            ("Kravet", Kravet, False),
-            ("Kravet Decor", KravetDecor, False),
-            ("Materialworks", Materialworks, True),
-            ("Maxwell", Maxwell, False),
-            ("MindTheGap", MindTheGap, False),
-            ("NOIR", NOIR, False),
-            ("Olivia & Quinn", OliviaQuinn, False),
-            ("P/Kaufmann", PKaufmann, False),
-            ("Peninsula Home", PeninsulaHome, False),
-            ("Phillip Jeffries", PhillipJeffries, False),
-            ("Phillips Collection", PhillipsCollection, False),
-            ("Pindler", Pindler, False),
-            ("Poppy", Poppy, False),
-            ("Port 68", Port68, False),
-            ("Premier Prints", PremierPrints, True),
-            ("Scalamandre", Scalamandre, False),
-            ("Schumacher", Schumacher, False),
-            ("Seabrook", Seabrook, False),
+            # ("Couture", Couture, False),
+            # ("Covington", Covington, True),
+            # ("Dana Gibson", DanaGibson, False),
+            # ("Elaine Smith", ElaineSmith, False),
+            # ("Exquisite Rugs", ExquisiteRugs, False),
+            # ("Galerie", Galerie, False),
+            # ("Hubbardton Forge", HubbardtonForge, False),
+            # ("Jaipur Living", JaipurLiving, False),
+            # ("Jamie Young", JamieYoung, False),
+            # ("JF Fabrics", JFFabrics, False),
+            # ("Kasmir", Kasmir, False),
+            # ("Kravet", Kravet, False),
+            # ("Kravet Decor", KravetDecor, False),
+            # ("Materialworks", Materialworks, True),
+            # ("Maxwell", Maxwell, False),
+            # ("MindTheGap", MindTheGap, False),
+            # ("NOIR", NOIR, False),
+            # ("Olivia & Quinn", OliviaQuinn, False),
+            # ("P/Kaufmann", PKaufmann, False),
+            # ("Peninsula Home", PeninsulaHome, False),
+            # ("Phillip Jeffries", PhillipJeffries, False),
+            # ("Phillips Collection", PhillipsCollection, False),
+            # ("Pindler", Pindler, False),
+            # ("Poppy", Poppy, False),
+            # ("Port 68", Port68, False),
+            # ("Premier Prints", PremierPrints, True),
+            # ("Scalamandre", Scalamandre, False),
+            # ("Schumacher", Schumacher, False),
+            # ("Seabrook", Seabrook, False),
             ("Stout", Stout, False),
             ("Surya", Surya, False),
             ("Tempaper", Tempaper, True),
@@ -843,11 +843,13 @@ class Processor:
 
     def syncPrice(self):
 
+        Sync.objects.all().delete()
+
         products = Product.objects.all()
 
         for product in tqdm(products):
             try:
-                Sync.objects.update_or_create(
+                Sync.objects.create(
                     productId=product.shopifyId,
                     type="Price"
                 )

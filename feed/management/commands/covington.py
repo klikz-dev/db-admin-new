@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
         if "status" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.statusSync(fullSync=True)
+            processor.DatabaseManager.statusSync(fullSync=False)
 
         if "content" in options['functions']:
             processor = Processor()
