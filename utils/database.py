@@ -10,6 +10,38 @@ from utils import debug, common, shopify, const
 env = environ.Env()
 
 
+ATTR_DICT = [
+    'pattern',
+    'color',
+    'collection',
+    'description',
+    'width',
+    'length',
+    'height',
+    'size',
+    'repeatH',
+    'repeatV',
+    'uom',
+    'minimum',
+    'increment',
+    'yardsPR',
+    'content',
+    'match',
+    'material',
+    'finish',
+    'care',
+    'weight',
+    'country',
+    'specs',
+    'features',
+    'usage',
+    'disclaimer',
+    'cost',
+    'map',
+    'msrp',
+]
+
+
 class DatabaseManager:
     def __init__(self, brand, Feed):
         self.brand = brand
@@ -162,12 +194,11 @@ class DatabaseManager:
         else:
             debug.warn(self.brand, f"Unknown UOMs: {', '.join(unknownUOMs)}")
 
-    def statusSync(self, fullSync=True):
+    def statusSync(self, fullSync=False):
         products = Product.objects.filter(manufacturer__brand=self.brand)
 
         for product in tqdm(products):
             try:
-                print(product.sku)
                 feed = self.Feed.objects.get(sku=product.sku)
 
                 feed.productId = product.shopifyId
@@ -198,42 +229,25 @@ class DatabaseManager:
                 debug.log(
                     self.brand, f"Resync Product: {product.sku} Status to: {product.published}")
 
-    def contentSync(self):
-        attributes = [
-            "pattern",
-            "color",
-            "collection",
-            "description",
-            "width",
-            "length",
-            "height",
-            "repeatH",
-            "repeatV",
-            "specs",
-            "yardsPR",
-            "content",
-            "match",
-            "material",
-            "finish",
-            "care",
-            "country",
-            "features",
-            "usage",
-            "disclaimer",
-        ]
-
+    def contentSync(self, private=False):
         feeds = self.Feed.objects.all()
-        for feed in feeds:
+        for feed in tqdm(feeds):
             try:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
                 continue
 
-            if all(getattr(feed, attr) == getattr(product, attr) for attr in attributes):
+            tags = self.generateTags(feed=feed, price=product.consumer)
+            for tag in tags:
+                product.tags.add(tag)
+
+            if all(getattr(feed, attr) == getattr(product, attr) for attr in ATTR_DICT):
                 continue
             else:
+                self.copyContent(feed, product, private)
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Content")
+                debug.log(self.brand, f"{product.shopifyId} Content updated")
 
     def priceSync(self):
         feeds = self.Feed.objects.all()
@@ -262,7 +276,7 @@ class DatabaseManager:
                 trade = 16.99
 
             if cost == product.cost and consumer == product.consumer and trade == product.trade:
-                return
+                continue
             else:
                 product.cost = cost
                 product.consumer = consumer
@@ -292,36 +306,6 @@ class DatabaseManager:
     def addProducts(self):
         pass
 
-    def syncProduct(self, feed, product, private):
-        manufacturer_name = "DecoratorsBest" if private else product.manufacturer
-        title = f"{manufacturer_name} {product.name or f'{product.pattern} {product.color} {product.type}'}"
-
-        manufacturer, type = (
-            Manufacturer.objects.get(name=feed.manufacturer),
-            Type.objects.get(name=feed.type),
-        )
-
-        feed_to_product_attrs = {
-            'mpn': 'mpn', 'pattern': 'pattern', 'color': 'color',
-            'collection': 'collection', 'description': 'description', 'width': 'width',
-            'length': 'length', 'height': 'height', 'size': 'size', 'repeatH': 'repeatH',
-            'repeatV': 'repeatV', 'specs': 'specs', 'uom': 'uom', 'minimum': 'minimum',
-            'increment': 'increment', 'yardsPR': 'yardsPR', 'content': 'content',
-            'match': 'match', 'material': 'material', 'finish': 'finish', 'care': 'care',
-            'country': 'country', 'features': 'features', 'usage': 'usage',
-            'disclaimer': 'disclaimer', 'cost': 'cost', 'weight': 'weight', 'barcode': 'upc',
-        }
-
-        for product_attr, feed_attr in feed_to_product_attrs.items():
-            setattr(product, product_attr, getattr(feed, feed_attr))
-
-        product.title = title
-        product.manufacturer = manufacturer
-        product.type = type
-
-        with transaction.atomic():
-            product.save()
-
     def updateProducts(self, feeds: list, private=False):
         total = len(feeds)
 
@@ -330,6 +314,8 @@ class DatabaseManager:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
                 return
+
+            self.copyContent(feed, product, private)
 
             tags = self.generateTags(feed=feed, price=product.consumer)
             for tag in tags:
@@ -349,6 +335,23 @@ class DatabaseManager:
         with ThreadPoolExecutor(max_workers=20) as executor:
             for index, feed in enumerate(feeds):
                 executor.submit(updateProduct, feed, index)
+
+    def copyContent(self, feed, product, private):
+        manufacturer, type = (
+            Manufacturer.objects.get(name=feed.manufacturer),
+            Type.objects.get(name=feed.type),
+        )
+
+        title = f"{'DecoratorsBest' if private else manufacturer.name} {feed.name}"
+
+        for attr in ATTR_DICT:
+            setattr(product, attr, getattr(feed, attr))
+
+        product.manufacturer = manufacturer
+        product.type = type
+        product.title = title
+
+        product.save()
 
     def downloadImages(self):
         pass

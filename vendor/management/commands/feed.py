@@ -17,7 +17,7 @@ env = environ.Env()
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 GS_FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestGS.xml"
-FB_FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestFB.xml"
+GS_FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestGS_error.xml"
 
 PROCESS = "Feed"
 
@@ -55,6 +55,8 @@ class Processor:
 
         if os.path.isfile(GS_FEED_DIR):
             os.remove(GS_FEED_DIR)
+        if os.path.isfile(GS_FEED_ERROR_DIR):
+            os.remove(GS_FEED_ERROR_DIR)
 
         products = Product.objects.filter(published=True).exclude(type="Trim")
 
@@ -258,11 +260,20 @@ class Processor:
             PROCESS, f"Completed GS Feed Generation. skipped {skipped} out of {total} SKUs")
 
         tree_str = ET.tostring(root, encoding='utf-8')
-        tree_dom = MD.parseString(tree_str)
-        pretty_tree = tree_dom.toprettyxml(indent="\t")
 
-        with open(GS_FEED_DIR, 'w', encoding="UTF-8") as file:
-            file.write(pretty_tree)
+        try:
+            tree_dom = MD.parseString(tree_str)
+            pretty_tree = tree_dom.toprettyxml(indent="\t")
+
+            with open(GS_FEED_DIR, 'w', encoding="UTF-8") as file:
+                file.write(pretty_tree)
+
+        except Exception as e:
+            print(e)
+            with open(GS_FEED_ERROR_DIR, 'wb') as file:
+                file.write(tree_str)
+
+            return
 
         if skipped < total * 0.3:
             self.uploadToGS()

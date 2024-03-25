@@ -90,4 +90,4 @@ class Processor:
                     PROCESS, f"Set Status of Product to Inactive: {product.shopifyId}. Image missing.")
             except Exception as e:
                 debug.warn(PROCESS, str(e))
-                return
+                continue
