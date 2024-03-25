@@ -162,7 +162,7 @@ class DatabaseManager:
         else:
             debug.warn(self.brand, f"Unknown UOMs: {', '.join(unknownUOMs)}")
 
-    def statusSync(self, fullSync=False):
+    def statusSync(self, fullSync=True):
         products = Product.objects.filter(manufacturer__brand=self.brand)
 
         for product in tqdm(products):
