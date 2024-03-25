@@ -849,7 +849,7 @@ class Processor:
 
         for product in tqdm(products):
             try:
-                Sync.objects.create(
+                Sync.objects.update_or_create(
                     productId=product.shopifyId,
                     type="Price"
                 )

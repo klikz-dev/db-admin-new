@@ -237,7 +237,7 @@ class DatabaseManager:
 
     def priceSync(self):
         feeds = self.Feed.objects.all()
-        for feed in feeds:
+        for feed in tqdm(feeds):
             try:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
@@ -250,8 +250,11 @@ class DatabaseManager:
                 markup = markup["European"]
 
             cost = feed.cost
+            map = feed.map
             consumer = common.toPrice(cost, markup['consumer'])
             trade = common.toPrice(cost, markup['trade'])
+
+            consumer = map if map > 0 else consumer
 
             if consumer < 20:
                 consumer = 19.99
@@ -273,7 +276,7 @@ class DatabaseManager:
 
     def tagSync(self):
         feeds = self.Feed.objects.all()
-        for feed in tqdm(feeds, desc="Processing"):
+        for feed in tqdm(feeds):
             try:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
