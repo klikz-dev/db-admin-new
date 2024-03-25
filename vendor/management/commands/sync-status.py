@@ -39,12 +39,12 @@ class Processor:
         # for index, sync in tqdm(syncs):
         def syncStatus(index, sync):
             productId = sync.productId
-            sync.delete()
 
             try:
                 product = Product.objects.get(shopifyId=productId)
             except Product.DoesNotExist:
                 debug.warn(PROCESS, f"Product Not Found: {productId}")
+                sync.delete()
                 return
 
             try:
@@ -63,9 +63,12 @@ class Processor:
                     PROCESS, f"Updated Status of Product: {productId} to {product.published}")
             except Exception as e:
                 debug.warn(PROCESS, str(e))
+                sync.delete()
                 return
 
-        with ThreadPoolExecutor(max_workers=20) as executor:
+            sync.delete()
+
+        with ThreadPoolExecutor(max_workers=100) as executor:
             for index, sync in enumerate(syncs):
                 executor.submit(syncStatus, index, sync)
 

@@ -75,6 +75,6 @@ python3 manage.py york status
 python3 manage.py zoffany status
 
 python3 manage.py sync-status
-python3 manage.py sync-price
+# python3 manage.py sync-price
 
 python3 manage.py feed google
