@@ -36,9 +36,6 @@ ATTR_DICT = [
     'features',
     'usage',
     'disclaimer',
-    'cost',
-    'map',
-    'msrp',
 ]
 
 
@@ -237,17 +234,26 @@ class DatabaseManager:
             except Product.DoesNotExist:
                 continue
 
-            tags = self.generateTags(feed=feed, price=product.consumer)
-            for tag in tags:
-                product.tags.add(tag)
+            title = f"{'DecoratorsBest' if private else feed.manufacturer} {feed.name}"
 
-            if all(getattr(feed, attr) == getattr(product, attr) for attr in ATTR_DICT):
-                continue
+            if any(getattr(feed, attr) != getattr(product, attr) for attr in ATTR_DICT):
+                for attr in ATTR_DICT:
+                    setattr(product, attr, getattr(feed, attr))
+            elif feed.manufacturer != product.manufacturer.name:
+                product.manufacturer = Manufacturer.objects.get(
+                    name=feed.manufacturer)
+            elif feed.type != product.type.name:
+                product.type = Type.objects.get(name=feed.type)
+            elif title != product.title:
+                product.title = title
             else:
-                self.copyContent(feed, product, private)
-                Sync.objects.get_or_create(
-                    productId=product.shopifyId, type="Content")
-                debug.log(self.brand, f"{product.shopifyId} Content updated")
+                continue
+
+            product.save()
+
+            Sync.objects.get_or_create(
+                productId=product.shopifyId, type="Content")
+            debug.log(self.brand, f"{product.shopifyId} Content updated")
 
     def priceSync(self):
         feeds = self.Feed.objects.all()
@@ -300,61 +306,49 @@ class DatabaseManager:
             currentTags = set(product.tags.all())
 
             if newTags != currentTags:
+                product.tags.clear()
+                product.tags.add(*newTags)
+
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Tag")
-
-    def addProducts(self):
-        pass
-
-    def updateProducts(self, feeds: list, private=False):
-        total = len(feeds)
-
-        def updateProduct(feed, index):
-            try:
-                product = Product.objects.get(sku=feed.sku)
-            except Product.DoesNotExist:
-                return
-
-            self.copyContent(feed, product, private)
-
-            tags = self.generateTags(feed=feed, price=product.consumer)
-            for tag in tags:
-                product.tags.add(tag)
-
-            shopifyManager = shopify.ShopifyManager(
-                product=product, thread=index)
-
-            handle = shopifyManager.updateProduct()
-
-            if handle:
-                product.shopifyHandle = handle
-                product.save()
                 debug.log(
-                    self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
+                    self.brand, f"{product.shopifyId} Tags updated")
 
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            for index, feed in enumerate(feeds):
-                executor.submit(updateProduct, feed, index)
+    # def addProducts(self):
+    #     pass
 
-    def copyContent(self, feed, product, private):
-        manufacturer, type = (
-            Manufacturer.objects.get(name=feed.manufacturer),
-            Type.objects.get(name=feed.type),
-        )
+    # def updateProducts(self, feeds: list, private=False):
+    #     total = len(feeds)
 
-        title = f"{'DecoratorsBest' if private else manufacturer.name} {feed.name}"
+    #     def updateProduct(feed, index):
+    #         try:
+    #             product = Product.objects.get(sku=feed.sku)
+    #         except Product.DoesNotExist:
+    #             return
 
-        for attr in ATTR_DICT:
-            setattr(product, attr, getattr(feed, attr))
+    #         self.copyContent(feed, product, private)
 
-        product.manufacturer = manufacturer
-        product.type = type
-        product.title = title
+    #         tags = self.generateTags(feed=feed, price=product.consumer)
+    #         for tag in tags:
+    #             product.tags.add(tag)
 
-        product.save()
+    #         shopifyManager = shopify.ShopifyManager(
+    #             product=product, thread=index)
 
-    def downloadImages(self):
-        pass
+    #         handle = shopifyManager.updateProduct()
+
+    #         if handle:
+    #             product.shopifyHandle = handle
+    #             product.save()
+    #             debug.log(
+    #                 self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
+
+    #     with ThreadPoolExecutor(max_workers=20) as executor:
+    #         for index, feed in enumerate(feeds):
+    #             executor.submit(updateProduct, feed, index)
+
+    # def downloadImages(self):
+    #     pass
 
     def updateInventory(self, stocks, type=1, reset=True):
         if reset:

@@ -155,20 +155,17 @@ def downloadFileFromLink(src, dst):
 
 
 def toText(text):
-    text = re.sub(r'[^\x00-\x7F]+', '', text)
-
     if text:
+        text = re.sub(r'[^\x20-\x7E]+', '', text)
         return str(text).replace("N/A", "").replace("n/a", "").strip()
     else:
         return ""
 
 
 def toFloat(value):
-    value = toText(value)
-
     if value:
         try:
-            value = round(float(value.lower().replace("n/a", "").replace('"', "").replace("'", "").replace("in", "").replace(
+            value = round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("'", "").replace("in", "").replace(
                 ",", "").replace("kg", "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "")), 2)
         except:
             value = 0

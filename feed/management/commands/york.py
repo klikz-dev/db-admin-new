@@ -136,7 +136,7 @@ class Processor:
                     collection = common.toText(row['CollectionName'])
 
                     # Main Information
-                    description_parts = [common.toText(row[key]) for key in [
+                    description_parts = [common.toText(row[key].replace('"', "")) for key in [
                         'AdvertisingCopy', 'AdvertisingCopyII', 'AdvertisingCopyIII'] if row[key]]
                     description = ' '.join(description_parts).strip()
 
@@ -186,6 +186,7 @@ class Processor:
                         "Jane Dixon": "RoomMates",
                         "Rose Lindo": "RoomMates",
                         "Nikki Chu": "RoomMates",
+                        "Roommates": "RoomMates",
                     }
                     manufacturer = MANUFACTURER_DICT.get(
                         manufacturer, manufacturer)

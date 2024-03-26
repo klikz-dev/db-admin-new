@@ -549,7 +549,7 @@ class Processor:
     def shopify(self):
 
         brands = [
-            ("Brewster", Brewster, False),
+            # ("Brewster", Brewster, False),
             # ("Couture", Couture, False),
             # ("Covington", Covington, True),
             # ("Dana Gibson", DanaGibson, False),
@@ -579,11 +579,11 @@ class Processor:
             # ("Scalamandre", Scalamandre, False),
             # ("Schumacher", Schumacher, False),
             # ("Seabrook", Seabrook, False),
-            ("Stout", Stout, False),
-            ("Surya", Surya, False),
-            ("Tempaper", Tempaper, True),
+            # ("Stout", Stout, False),
+            # ("Surya", Surya, False),
+            # ("Tempaper", Tempaper, True),
             ("York", York, False),
-            ("Zoffany", Zoffany, False),
+            # ("Zoffany", Zoffany, False),
         ]
 
         for brandName, brand, private in brands:
@@ -601,7 +601,7 @@ class Processor:
 
                 response = requests.request(
                     "GET",
-                    f"https://www.decoratorsbestam.com/api/products/?mpn={quote(product.mpn)}",
+                    f"https://www.decoratorsbestam.com/api/products/?sku={quote(product.sku)}",
                     headers={
                         'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
                     }
@@ -754,9 +754,9 @@ class Processor:
         return responseJson
 
     def image(self):
-        Image.objects.all().delete()
+        Image.objects.filter(product__manufacturer__brand="York").delete()
 
-        products = Product.objects.all()
+        products = Product.objects.filter(manufacturer__brand="York")
         total = len(products)
 
         def importImage(index, product):
