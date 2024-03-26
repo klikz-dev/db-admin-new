@@ -174,11 +174,11 @@ class Processor:
                 skipped += 1
                 continue
 
-            # if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
-            #     debug.log(
-            #         PROCESS, f"IGNORED SKU {sku}. 'Get' word in the description")
-            #     skipped += 1
-            #     continue
+            if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
+                debug.log(
+                    PROCESS, f"IGNORED SKU {sku}. 'Get' word in the description")
+                skipped += 1
+                continue
 
             nonMAPSurya = [
                 "Rodos",
@@ -213,20 +213,20 @@ class Processor:
                 continue
 
             # Inventory
-            # try:
-            #     inventory = Inventory.objects.get(sku=sku, brand=brand)
+            try:
+                inventory = Inventory.objects.get(sku=sku, brand=brand)
 
-            #     if inventory.quantity < minimum:
-            #         debug.log(
-            #             PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
-            #         skipped += 1
-            #         continue
+                if inventory.quantity < minimum:
+                    debug.log(
+                        PROCESS, f"IGNORED SKU {sku}. Inventory insufficient")
+                    skipped += 1
+                    continue
 
-            # except Inventory.DoesNotExist:
-            #     debug.log(
-            #         PROCESS, f"IGNORED SKU {sku}. Inventory not found")
-            #     skipped += 1
-            #     continue
+            except Inventory.DoesNotExist:
+                debug.log(
+                    PROCESS, f"IGNORED SKU {sku}. Inventory not found")
+                skipped += 1
+                continue
 
             # Write Row
             item = ET.SubElement(channel, "item")
