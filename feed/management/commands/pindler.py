@@ -66,7 +66,7 @@ class Command(BaseCommand):
             processor = Processor()
             stocks = processor.inventory()
             processor.DatabaseManager.updateInventory(
-                stocks=stocks, type=1, reset=True)
+                stocks=stocks, type=3, reset=True)
 
 
 class Processor:
@@ -95,12 +95,6 @@ class Processor:
 
         except Exception as e:
             debug.warn(BRAND, str(e))
-
-    def requestAPI(self, mpn):
-        responseData = requests.get(
-            f"{env('PINDLER_API_URL')}?w3exec=checkstock&w3serverpool=checkstock&token={env('PINDLER_API_KEY')}&yards=10&item={mpn}"
-        )
-        return responseData.text
 
     def fetchFeed(self):
         # Get Product Feed
@@ -203,20 +197,22 @@ class Processor:
     def inventory(self):
         stocks = []
 
-        products = Pindler.objects.filter(statusP=True)
-        for product in products:
-            mpn = product.mpn
-            sku = product.sku
+        f = open(f"{FILEDIR}/pindler-master.csv", "rb")
+        cr = csv.reader(codecs.iterdecode(f, 'utf-8'))
 
+        for row in cr:
             try:
-                data = self.requestAPI(mpn)
+                if row[0] == "Inventory Number" or row[0] == "Text":
+                    continue
 
-                if "INSTOCK" in data.upper():
+                sku = f"PDL {row[20]}-{row[18]}".replace("'", "")
+
+                stockP = row[11]
+
+                if stockP == "IN STOCK":
                     stockP = 10
                 else:
-                    stockP = 0
-
-                print(sku, stockP)
+                    stockP = common.toInt(stockP)
 
                 stock = {
                     'sku': sku,
