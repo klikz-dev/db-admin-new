@@ -45,7 +45,6 @@ class Processor:
                 product = Product.objects.get(shopifyId=productId)
             except Product.DoesNotExist:
                 debug.warn(PROCESS, f"Product Not Found: {productId}")
-                sync.delete()
                 return
 
             try:
@@ -58,11 +57,10 @@ class Processor:
                     product.shopifyHandle = handle
                     product.save()
                     debug.log(
-                        self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
+                        PROCESS, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
 
             except Exception as e:
                 debug.warn(PROCESS, str(e))
-                sync.delete()
                 return
 
             sync.delete()
