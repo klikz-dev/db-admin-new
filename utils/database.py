@@ -314,42 +314,6 @@ class DatabaseManager:
                 debug.log(
                     self.brand, f"{product.shopifyId} Tags updated")
 
-    # def addProducts(self):
-    #     pass
-
-    # def updateProducts(self, feeds: list, private=False):
-    #     total = len(feeds)
-
-    #     def updateProduct(feed, index):
-    #         try:
-    #             product = Product.objects.get(sku=feed.sku)
-    #         except Product.DoesNotExist:
-    #             return
-
-    #         self.copyContent(feed, product, private)
-
-    #         tags = self.generateTags(feed=feed, price=product.consumer)
-    #         for tag in tags:
-    #             product.tags.add(tag)
-
-    #         shopifyManager = shopify.ShopifyManager(
-    #             product=product, thread=index)
-
-    #         handle = shopifyManager.updateProduct()
-
-    #         if handle:
-    #             product.shopifyHandle = handle
-    #             product.save()
-    #             debug.log(
-    #                 self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
-
-    #     with ThreadPoolExecutor(max_workers=20) as executor:
-    #         for index, feed in enumerate(feeds):
-    #             executor.submit(updateProduct, feed, index)
-
-    # def downloadImages(self):
-    #     pass
-
     def updateInventory(self, stocks, type=1, reset=True):
         if reset:
             Inventory.objects.filter(brand=self.brand).delete()

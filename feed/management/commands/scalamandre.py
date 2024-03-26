@@ -176,12 +176,13 @@ class Processor:
                     "WALLCOVERING": "Wallpaper",
                     "TRIMMING": "Trim",
                     "PILLOWS": "Pillow",
-                    "FABRIC": "Fabric"
+                    "FABRIC": "Fabric",
                 }
                 type = TYPE_DICT.get(type, type)
 
                 MANUFACTURER_DICT = {
-                    "The House of Scalamandré": "Scalamandre",
+                    "The House of Scalamandr": "Scalamandre",
+                    "Scalamandr": "Scalamandre",
                     "LAMPSHADES": "Scalamandre",
                     "THIRD FLOOR FABRIC": "Scalamandre",
                     "WALLCOVERING": "Scalamandre"
@@ -206,6 +207,9 @@ class Processor:
                 name = f"{pattern} {color} {type}".title()
 
                 # Exceptions
+                if type == "UNDETERMINED":
+                    continue
+
                 if cost == 0 or not pattern or not color or not type:
                     continue
 

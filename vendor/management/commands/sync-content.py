@@ -35,6 +35,8 @@ class Processor:
 
         syncs = Sync.objects.filter(type="Content")
 
+        total = len(syncs)
+
         # for index, sync in enumerate(tqdm(syncs)):
         def syncContent(index, sync):
             productId = sync.productId
@@ -49,10 +51,15 @@ class Processor:
             try:
                 shopifyManager = shopify.ShopifyManager(
                     product=product, thread=index)
-                shopifyManager.updateProduct()
 
-                debug.log(
-                    PROCESS, f"{productId} Product updated: {product.title}")
+                handle = shopifyManager.updateProduct()
+
+                if handle:
+                    product.shopifyHandle = handle
+                    product.save()
+                    debug.log(
+                        self.brand, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
+
             except Exception as e:
                 debug.warn(PROCESS, str(e))
                 sync.delete()

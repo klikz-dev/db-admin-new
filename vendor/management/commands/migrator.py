@@ -495,20 +495,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         processor = Processor()
 
-        if "type" in options['functions']:
-            processor.type()
+        # if "type" in options['functions']:
+        #     processor.type()
 
-        if "manufacturer" in options['functions']:
-            processor.manufacturer()
+        # if "manufacturer" in options['functions']:
+        #     processor.manufacturer()
 
-        if "tag" in options['functions']:
-            processor.tag()
+        # if "tag" in options['functions']:
+        #     processor.tag()
 
-        if "shopify" in options['functions']:
-            processor.shopify()
+        # if "shopify" in options['functions']:
+        #     processor.shopify()
 
-        if "image" in options['functions']:
-            processor.image()
+        # if "image" in options['functions']:
+        #     processor.image()
 
         if "cleanup" in options['functions']:
             processor.cleanup()
@@ -518,6 +518,9 @@ class Command(BaseCommand):
 
         if "sync-price" in options['functions']:
             processor.syncPrice()
+
+        if "sync-tag" in options['functions']:
+            processor.syncTag()
 
         if "sync-content" in options['functions']:
             processor.syncContent()
@@ -860,6 +863,21 @@ class Processor:
                 )
             except Exception as e:
                 print(e)
+
+    def syncTag(self):
+
+        Sync.objects.filter(type="Tag").delete()
+
+        # products = Product.objects.all()
+
+        # for product in tqdm(products):
+        #     try:
+        #         Sync.objects.create(
+        #             productId=product.shopifyId,
+        #             type="Tag"
+        #         )
+        #     except Exception as e:
+        #         print(e)
 
     def syncContent(self):
 
