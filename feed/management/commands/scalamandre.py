@@ -153,7 +153,7 @@ class Processor:
 
                 # Status
                 statusP = True
-                statusS = True
+                statusS = row.get('SAMPLE_STATUS', 0) == 1
 
                 if row.get('DISCONTINUED', False) != False:
                     statusP = False

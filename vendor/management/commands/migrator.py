@@ -519,6 +519,9 @@ class Command(BaseCommand):
         if "sync-price" in options['functions']:
             processor.syncPrice()
 
+        if "sync-content" in options['functions']:
+            processor.syncContent()
+
 
 class Processor:
     def __init__(self):
@@ -830,11 +833,13 @@ class Processor:
 
     def syncStatus(self):
 
+        Sync.objects.filter(type="Status").delete()
+
         products = Product.objects.all()
 
         for product in tqdm(products):
             try:
-                Sync.objects.update_or_create(
+                Sync.objects.create(
                     productId=product.shopifyId,
                     type="Status"
                 )
@@ -843,15 +848,30 @@ class Processor:
 
     def syncPrice(self):
 
-        Sync.objects.all().delete()
+        Sync.objects.filter(type="Price").delete()
 
         products = Product.objects.all()
 
         for product in tqdm(products):
             try:
-                Sync.objects.update_or_create(
+                Sync.objects.create(
                     productId=product.shopifyId,
                     type="Price"
+                )
+            except Exception as e:
+                print(e)
+
+    def syncContent(self):
+
+        Sync.objects.filter(type="Content").delete()
+
+        products = Product.objects.all()
+
+        for product in tqdm(products):
+            try:
+                Sync.objects.create(
+                    productId=product.shopifyId,
+                    type="Content"
                 )
             except Exception as e:
                 print(e)

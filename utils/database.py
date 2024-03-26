@@ -381,7 +381,7 @@ class DatabaseManager:
             type="Style").values_list('name', flat=True)
 
         for style in allStyles:
-            if style.lower() in feed.keywords.lower():
+            if style.lower() in common.toText(feed.keywords).lower():
                 try:
                     tag = Tag.objects.get(name=style, type="Style")
                     tags.append(tag)
@@ -393,7 +393,7 @@ class DatabaseManager:
             type="Category").values_list('name', flat=True)
 
         for category in allCategories:
-            if category.lower() in feed.keywords.lower():
+            if category.lower() in common.toText(feed.keywords).lower():
                 try:
                     tag = Tag.objects.get(name=category, type="Category")
                     tags.append(tag)
@@ -402,7 +402,7 @@ class DatabaseManager:
 
         # Generate Color tags
         for key, color in const.colorDict.items():
-            if key.lower() in feed.colors.lower():
+            if key.lower() in common.toText(feed.colors).lower():
                 try:
                     tag = Tag.objects.get(name=color, type="Color")
                     tags.append(tag)
@@ -424,7 +424,7 @@ class DatabaseManager:
             type="Content").values_list('name', flat=True)
 
         for content in allContents:
-            if content.lower() in feed.keywords.lower():
+            if content.lower() in common.toText(feed.keywords).lower():
                 try:
                     tag = Tag.objects.get(name=content, type="Content")
                     tags.append(tag)
@@ -436,7 +436,7 @@ class DatabaseManager:
             type="Designer").values_list('name', flat=True)
 
         for designer in allDesigners:
-            if designer.lower() in feed.collection.lower():
+            if designer.lower() in common.toText(feed.collection).lower():
                 try:
                     tag = Tag.objects.get(name=designer, type="Designer")
                     tags.append(tag)
@@ -448,7 +448,7 @@ class DatabaseManager:
             type="Shape").values_list('name', flat=True)
 
         for shape in allShapes:
-            if shape.lower() in feed.collection.lower():
+            if shape.lower() in common.toText(feed.collection).lower():
                 try:
                     tag = Tag.objects.get(name=shape, type="Shape")
                     tags.append(tag)

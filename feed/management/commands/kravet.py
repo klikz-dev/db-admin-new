@@ -144,8 +144,8 @@ class Processor:
                 map = common.toFloat(row[49])
 
                 # Tagging
-                keywords = f"{row[20]}, {row[21]}"
-                colors = f"{row[26]}, {row[27]}, {row[28]}"
+                keywords = f"{row[18]} {row[19]} {row[20]} {row[21]}"
+                colors = f"{row[26]} {row[27]} {row[28]}"
 
                 # Image
                 thumbnail = common.toText(row[24] or row[25])
