@@ -239,3 +239,18 @@ class ShopifyManager:
             method="PUT", url=f"/variants/{product.tradeId}.json", payload={"variant": tradeVariant})
 
         return True
+
+    def updateProductTag(self):
+        productData = self.requestAPI(
+            method="PUT",
+            url=f"/products/{self.productId}.json",
+            payload={
+                "product":
+                {
+                    'id': self.productId,
+                    "tags": self.productTags,
+                }
+            }
+        )
+
+        return productData["product"]["handle"]

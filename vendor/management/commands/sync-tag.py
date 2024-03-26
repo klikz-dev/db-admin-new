@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
 from utils import debug, shopify
 
-from vendor.models import Sync, Product, Image
+from vendor.models import Sync, Product
 
 PROCESS = "Sync-Tag"
 
@@ -31,7 +32,34 @@ class Processor:
         pass
 
     def tag(self):
+
         syncs = Sync.objects.filter(type="Tag")
 
-        for sync in tqdm(syncs):
-            pass
+        # for index, sync in enumerate(tqdm(syncs)):
+        def syncTag(index, sync):
+            productId = sync.productId
+
+            try:
+                product = Product.objects.get(shopifyId=productId)
+            except Product.DoesNotExist:
+                debug.warn(PROCESS, f"Product Not Found: {productId}")
+                sync.delete()
+                return
+
+            try:
+                shopifyManager = shopify.ShopifyManager(
+                    product=product, thread=index)
+                shopifyManager.updateProductTag()
+
+                debug.log(
+                    PROCESS, f"{productId} Tag updated: {product.title}")
+            except Exception as e:
+                debug.warn(PROCESS, str(e))
+                sync.delete()
+                return
+
+            sync.delete()
+
+        with ThreadPoolExecutor(max_workers=100) as executor:
+            for index, sync in enumerate(syncs):
+                executor.submit(syncTag, index, sync)
