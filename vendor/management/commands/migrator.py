@@ -797,7 +797,7 @@ class Processor:
         shopifyManager = shopify.ShopifyManager()
 
         base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
-        params = {'limit': 250, 'fields': 'id'}
+        params = {'limit': 250, 'fields': 'id,published_at'}
         headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
 
         session = requests.Session()
@@ -809,8 +809,9 @@ class Processor:
         while True:
             print(f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
 
-            product_ids = {str(product['id'])
-                           for product in response.json()['products']}
+            products = response.json()['products']
+            product_ids = {
+                str(product['id']) for product in products if product['published_at'] is not None}
 
             existing_product_ids = set(Product.objects.filter(
                 shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
