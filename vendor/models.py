@@ -42,6 +42,9 @@ class Tag(models.Model):
     name = models.CharField(max_length=200, primary_key=True)
     type = models.CharField(max_length=200, blank=True, null=True)
 
+    def productsCount(self):
+        return self.products.count()
+
     def __str__(self):
         return self.name
 

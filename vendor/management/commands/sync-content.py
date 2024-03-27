@@ -37,17 +37,19 @@ class Processor:
 
         total = len(syncs)
 
-        # for index, sync in enumerate(tqdm(syncs)):
-        def syncContent(index, sync):
+        for index, sync in enumerate(tqdm(syncs)):
+            # def syncContent(index, sync):
             productId = sync.productId
 
-            try:
+            # try:
+            if True:
                 product = Product.objects.get(shopifyId=productId)
-            except Product.DoesNotExist:
-                debug.warn(PROCESS, f"Product Not Found: {productId}")
-                return
+            # except Product.DoesNotExist:
+            #     debug.warn(PROCESS, f"Product Not Found: {productId}")
+            #     return
 
-            try:
+            # try:
+            if True:
                 shopifyManager = shopify.ShopifyManager(
                     product=product, thread=index)
 
@@ -59,12 +61,12 @@ class Processor:
                     debug.log(
                         PROCESS, f"Updated Product {product.sku} -- (Progress: {index}/{total})")
 
-            except Exception as e:
-                debug.warn(PROCESS, str(e))
-                return
+            # except Exception as e:
+            #     debug.warn(PROCESS, str(e))
+            #     return
 
-            sync.delete()
+            # sync.delete()
 
-        with ThreadPoolExecutor(max_workers=100) as executor:
-            for index, sync in enumerate(syncs):
-                executor.submit(syncContent, index, sync)
+        # with ThreadPoolExecutor(max_workers=100) as executor:
+        #     for index, sync in enumerate(syncs):
+        #         executor.submit(syncContent, index, sync)

@@ -59,7 +59,8 @@ class TagAdmin(admin.ModelAdmin):
 
     list_display = [
         'name',
-        'type'
+        'type',
+        'productsCount'
     ]
 
     list_filter = [

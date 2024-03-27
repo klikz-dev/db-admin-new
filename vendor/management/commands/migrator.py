@@ -4,6 +4,7 @@ import json
 import environ
 from urllib.parse import quote
 from tqdm import tqdm
+from django.db import transaction
 
 from django.core.management.base import BaseCommand
 
@@ -513,6 +514,9 @@ class Command(BaseCommand):
         if "cleanup" in options['functions']:
             processor.cleanup()
 
+        if "collections" in options['functions']:
+            processor.collections()
+
         if "sync-status" in options['functions']:
             processor.syncStatus()
 
@@ -833,18 +837,73 @@ class Processor:
             else:
                 break
 
+    def collections(self):
+
+        base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections.json"
+        params = {'limit': 250, 'fields': 'id,handle,rules'}
+        headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
+
+        session = requests.Session()
+        session.headers.update(headers)
+
+        response = session.get(base_url, params=params)
+
+        page = 1
+        while True:
+            print(
+                f"Reviewing Collections {250 * (page - 1) + 1} - {250 * page}")
+
+            collections = response.json()['smart_collections']
+
+            for collection in collections:
+                print(f"Updating: {collection['handle']}")
+
+                rules = collection['rules']
+                newRules = []
+                for rule in rules:
+                    if "mws_fee_generated" == rule['condition'] or "Product Fee" == rule['condition'] or "mw_hidden_cart_fee" == rule['condition']:
+                        continue
+                    newRule = {
+                        'column': rule['column'],
+                        'relation': rule['relation'],
+                        'condition': rule['condition'].replace("p_color:", "Color:"),
+                    }
+                    newRules.append(newRule)
+
+                try:
+                    requests.request(
+                        "PUT",
+                        f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections/{collection['id']}.json",
+                        headers=headers,
+                        json={
+                            "smart_collection": {
+                                "rules": newRules
+                            }
+                        }
+                    )
+                except Exception as e:
+                    print(e)
+                    continue
+
+            if 'next' in response.links:
+                next_url = response.links['next']['url']
+                response = session.get(next_url)
+                page += 1
+            else:
+                break
+
     def syncStatus(self):
 
         Sync.objects.filter(type="Status").delete()
 
-        products = Product.objects.all()
+        product_ids = Product.objects.values_list('shopifyId', flat=True)
 
-        for product in tqdm(products):
+        sync_objects = [Sync(productId=shopify_id, type="Status")
+                        for shopify_id in product_ids]
+
+        with transaction.atomic():
             try:
-                Sync.objects.create(
-                    productId=product.shopifyId,
-                    type="Status"
-                )
+                Sync.objects.bulk_create(sync_objects)
             except Exception as e:
                 print(e)
 
@@ -852,14 +911,14 @@ class Processor:
 
         Sync.objects.filter(type="Price").delete()
 
-        products = Product.objects.all()
+        product_ids = Product.objects.values_list('shopifyId', flat=True)
 
-        for product in tqdm(products):
+        sync_objects = [Sync(productId=shopify_id, type="Price")
+                        for shopify_id in product_ids]
+
+        with transaction.atomic():
             try:
-                Sync.objects.create(
-                    productId=product.shopifyId,
-                    type="Price"
-                )
+                Sync.objects.bulk_create(sync_objects)
             except Exception as e:
                 print(e)
 
@@ -867,28 +926,28 @@ class Processor:
 
         Sync.objects.filter(type="Tag").delete()
 
-        # products = Product.objects.all()
+        product_ids = Product.objects.values_list('shopifyId', flat=True)
 
-        # for product in tqdm(products):
-        #     try:
-        #         Sync.objects.create(
-        #             productId=product.shopifyId,
-        #             type="Tag"
-        #         )
-        #     except Exception as e:
-        #         print(e)
+        sync_objects = [Sync(productId=shopify_id, type="Tag")
+                        for shopify_id in product_ids]
+
+        with transaction.atomic():
+            try:
+                Sync.objects.bulk_create(sync_objects)
+            except Exception as e:
+                print(e)
 
     def syncContent(self):
 
         Sync.objects.filter(type="Content").delete()
 
-        products = Product.objects.all()
+        product_ids = Product.objects.values_list('shopifyId', flat=True)
 
-        for product in tqdm(products):
+        sync_objects = [Sync(productId=shopify_id, type="Content")
+                        for shopify_id in product_ids]
+
+        with transaction.atomic():
             try:
-                Sync.objects.create(
-                    productId=product.shopifyId,
-                    type="Content"
-                )
+                Sync.objects.bulk_create(sync_objects)
             except Exception as e:
                 print(e)
