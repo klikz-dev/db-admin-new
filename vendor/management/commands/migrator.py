@@ -796,10 +796,8 @@ class Processor:
 
         shopifyManager = shopify.ShopifyManager()
 
-        vendor_name = "Surya"
-
         base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
-        params = {'vendor': vendor_name, 'limit': 250, 'fields': 'id'}
+        params = {'limit': 250, 'fields': 'id'}
         headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
 
         session = requests.Session()
@@ -815,7 +813,7 @@ class Processor:
                            for product in response.json()['products']}
 
             existing_product_ids = set(Product.objects.filter(
-                manufacturer=vendor_name, shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
+                shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
 
             products_to_remove = product_ids - existing_product_ids
 
