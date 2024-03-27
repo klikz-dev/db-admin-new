@@ -33,8 +33,10 @@ class ShopifyManager:
 
             if product.type.parent == "Root":
                 self.productType = product.type.name
+                self.subType = ""
             else:
                 self.productType = product.type.parent
+                self.subType = product.type.name
 
             self.productManufacturer = product.manufacturer.name
 
@@ -139,7 +141,11 @@ class ShopifyManager:
                 size = tag.name
 
         # Core value tagging
-        tags.append(f"Type:{product.type.name}")
+        tags.append(f"Type:{self.productType}")
+
+        if self.subType:
+            tags.append(f"Subtype:{self.subType}")
+
         tags.append(f"Brand:{product.manufacturer.brand}")
 
         # Rebuy tagging
@@ -147,6 +153,7 @@ class ShopifyManager:
             f"Rebuy_Recommendation_{product.collection}_{product.color}")
         tags.append(f"Rebuy_Collection_{product.collection}")
         tags.append(f"Rebuy_Color_{product.color}")
+
         if product.type.name == "Rug" and size:
             tags.append(f"Rebuy_Rug_Size_{size}")
         if product.type.name == "Rug Pad" and size:
