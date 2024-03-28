@@ -277,8 +277,8 @@ class Processor:
 
             return
 
-        self.google(tree_str)
-        self.facebook(tree_str)
+        self.google()
+        self.facebook()
 
     def google(self):
 
