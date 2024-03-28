@@ -156,8 +156,8 @@ def downloadFileFromLink(src, dst):
 
 def toText(text):
     if text:
-        text = re.sub(r'[^\x20-\x7E]+', '', text)
-        return str(text).replace("N/A", "").replace("n/a", "").strip()
+        text = re.sub(r'[^\x20-\x7E]+', '', str(text))
+        return text.replace("N/A", "").replace("n/a", "").strip()
     else:
         return ""
 

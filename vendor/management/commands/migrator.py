@@ -592,7 +592,7 @@ class Processor:
             # ("Stout", Stout, False),
             # ("Surya", Surya, False),
             # ("Tempaper", Tempaper, True),
-            ("York", York, False),
+            # ("York", York, False),
             # ("Zoffany", Zoffany, False),
         ]
 

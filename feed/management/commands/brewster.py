@@ -225,7 +225,8 @@ class Processor:
                     id_key = header_to_id_map[header]
                     ids[id_key] = colId
 
-            for row in data:
+            for dataRow in data:
+                row = dataRow + (None,)
                 try:
                     # Primary Attributes
                     mpn = common.toText(row[ids["mpnId"]])
@@ -235,7 +236,7 @@ class Processor:
                     sku = f"{sku_prefix} {mpn}"
 
                     pattern = common.toText(row[ids["patternId"]]) or mpn
-                    color = common.toText(row[ids["colorId"]]) or "Multicolor"
+                    color = common.toText(row[ids["colorId"]])
 
                     # Categorization
                     brand = BRAND
@@ -288,8 +289,8 @@ class Processor:
                         msrp = prices[mpn]['msrp']
 
                     # Tagging
-                    keywords = f'{pattern}, {row[ids["styleId"]]}, {row[ids["themeId"]]}, {description}'
-                    colors = color
+                    keywords = f'{pattern} {row[ids["styleId"]]} {row[ids["themeId"]]} {description}'
+                    colors = common.toText(row[ids["colorsId"]])
 
                     # Status
                     statusP = collection not in [
@@ -299,6 +300,11 @@ class Processor:
                     bestSeller = mpn in bestsellingMPNs
 
                     # Fine-tuning
+                    if not color:
+                        color = colors
+                    else:
+                        colors = f"{color} {colors}"
+
                     manufacturer = "Brewster Home Fashions" if manufacturer != "A-Street Prints" else "A-Street Prints"
                     name = common.toText(
                         row[ids["nameId"]]) or f"{pattern} {color} {type}"
