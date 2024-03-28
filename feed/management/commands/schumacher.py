@@ -165,18 +165,10 @@ class Processor:
                 thumbnail = common.toText(row[18]).strip()
                 roomsets = common.toText(row[22]).split(",")
 
-                # Status
-                statusP = not (type == "Rug" and cost == 15)
-                statusS = (type in ["Wallpaper", "Fabric", "Trim"]) or (
-                    type == "Rug" and cost != 15)
-
-                if mpn in discontinuedSamples:
-                    statusS = False
-
                 # Fine-tuning
                 if "BORÅSTAPETER" in collection:
-                    manufacturer = "Boråstapeter"
-                    collection = "Boråstapeter"
+                    manufacturer = "Borastapeter"
+                    collection = "Borastapeter"
                 else:
                     collection = collection.replace(
                         "Collection Name", "").strip()
@@ -215,6 +207,13 @@ class Processor:
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
                     continue
+
+                # Status
+                statusP = not (type == "Rug" and cost == 15)
+                statusS = type in ["Wallpaper", "Fabric", "Trim"]
+
+                if mpn in discontinuedSamples:
+                    statusS = False
 
             except Exception as e:
                 debug.warn(BRAND, str(e))
