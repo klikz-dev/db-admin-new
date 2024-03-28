@@ -223,8 +223,6 @@ class DatabaseManager:
             if fullSync:
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Status")
-                debug.log(
-                    self.brand, f"Resync Product: {product.sku} Status to: {product.published}")
 
     def contentSync(self, private=False):
         feeds = self.Feed.objects.all()
@@ -253,7 +251,6 @@ class DatabaseManager:
 
             Sync.objects.get_or_create(
                 productId=product.shopifyId, type="Content")
-            debug.log(self.brand, f"{product.shopifyId} Content updated")
 
     def priceSync(self):
         feeds = self.Feed.objects.all()
@@ -291,8 +288,6 @@ class DatabaseManager:
 
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Price")
-                debug.log(
-                    self.brand, f"{product.shopifyId} Price updated: {consumer} / {trade}")
 
     def tagSync(self):
         feeds = self.Feed.objects.all()
@@ -311,8 +306,6 @@ class DatabaseManager:
 
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Tag")
-                debug.log(
-                    self.brand, f"{product.shopifyId} Tags updated")
 
     def updateInventory(self, stocks, type=1, reset=True):
         if reset:
