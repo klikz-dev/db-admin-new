@@ -16,8 +16,8 @@ env = environ.Env()
 
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
-GS_FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestGS.xml"
-GS_FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestGS_error.xml"
+FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestGS.xml"
+FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestGS_error.xml"
 
 PROCESS = "Feed"
 
@@ -30,9 +30,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        if "google" in options['functions']:
+        if "main" in options['functions']:
             with Processor() as processor:
-                processor.google()
+                processor.feed()
 
 
 class Processor:
@@ -51,12 +51,12 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def google(self):
+    def feed(self):
 
-        if os.path.isfile(GS_FEED_DIR):
-            os.remove(GS_FEED_DIR)
-        if os.path.isfile(GS_FEED_ERROR_DIR):
-            os.remove(GS_FEED_ERROR_DIR)
+        if os.path.isfile(FEED_DIR):
+            os.remove(FEED_DIR)
+        if os.path.isfile(FEED_ERROR_DIR):
+            os.remove(FEED_ERROR_DIR)
 
         products = Product.objects.filter(published=True).exclude(type="Trim")
 
@@ -241,6 +241,8 @@ class Processor:
                 item, "g:link").text = f"https://www.decoratorsbest.com/products/{shopifyHandle}"
             ET.SubElement(item, "g:image_link").text = f"{imageURL}"
             ET.SubElement(item, "g:availability").text = "in stock"
+            ET.SubElement(
+                item, "g:quantity_to_sell_on_facebook").text = f"{inventory.quantity}"
             ET.SubElement(item, "g:gtin").text = f"{barcode}"
             ET.SubElement(item, "g:price").text = f"{price}"
             ET.SubElement(item, "g:brand").text = f"{manufacturer}"
@@ -265,21 +267,29 @@ class Processor:
             tree_dom = MD.parseString(tree_str)
             pretty_tree = tree_dom.toprettyxml(indent="\t")
 
-            with open(GS_FEED_DIR, 'w', encoding="UTF-8") as file:
+            with open(FEED_DIR, 'w', encoding="UTF-8") as file:
                 file.write(pretty_tree)
 
         except Exception as e:
             print(e)
-            with open(GS_FEED_ERROR_DIR, 'wb') as file:
+            with open(FEED_ERROR_DIR, 'wb') as file:
                 file.write(tree_str)
 
             return
 
-        if skipped < total * 0.3:
-            self.uploadToGS()
+        self.google(tree_str)
+        self.facebook(tree_str)
 
-    def uploadToGS(self):
-        self.s3.upload_file(GS_FEED_DIR, self.bucket, "DecoratorsBestGS.xml", ExtraArgs={
+    def google(self):
+
+        self.s3.upload_file(FEED_DIR, self.bucket, "DecoratorsBestGS.xml", ExtraArgs={
                             'ACL': 'public-read'})
         debug.log(
             PROCESS, 'Uploaded to https://decoratorsbestimages.s3.amazonaws.com/DecoratorsBestGS.xml')
+
+    def facebook(self):
+
+        self.s3.upload_file(FEED_DIR, self.bucket, "DecoratorsBestFB.xml", ExtraArgs={
+                            'ACL': 'public-read'})
+        debug.log(
+            PROCESS, 'Uploaded to https://decoratorsbestimages.s3.amazonaws.com/DecoratorsBestFB.xml')
