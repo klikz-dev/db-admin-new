@@ -451,7 +451,7 @@ class DatabaseManager:
         }
 
         for attr, tagName in allGroups.items():
-            if getattr(feed, attr, False) or (attr == "statusS" and not getattr(feed, attr, True)):
+            if (attr != "statusS" and getattr(feed, attr, False)) or (attr == "statusS" and not getattr(feed, attr, True)):
                 try:
                     tag = Tag.objects.get(name=tagName, type="Group")
                     tags.append(tag)
