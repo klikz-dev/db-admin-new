@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 import requests
 import json
 import environ
+import os
 from urllib.parse import quote
 from tqdm import tqdm
 from django.db import transaction
@@ -48,6 +49,8 @@ from feed.models import York
 from feed.models import Zoffany
 
 env = environ.Env()
+
+FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 types = [
     ("Wallpaper", "Root"),
@@ -905,6 +908,8 @@ class Processor:
 
         response = session.get(base_url, params=params)
 
+        oldRules = []
+
         page = 1
         while True:
             print(
@@ -915,32 +920,39 @@ class Processor:
             for collection in collections:
                 print(f"Updating: {collection['handle']}")
 
-                rules = collection['rules']
-                newRules = []
-                for rule in rules:
-                    if "mws_fee_generated" == rule['condition'] or "Product Fee" == rule['condition'] or "mw_hidden_cart_fee" == rule['condition']:
-                        continue
-                    newRule = {
-                        'column': rule['column'],
-                        'relation': rule['relation'],
-                        'condition': rule['condition'].replace("p_color:", "Color:"),
-                    }
-                    newRules.append(newRule)
+                oldRules.append({
+                    'id': collection['id'],
+                    'handle': collection['handle'],
+                    'rules': collection['rules']
+                })
 
-                try:
-                    requests.request(
-                        "PUT",
-                        f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections/{collection['id']}.json",
-                        headers=headers,
-                        json={
-                            "smart_collection": {
-                                "rules": newRules
-                            }
-                        }
-                    )
-                except Exception as e:
-                    print(e)
-                    continue
+                # newRules = []
+                # for rule in rules:
+                #     oldRules.append(rules)
+
+                #     if "mws_fee_generated" == rule['condition'] or "Product Fee" == rule['condition'] or "mw_hidden_cart_fee" == rule['condition']:
+                #         continue
+                #     newRule = {
+                #         'column': rule['column'],
+                #         'relation': rule['relation'],
+                #         'condition': rule['condition'].replace("p_color:", "Color:"),
+                #     }
+                #     newRules.append(newRule)
+
+                # try:
+                #     requests.request(
+                #         "PUT",
+                #         f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections/{collection['id']}.json",
+                #         headers=headers,
+                #         json={
+                #             "smart_collection": {
+                #                 "rules": newRules
+                #             }
+                #         }
+                #     )
+                # except Exception as e:
+                #     print(e)
+                #     continue
 
             if 'next' in response.links:
                 next_url = response.links['next']['url']
@@ -948,6 +960,77 @@ class Processor:
                 page += 1
             else:
                 break
+
+        newRules = oldRules
+
+        for i, rulesData in enumerate(newRules):
+            rules = rulesData['rules']
+            for index, rule in enumerate(rules):
+                if rule['column'] == "vendor" and " Wallpaper" in rule['condition']:
+                    rules[index]['condition'] = rules[index]['condition'].replace(
+                        " Wallpaper", "").strip()
+
+                    rules.append({
+                        "column": "type",
+                        "relation": "equals",
+                        "condition": "Wallpaper"
+                    })
+
+                if rule['column'] == "vendor" and " Fabric" in rule['condition']:
+                    rules[index]['condition'] = rules[index]['condition'].replace(
+                        " Fabric", "").strip()
+
+                    rules.append({
+                        "column": "type",
+                        "relation": "equals",
+                        "condition": "Fabric"
+                    })
+
+                if rule['column'] == "vendor" and " Trim" in rule['condition']:
+                    rules[index]['condition'] = rules[index]['condition'].replace(
+                        " Trim", "").strip()
+
+                    rules.append({
+                        "column": "type",
+                        "relation": "equals",
+                        "condition": "Trim"
+                    })
+
+                if rule['column'] == "vendor" and " Pillow" in rule['condition']:
+                    rules[index]['condition'] = rules[index]['condition'].replace(
+                        " Pillow", "").strip()
+
+                    rules.append({
+                        "column": "type",
+                        "relation": "equals",
+                        "condition": "Pillow"
+                    })
+
+            newRules[i]['rules'] = rules
+
+        for collection in newRules:
+            try:
+                requests.request(
+                    "PUT",
+                    f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections/{collection['id']}.json",
+                    headers=headers,
+                    json={
+                        "smart_collection": {
+                            "rules": collection['rules']
+                        }
+                    }
+                )
+
+                print(collection['handle'])
+            except Exception as e:
+                print(e)
+                continue
+
+        # with open(f"{FILEDIR}/collections.json", 'w') as outfile:
+        #     json.dump(oldRules, outfile, indent=2)
+
+        # with open(f"{FILEDIR}/new_collections.json", 'w') as outfile:
+        #     json.dump(newRules, outfile, indent=2)
 
     def syncStatus(self):
 
