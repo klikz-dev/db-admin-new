@@ -798,6 +798,63 @@ class Processor:
 
     def cleanup(self):
 
+        # Temp: Enable JFF Casadeco, Caselio, ILIV
+        shopifyManager = shopify.ShopifyManager()
+
+        vendors = ["Casadeco", "Caselio", "ILIV"]
+        for vendor_name in vendors:
+            base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
+            params = {'vendor': vendor_name,
+                      'limit': 250, 'fields': 'id,title'}
+            headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
+
+            session = requests.Session()
+            session.headers.update(headers)
+
+            response = session.get(base_url, params=params)
+
+            page = 1
+            while True:
+                print(
+                    f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
+
+                products = response.json()['products']
+
+                product_ids = {
+                    str(product['id']) for product in products}
+
+                existing_product_ids = set(Product.objects.filter(
+                    shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
+
+                products_to_remove = product_ids - existing_product_ids
+
+                for product_id in products_to_remove:
+                    print(f"Publish: {product_id}")
+
+                    shopifyManager.updateProductStatus(
+                        productId=product_id, status=True)
+
+                    shopifyManager.requestAPI(
+                        method="PUT",
+                        url=f"/products/{product_id}.json",
+                        payload={
+                            "product":
+                            {
+                                'id': product_id,
+                                "tags": "Group:No Sample",
+                            }
+                        }
+                    )
+
+                if 'next' in response.links:
+                    next_url = response.links['next']['url']
+                    response = session.get(next_url)
+                    page += 1
+                else:
+                    break
+
+        return
+
         shopifyManager = shopify.ShopifyManager()
 
         base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
