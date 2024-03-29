@@ -16,8 +16,8 @@ env = environ.Env()
 
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
-FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestGS.xml"
-FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestGS_error.xml"
+FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestFeed.xml"
+FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestFeed_error.xml"
 
 PROCESS = "Feed"
 
