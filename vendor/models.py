@@ -20,6 +20,12 @@ STOCK_TYPES = [
     (3, "Hide Stock & Show Note"),
 ]
 
+ORDER_TYPES = [
+    ("Order", "Order"),
+    ("Sample", "Sample"),
+    ("Order/Sample", "Order/Sample"),
+]
+
 
 class Manufacturer(models.Model):
     name = models.CharField(max_length=200, primary_key=True)
@@ -118,13 +124,13 @@ class Product(models.Model):
     freeSampleId = models.CharField(
         max_length=200, unique=True, db_index=True, null=False, blank=False)
 
-    cost = models.FloatField(default=0)
-    consumer = models.FloatField(default=0)
-    trade = models.FloatField(default=0)
-    sample = models.FloatField(default=0)
-    compare = models.FloatField(default=0, blank=True, null=True)
+    cost = models.FloatField(default=5, null=False, blank=False)
+    consumer = models.FloatField(default=19.99, null=False, blank=False)
+    trade = models.FloatField(default=16.99, null=False, blank=False)
+    sample = models.FloatField(default=5, null=False, blank=False)
+    compare = models.FloatField(default=None, blank=True, null=True)
 
-    weight = models.FloatField(default=0)
+    weight = models.FloatField(default=5, null=True, blank=True)
     barcode = models.CharField(
         max_length=200, default=None, blank=True, null=True)
 
@@ -167,3 +173,103 @@ class Inventory(models.Model):
 
     def __str__(self):
         return self.sku
+
+
+class Address(models.Model):
+    firstName = models.CharField(max_length=200, null=False, blank=False)
+    lastName = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    company = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    address1 = models.CharField(max_length=200, null=False, blank=False)
+    address2 = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    city = models.CharField(max_length=200, null=False, blank=False)
+    state = models.CharField(max_length=200, null=False, blank=False)
+    zip = models.CharField(max_length=200, null=False, blank=False)
+    country = models.CharField(max_length=200, null=False, blank=False)
+
+    phone = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.address1}, {self.city}, {self.state} {self.zip}"
+
+
+class Customer(models.Model):
+
+    shopifyId = models.CharField(max_length=200, primary_key=True)
+
+    email = models.CharField(
+        max_length=200, unique=True, null=False, blank=False)
+
+    firstName = models.CharField(max_length=200, null=False, blank=False)
+    lastName = models.TextField(
+        max_length=200, default=None, null=True, blank=True)
+
+    phone = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    address = models.ForeignKey(
+        Address, related_name='customers', on_delete=models.CASCADE)
+
+    note = models.TextField(
+        max_length=2000, default=None, null=True, blank=True)
+    tags = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.firstName}, {self.lastName}"
+
+
+class Order(models.Model):
+    shopifyId = models.CharField(max_length=200, primary_key=True)
+
+    po = models.CharField(max_length=200, unique=True, null=False, blank=False)
+
+    orderType = models.CharField(
+        max_length=200, default="Order", choices=ORDER_TYPES, blank=False, null=False)
+
+    email = models.CharField(max_length=200, null=False, blank=False)
+    phone = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    customer = models.ForeignKey(
+        Customer, related_name='orders', on_delete=models.CASCADE, blank=False, null=False)
+
+    shippingAddress = models.ForeignKey(
+        Address, related_name='shippingAddresses', on_delete=models.CASCADE)
+    billingAddress = models.ForeignKey(
+        Address, related_name='billingAddresses', on_delete=models.CASCADE)
+
+    subTotal = models.FloatField(default=0, null=False, blank=False)
+    discount = models.FloatField(default=0, null=False, blank=False)
+    shippingCost = models.FloatField(default=0, null=False, blank=False)
+    tax = models.FloatField(default=0, null=False, blank=False)
+    total = models.FloatField(default=0, null=False, blank=False)
+
+    shippingMethod = models.CharField(max_length=200, null=False, blank=False)
+
+    weight = models.FloatField(default=5, null=False, blank=False)
+    orderDate = models.DateTimeField()
+
+    status = models.CharField(
+        max_length=200, default="New", null=False, blank=False)
+    reference = models.CharField(
+        max_length=2000, default=None, null=True, blank=True)
+
+    internalNote = models.CharField(
+        max_length=2000, default=None, null=True, blank=True)
+    customerNote = models.CharField(
+        max_length=2000, default=None, null=True, blank=True)
+
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.po

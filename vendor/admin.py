@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Address, Customer, Order
 
 
 @admin.register(Manufacturer)
@@ -169,6 +169,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Image)
 class ImageAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        'product',
+    ]
+
     fields = [
         'product',
         'url',
@@ -247,4 +251,146 @@ class InventoryAdmin(admin.ModelAdmin):
         'sku',
         'note',
         'brand'
+    ]
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    fields = [
+        'firstName',
+        'lastName',
+        'company',
+        'address1',
+        'address2',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'phone',
+    ]
+
+    list_display = [
+        'firstName',
+        'lastName',
+        'address1',
+        'city',
+        'state',
+    ]
+
+    list_filter = [
+        'state',
+    ]
+
+    search_fields = [
+        'firstName',
+        'lastName',
+        'company',
+        'address1',
+        'address2',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'phone',
+    ]
+
+
+@admin.register(Customer)
+class CustomerAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        'address',
+    ]
+
+    fields = [
+        'shopifyId',
+        'email',
+        'firstName',
+        'lastName',
+        'phone',
+        'address',
+        'note',
+        'tags',
+    ]
+
+    list_display = [
+        'email',
+        'firstName',
+        'lastName',
+        'phone',
+        'tags',
+    ]
+
+    list_filter = [
+        'tags',
+    ]
+
+    search_fields = [
+        'shopifyId',
+        'email',
+        'firstName',
+        'lastName',
+        'phone',
+        'note',
+        'tags',
+    ]
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        'customer',
+        'shippingAddress',
+        'billingAddress',
+    ]
+
+    fieldsets = [
+        ('Primary Keys', {'fields': [
+            'shopifyId',
+            'po',
+            'orderType',
+            'email',
+            'phone',
+            'customer',
+        ]}),
+        ('Address', {'fields': [
+            'shippingAddress',
+            'billingAddress',
+        ]}),
+        ('Details', {'fields': [
+            'subTotal',
+            'discount',
+            'shippingCost',
+            'tax',
+            'total',
+            'shippingMethod',
+            'weight',
+            'orderDate',
+        ]}),
+        ('Status', {'fields': [
+            'status',
+            'reference',
+            'internalNote',
+            'customerNote',
+        ]}),
+    ]
+
+    list_display = [
+        'po',
+        'orderType',
+        'customer',
+        'total',
+    ]
+
+    list_filter = [
+        'orderType',
+        'shippingMethod',
+        'status',
+    ]
+
+    search_fields = [
+        'shopifyId',
+        'po',
+        'orderType',
+        'email',
+        'phone',
     ]
