@@ -145,7 +145,7 @@ class Processor:
                     data['order']['wallcovering']['price']['amount'])
 
                 # Tagging
-                keywords = f"{collection}, {description}, {pattern}"
+                keywords = f"{collection} {description} {pattern}"
                 colors = color
 
                 # Assets

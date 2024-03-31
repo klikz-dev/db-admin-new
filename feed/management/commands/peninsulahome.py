@@ -158,7 +158,7 @@ class Processor:
                 map = common.toFloat(row[4])
 
                 # Tagging
-                keywords = f"{material}, {name}, {description}"
+                keywords = f"{collection} {pattern} {description} {material} {name}"
                 colors = color
 
                 # Image

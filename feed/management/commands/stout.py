@@ -160,7 +160,7 @@ class Processor:
                 msrp = common.toFloat(row[3])
 
                 # Tagging
-                keywords = f"{construction} {style}"
+                keywords = f"{collection} {pattern} {construction} {style}"
                 colors = color
 
                 # Image

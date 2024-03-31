@@ -119,7 +119,7 @@ class Processor:
                 minimum = common.toInt(row[22])
 
                 # Tagging
-                keywords = f"{row[24]}, {','.join(features)}"
+                keywords = f"{collection} {pattern} {description} {row[24]} {' '.join(features)}"
                 colors = common.toText(row[25])
 
                 # Status

@@ -120,7 +120,7 @@ class Processor:
                 uom = "Item"
 
                 # Tagging
-                keywords = f"{row[18]}, {pattern}, {type}"
+                keywords = f"{collection} {pattern} {description} {type} {row[18]}"
                 colors = color
 
                 # Image

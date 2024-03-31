@@ -140,7 +140,7 @@ class Processor:
                     cost = common.toFloat(row['price'])
 
                     # Tagging
-                    keywords = collection
+                    keywords = f"{collection} {pattern} {description}"
                     colors = color
 
                     # Image

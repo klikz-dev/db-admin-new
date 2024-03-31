@@ -119,7 +119,7 @@ class Processor:
                 uom = "Item"
 
                 # Taggingf
-                keywords = f"{material}, {description}"
+                keywords = f"{collection} {pattern} {description} {material}"
                 colors = color
 
                 # Image

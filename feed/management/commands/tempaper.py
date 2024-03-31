@@ -146,7 +146,7 @@ class Processor:
                 map = common.toFloat(row[11])
 
                 # Tagging
-                keywords = f"{material}, {match}, {common.toText(row[28])}, {common.toText(row[29])}, {collection}, {pattern}, {description}"
+                keywords = f"{collection} {pattern} {description} {material} {match} {row[28]} {row[29]}"
                 colors = color
 
                 # Image

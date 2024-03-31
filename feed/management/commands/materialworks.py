@@ -132,7 +132,7 @@ class Processor:
                 uom = common.toText(row[17]).strip()
 
                 # Tagging
-                keywords = f"{usage} {row[21]} {row[23]}"
+                keywords = f"{collection} {pattern} {description} {usage} {row[21]} {row[23]}"
                 colors = common.toText(row[22])
 
                 # Status

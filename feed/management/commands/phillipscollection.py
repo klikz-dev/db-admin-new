@@ -174,7 +174,7 @@ class Processor:
                         minimum = common.toInt(row['price']['factor'])
 
                         # Tagging
-                        keywords = f"{type} {attr['style']} {description}"
+                        keywords = f"{collection} {pattern} {description} {type} {attr['style']}"
                         colors = " ".join(attr['color'])
 
                         # Pricing

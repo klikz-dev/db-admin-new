@@ -148,7 +148,7 @@ class Processor:
                 cost = common.toFloat(row['NETPRICE'])
 
                 # Tagging
-                keywords = f"{collection} {row.get('WEARCODE', '')} {material} {description}"
+                keywords = f"{collection} {pattern} {description} {row.get('WEARCODE', '')} {material}"
                 colors = color
 
                 # Status

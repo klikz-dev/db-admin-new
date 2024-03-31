@@ -147,7 +147,7 @@ class Processor:
                 map = 0 if row[53] == "No" else common.toFloat(row[map_index])
 
                 # Tagging
-                keywords = f"{row[7]} {row[8]}"
+                keywords = f"{collection} {pattern} {description} {row[7]} {row[8]}"
                 colors = common.toText(row[9])
 
                 # Image
@@ -162,8 +162,7 @@ class Processor:
 
                 # Fine-tuning
                 TYPE_DICT = {
-                    "Sidewall": "Wallpaper",
-                    "Mural": "Wallpaper",
+                    "Sidewall": "Border",
                     "Residential Use": "Wallpaper"
                 }
                 type = TYPE_DICT.get(type, type)

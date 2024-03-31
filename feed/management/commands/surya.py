@@ -147,9 +147,9 @@ class Processor:
                 map = common.toFloat(row[10])
 
                 # Tagging
-                keywords = f"{common.toText(row[14])}, {common.toText(row[41])}, {type}, {collection}, {pattern}"
+                keywords = f"{collection} {pattern} {description} {common.toText(row[14])}, {common.toText(row[41])}, {type}"
                 if common.toText(row[31]) == "Yes":
-                    keywords = f"{keywords}, Outdoor"
+                    keywords = f"{keywords} Outdoor"
 
                 colors = common.toText(row[12])
 

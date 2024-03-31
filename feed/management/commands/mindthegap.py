@@ -143,7 +143,7 @@ class Processor:
                 uom = type
 
                 # Tagging
-                keywords = f"{pattern} {color} {row[13]} {material} {finish} {description}"
+                keywords = f"{collection} {pattern} {description} {color} {row[13]} {material} {finish}"
                 colors = row[5]
 
                 # Status

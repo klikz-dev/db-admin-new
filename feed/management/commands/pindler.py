@@ -138,8 +138,7 @@ class Processor:
                 cost = common.toFloat(row[25])
 
                 # Tagging
-                keywords = " ".join(
-                    [row[12], row[13], row[14], row[15], row[16], row[17]])
+                keywords = f"{collection} {pattern} {row[12]} {row[13]} {row[14]} {row[15]} {row[16]} {row[17]}"
                 colors = row[12]
 
                 # Image

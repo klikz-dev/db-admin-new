@@ -166,7 +166,7 @@ class Processor:
                     map = common.toFloat(row['NewMap'])
 
                     # Tagging
-                    keywords = f"{row['Substrate']} {row['Theme']} {pattern} {collection} {description}"
+                    keywords = f"{collection} {pattern} {description} {row['Substrate']} {row['Theme']}"
                     colors = color
 
                     # Status determination

@@ -139,7 +139,7 @@ class Processor:
                 map = common.toFloat(row[10])
 
                 # Tagging
-                keywords = f"{match} {paste} {material} {washability} {removability} {common.toText(row[27])} {collection} {pattern} {description}"
+                keywords = f"{collection} {pattern} {description} {match} {paste} {material} {washability} {removability} {common.toText(row[27])}"
                 colors = color
 
                 # Status

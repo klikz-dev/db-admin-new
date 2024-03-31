@@ -134,7 +134,7 @@ class Processor:
                 minimum = 2
 
                 # Tagging
-                keywords = f"{row[10]} {collection} {usage} {description}"
+                keywords = f"{collection} {pattern} {description} {row[10]} {usage}"
                 colors = color
 
                 # Image

@@ -289,7 +289,7 @@ class Processor:
                         msrp = prices[mpn]['msrp']
 
                     # Tagging
-                    keywords = f'{pattern} {row[ids["styleId"]]} {row[ids["themeId"]]} {description}'
+                    keywords = f'{collection} {pattern} {description} {row[ids["styleId"]]} {row[ids["themeId"]]}'
                     colors = common.toText(row[ids["colorsId"]])
 
                     # Status

@@ -149,8 +149,7 @@ class Processor:
                 msrp = common.toFloat(row[17])
 
                 # Tagging
-                keywords = ", ".join(
-                    (row[19], row[50], row[51], pattern, name, description, type, ", ".join(features)))
+                keywords = f"{collection} {pattern} {description} {row[19]} {row[50]} {row[51]} {name} {type} {' '.join(features)}"
                 colors = color
 
                 # Image

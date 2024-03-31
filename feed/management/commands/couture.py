@@ -138,7 +138,7 @@ class Processor:
                 map = common.toFloat(row[10])
 
                 # Tagging
-                keywords = description
+                keywords = f"{collection} {pattern} {description}"
                 colors = color
 
                 # Status

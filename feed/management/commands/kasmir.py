@@ -132,7 +132,7 @@ class Processor:
                 cost = common.toFloat(row[2]) / 2
 
                 # Tagging
-                keywords = f"{row[54]}, {row[55]}"
+                keywords = f"{collection} {pattern} {row[54]}, {row[55]}"
                 colors = color
 
                 # Images

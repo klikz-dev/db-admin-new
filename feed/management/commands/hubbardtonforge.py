@@ -149,7 +149,7 @@ class Processor:
                     map = prices[mpn]['map']
 
                 # Tagging
-                keywords = f"{row[79]}, {row[80]}, {row[89]}, {type}, {name}, {finish}"
+                keywords = f"{collection} {pattern} {description} {row[79]}, {row[80]}, {row[89]}, {type}, {name}, {finish}"
                 colors = color
 
                 # Image
