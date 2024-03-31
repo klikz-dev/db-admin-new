@@ -32,13 +32,14 @@ class ShopifyManager:
             self.productId = product.shopifyId
 
             if product.type.parent == "Root":
-                self.productType = product.type.name
+                self.type = product.type.name
                 self.subType = ""
             else:
-                self.productType = product.type.parent
+                self.type = product.type.parent
                 self.subType = product.type.name
 
-            self.productManufacturer = product.manufacturer.name
+            self.brand = product.manufacturer.brand
+            self.manufacturer = product.manufacturer.name
 
             self.variantsData = self.generateVariantsData(product=product)
 
@@ -133,7 +134,18 @@ class ShopifyManager:
 
     def generateProductTags(self, product):
         tags = []
-        size = ''
+        size = None
+
+        # Core Tagging
+        tags.append(f"Brand:{self.brand}")
+        tags.append(f"Type:{self.type}")
+
+        tags.append(f"Manufacturer:{self.manufacturer} {self.type}")
+
+        if self.subType:
+            tags.append(f"Subtype:{self.subType}")
+
+        # Attribute Tagging
         for tag in product.tags.all():
             tags.append(f"{tag.type}:{tag.name}")
 
@@ -143,15 +155,7 @@ class ShopifyManager:
             if tag.type == "Size":
                 size = tag.name
 
-        # Core value tagging
-        tags.append(f"Type:{self.productType}")
-
-        if self.subType:
-            tags.append(f"Subtype:{self.subType}")
-
-        tags.append(f"Brand:{product.manufacturer.brand}")
-
-        # Rebuy tagging
+        # Rebuy Tagging
         tags.append(
             f"Rebuy_Recommendation_{product.collection}_{product.color}")
         tags.append(f"Rebuy_Collection_{product.collection}")
@@ -171,11 +175,11 @@ class ShopifyManager:
                 "options": [
                     {"name": "Type", "position": 1, "values": VARIANT_OPTIONS},
                 ],
-                "product_type": self.productType,
+                "product_type": self.type,
                 "tags": self.productTags,
                 "title": product.title.title(),
                 "handle": common.toHandle(product.title),
-                "vendor": self.productManufacturer,
+                "vendor": self.manufacturer,
                 "metafields": self.productMetafields
             }
         }
@@ -207,12 +211,6 @@ class ShopifyManager:
             method="PUT", url=f"/products/{self.productId}.json", payload=self.productData)
 
         return productData["product"]["handle"]
-
-    def deleteProduct(self, productId):
-        productData = self.requestAPI(
-            method="DELETE", url=f"/products/{productId}.json")
-
-        return productData
 
     def updateProductStatus(self, productId, status):
         productData = self.requestAPI(
@@ -264,6 +262,12 @@ class ShopifyManager:
         )
 
         return productData["product"]["handle"]
+
+    def deleteProduct(self, productId):
+        productData = self.requestAPI(
+            method="DELETE", url=f"/products/{productId}.json")
+
+        return productData
 
     def getOrders(self, lastOrderId):
         ordersData = self.requestAPI(
