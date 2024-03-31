@@ -367,14 +367,38 @@ class DatabaseManager:
                     continue
 
         # Generate Size tags
+        sizes = []
+        lumbar = True
+
         for key, size in const.sizeDict.items():
             sizeString = f"{feed.size.replace('W', '').replace('H', '').lower()} {common.toInt(feed.width / 12)}' x {common.toInt(feed.length / 12)}'"
             if key.lower() in sizeString:
-                try:
-                    tag = Tag.objects.get(name=size, type="Size")
-                    tags.append(tag)
-                except Tag.DoesNotExist:
-                    continue
+                sizes.append(size)
+                lumbar = False
+
+        if feed.type == "Pillow" and lumbar:
+            sizes.append("Lumbar")
+
+        if feed.type == "Trim" and feed.width > 0:
+            if feed.width < 1:
+                sizes.append('Up to 1"')
+            elif feed.width < 2:
+                sizes.append('1" to 2"')
+            elif feed.width < 3:
+                sizes.append('2" to 3"')
+            elif feed.width < 4:
+                sizes.append('3" to 4"')
+            elif feed.width < 5:
+                sizes.append('4" to 5"')
+            else:
+                sizes.append('5" and More')
+
+        for size in sizes:
+            try:
+                tag = Tag.objects.get(name=size, type="Size")
+                tags.append(tag)
+            except Tag.DoesNotExist:
+                continue
 
         # Generate Content tags
         allContents = Tag.objects.filter(
