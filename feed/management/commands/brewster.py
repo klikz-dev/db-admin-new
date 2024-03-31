@@ -309,6 +309,9 @@ class Processor:
                     name = common.toText(
                         row[ids["nameId"]]) or f"{pattern} {color} {type}"
 
+                    if "Mural" in usage:
+                        type = "Mural"
+
                     # Exceptions
                     if cost == 0 or not pattern or not color or not type:
                         continue

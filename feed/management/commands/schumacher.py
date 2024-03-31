@@ -194,6 +194,10 @@ class Processor:
                 width = width * 12 if "'" in row[11] else width
                 length = length * 12 if "'" in row[21] else length
 
+                if "Mural" in pattern:
+                    pattern = pattern.replace("Mural", "").strip()
+                    type = "Mural"
+
                 if type == "Rug" or type == "Rug Pad":
                     size = f"{common.toFloat(width / 12)}' x {common.toFloat(length / 12)}'"
                     name = f"{pattern} {color} {size} {type}"

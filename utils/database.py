@@ -350,7 +350,9 @@ class DatabaseManager:
             type="Category").values_list('name', flat=True)
 
         for category in allCategories:
-            if category.lower() in common.toText(feed.keywords).lower():
+            categoryName = category.split(
+                ">")[1] if ">" in category else category
+            if categoryName.lower() in common.toText(feed.keywords).lower():
                 try:
                     tag = Tag.objects.get(name=category, type="Category")
                     tags.append(tag)

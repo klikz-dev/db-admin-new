@@ -196,6 +196,10 @@ class Processor:
                     }
                     uom = UOM_DICT.get(uom, uom)
 
+                    if "Mural" in pattern:
+                        pattern = pattern.replace("Mural", "").strip()
+                        type = "Mural"
+
                     statusS = False
                     name = f"{pattern} {color} {type}"
 

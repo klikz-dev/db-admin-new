@@ -179,6 +179,9 @@ class Processor:
                 if colors:
                     color = f"{'/'.join([c.strip() for c in colors.split(',')])} ({color})"
 
+                if "mural" in description.lower():
+                    type = "Mural"
+
                 name = f"{pattern} {color} {type}"
 
                 # Exceptions
