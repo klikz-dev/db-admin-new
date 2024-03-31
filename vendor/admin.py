@@ -14,7 +14,8 @@ class ManufacturerAdmin(admin.ModelAdmin):
     list_display = [
         'name',
         'brand',
-        'private'
+        'private',
+        'productsCount'
     ]
 
     list_filter = [
@@ -37,7 +38,8 @@ class TypeAdmin(admin.ModelAdmin):
 
     list_display = [
         'name',
-        'parent'
+        'parent',
+        'productsCount'
     ]
 
     list_filter = [

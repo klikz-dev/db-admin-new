@@ -32,6 +32,9 @@ class Manufacturer(models.Model):
     brand = models.CharField(max_length=200, blank=False, null=False)
     private = models.BooleanField(default=False)
 
+    def productsCount(self):
+        return self.products.count()
+
     def __str__(self):
         return self.name
 
@@ -39,6 +42,9 @@ class Manufacturer(models.Model):
 class Type(models.Model):
     name = models.CharField(max_length=200, primary_key=True)
     parent = models.CharField(max_length=200, blank=True, null=True)
+
+    def productsCount(self):
+        return self.products.count()
 
     def __str__(self):
         return self.name
