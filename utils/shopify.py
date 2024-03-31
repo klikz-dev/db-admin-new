@@ -137,6 +137,9 @@ class ShopifyManager:
         for tag in product.tags.all():
             tags.append(f"{tag.type}:{tag.name}")
 
+            if tag.type == "Category":
+                tags.append(f"Subcategory:{tag.name}")
+
             if tag.type == "Size":
                 size = tag.name
 
@@ -261,3 +264,12 @@ class ShopifyManager:
         )
 
         return productData["product"]["handle"]
+
+    def getOrders(self, lastOrderId):
+        ordersData = self.requestAPI(
+            method="GET", url=f"/orders.json?since_id={lastOrderId}&statu=any")
+
+        if 'orders' in ordersData:
+            return ordersData['orders']
+        else:
+            return []

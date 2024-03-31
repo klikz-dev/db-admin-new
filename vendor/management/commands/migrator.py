@@ -966,45 +966,8 @@ class Processor:
         for i, rulesData in enumerate(newRules):
             rules = rulesData['rules']
             for index, rule in enumerate(rules):
-                if rule['column'] == "vendor" and " Wallpaper" in rule['condition']:
-                    rules[index]['condition'] = rules[index]['condition'].replace(
-                        " Wallpaper", "").strip()
-
-                    rules.append({
-                        "column": "type",
-                        "relation": "equals",
-                        "condition": "Wallpaper"
-                    })
-
-                if rule['column'] == "vendor" and " Fabric" in rule['condition']:
-                    rules[index]['condition'] = rules[index]['condition'].replace(
-                        " Fabric", "").strip()
-
-                    rules.append({
-                        "column": "type",
-                        "relation": "equals",
-                        "condition": "Fabric"
-                    })
-
-                if rule['column'] == "vendor" and " Trim" in rule['condition']:
-                    rules[index]['condition'] = rules[index]['condition'].replace(
-                        " Trim", "").strip()
-
-                    rules.append({
-                        "column": "type",
-                        "relation": "equals",
-                        "condition": "Trim"
-                    })
-
-                if rule['column'] == "vendor" and " Pillow" in rule['condition']:
-                    rules[index]['condition'] = rules[index]['condition'].replace(
-                        " Pillow", "").strip()
-
-                    rules.append({
-                        "column": "type",
-                        "relation": "equals",
-                        "condition": "Pillow"
-                    })
+                if rule['column'] == "type" and "Throw Pillows" == rule['condition']:
+                    rules[index]['condition'] = "Pillow"
 
             newRules[i]['rules'] = rules
 
