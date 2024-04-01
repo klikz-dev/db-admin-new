@@ -346,18 +346,25 @@ class DatabaseManager:
                     continue
 
         # Generate Category tags
-        allCategories = Tag.objects.filter(
-            type="Category").values_list('name', flat=True)
+        if feed.type in [
+            "Fabric", "Upholstery Fabric", "Drapery Fabric",
+            "Wallpaper", "Mural",
+            "Pillow", "Pillow Kit", "Pillow Insert", "Pillow Cover", "Outdoor Pillow", "Decorative Pillow",
+            "Trim",
+            "Rug", "Rug Pad",
+        ]:
+            allCategories = Tag.objects.filter(
+                type="Category").values_list('name', flat=True)
 
-        for category in allCategories:
-            categoryName = category.split(
-                ">")[1] if ">" in category else category
-            if categoryName.lower() in common.toText(feed.keywords).lower():
-                try:
-                    tag = Tag.objects.get(name=category, type="Category")
-                    tags.append(tag)
-                except Tag.DoesNotExist:
-                    continue
+            for category in allCategories:
+                categoryName = category.split(
+                    ">")[1] if ">" in category else category
+                if categoryName.lower() in common.toText(feed.keywords).lower():
+                    try:
+                        tag = Tag.objects.get(name=category, type="Category")
+                        tags.append(tag)
+                    except Tag.DoesNotExist:
+                        continue
 
         # Generate Color tags
         for key, color in const.colorDict.items():

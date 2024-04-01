@@ -162,7 +162,8 @@ class Processor:
 
                 # Fine-tuning
                 TYPE_DICT = {
-                    "Sidewall": "Border",
+                    "Border": "Wallpaper",
+                    "Sidewall": "Wallpaper",
                     "Residential Use": "Wallpaper"
                 }
                 type = TYPE_DICT.get(type, type)

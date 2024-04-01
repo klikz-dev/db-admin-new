@@ -132,7 +132,7 @@ class Processor:
                 brand = BRAND
                 manufacturer = BRAND
                 type = common.toText(row[0]).title()
-                collection = common.toText(row[2]).title()
+                collection = common.toText(row[2])
 
                 # Main Information
                 description = common.toText(row[17])
@@ -166,7 +166,7 @@ class Processor:
                 roomsets = common.toText(row[22]).split(",")
 
                 # Fine-tuning
-                if "BORÅSTAPETER" in collection:
+                if "BORSTAPETER" in collection:
                     manufacturer = "Borastapeter"
                     collection = "Borastapeter"
                 else:
