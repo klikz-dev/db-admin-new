@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Address, Customer, Order
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Address, Customer, Order, LineItem
 
 
 @admin.register(Manufacturer)
@@ -395,4 +395,38 @@ class OrderAdmin(admin.ModelAdmin):
         'orderType',
         'email',
         'phone',
+    ]
+
+
+@admin.register(LineItem)
+class LineItemAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        'order',
+        'product',
+    ]
+
+    fields = [
+        'order',
+        'product',
+        'variant',
+        'quantity',
+        'orderPrice',
+        'orderDiscount',
+        'orderWeight',
+        'tracking',
+    ]
+
+    list_display = [
+        'order',
+        'product',
+        'variant',
+        'quantity',
+    ]
+
+    list_filter = [
+        'variant',
+    ]
+
+    search_fields = [
+        'variant',
     ]

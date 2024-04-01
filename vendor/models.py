@@ -279,3 +279,26 @@ class Order(models.Model):
 
     def __str__(self):
         return self.po
+
+
+class LineItem(models.Model):
+    order = models.ForeignKey(
+        Order, related_name='lineItems', on_delete=models.CASCADE, blank=False, null=False)
+
+    product = models.ForeignKey(
+        Product, related_name='lineItems', on_delete=models.CASCADE, blank=False, null=False)
+
+    variant = models.CharField(
+        max_length=200, choices=VARIANT_TYPES, default="Consumer")
+
+    quantity = models.IntegerField(default=1, null=False, blank=False)
+
+    orderPrice = models.FloatField(default=0, null=False, blank=False)
+    orderDiscount = models.FloatField(default=0, null=False, blank=False)
+    orderWeight = models.FloatField(default=0, null=False, blank=False)
+
+    tracking = models.CharField(
+        max_length=1000, default=None, null=True, blank=True)
+
+    def __str__(self):
+        return self.order.po
