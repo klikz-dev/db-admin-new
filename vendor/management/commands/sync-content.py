@@ -63,6 +63,75 @@ class Processor:
 
             except Exception as e:
                 debug.warn(PROCESS, str(e))
+
+                # shopifyProduct = shopifyManager.requestAPI(
+                #     method="GET", url=f"/products/{product.shopifyId}.json")
+                # if 'product' not in shopifyProduct:
+                #     product.delete()
+                #     sync.delete()
+                # else:
+                #     for variantId in shopifyManager.variantsData.keys():
+                #         shopifyManager.requestAPI(
+                #             method="DELETE", url=f"/products/{product.shopifyId}/variants/{variantId}.json")
+
+                #     base_variant_info = {
+                #         "sku": product.sku,
+                #         "cost": product.cost,
+                #         "weight": product.weight,
+                #         "weight_unit": "lb",
+                #         "barcode": product.barcode,
+                #         "inventory_management": None,
+                #         "fulfillment_service": "manual",
+                #     }
+
+                #     variants_data = [
+                #         {"title": "Consumer", "option1": "Consumer",
+                #             "price": product.consumer},
+                #         {"title": "Trade",
+                #             "option1": "Trade", "price": product.trade},
+                #         {"title": "Sample", "option1": "Sample",
+                #             "price": product.sample, "cost": 0, "weight": 5},
+                #         {"title": "Free Sample", "option1": "Free Sample",
+                #             "price": 0, "cost": 0, "weight": 5}
+                #     ]
+
+                #     variants = [{**base_variant_info, **variant}
+                #                 for variant in variants_data]
+
+                #     productData = shopifyManager.productData
+                #     productData['product']['variants'] = variants
+
+                #     print(productData)
+
+                #     try:
+
+                #         metafieldsData = shopifyManager.requestAPI(
+                #             method="GET", url=f"/products/{product.shopifyId}/metafields.json")
+
+                #         for metafield in metafieldsData["metafields"]:
+                #             shopifyManager.requestAPI(
+                #                 method="DELETE", url=f"/metafields/{metafield['id']}.json")
+
+                #         productRes = shopifyManager.requestAPI(
+                #             method="PUT", url=f"/products/{product.shopifyId}.json", payload=shopifyManager.productData)
+
+                #         for variant in productRes['product']['variants']:
+                #             if variant['option1'] == "Consumer":
+                #                 product.consumerId = variant['id']
+                #             if variant['option1'] == "Trade":
+                #                 product.tradeId = variant['id']
+                #             if variant['option1'] == "Sample":
+                #                 product.sampleId = variant['id']
+                #             if variant['option1'] == "Free Sample":
+                #                 product.freeSampleId = variant['id']
+
+                #     except:
+                #         product.delete()
+                #         # sync.delete()
+
+                #     product.save()
+                #     sync.delete()
+
                 return
 
             sync.delete()

@@ -119,7 +119,7 @@ class Processor:
 
                 # Additional Information
                 usage = common.toText(row[56])
-                content = common.toText(row[26])
+                content = common.toText(row[26]).replace("\n", " ")
 
                 specs = [
                     "Construction", common.toText(row[55])

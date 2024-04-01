@@ -104,7 +104,7 @@ class Processor:
                 height = common.toFloat(row[14])
 
                 # Additional Information
-                material = common.toText(row[19])
+                material = common.toText(row[19]).replace("\n", " ")
                 finish = common.toText(row[20])
                 country = common.toText(row[32])
                 weight = common.toFloat(row[9])

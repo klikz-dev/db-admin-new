@@ -179,7 +179,7 @@ class Processor:
 
                 # Additional Information
                 material = common.toText(row[34])
-                care = common.toText(row[37])
+                care = common.toText(row[37]).replace("\n", " ")
                 country = common.toText(row[46])
                 weight = common.toFloat(row[12])
                 disclaimer = common.toText(row[36])

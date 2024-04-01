@@ -209,7 +209,7 @@ def pluralToSingular(word):
 
 def getRelatedProducts(product):
     samePatterns = Product.objects.filter(
-        manufacturer=product.manufacturer, type=product.type, pattern=product.pattern)
+        manufacturer=product.manufacturer, type=product.type, collection=product.collection, pattern=product.pattern)
 
     relatedProducts = []
     for samePattern in samePatterns:
@@ -224,3 +224,12 @@ def getRelatedProducts(product):
         })
 
     return relatedProducts
+
+
+def wordInText(word, text):
+    pattern = r'\b' + re.escape(word) + r'\b'
+
+    if bool(re.search(pattern, text, re.IGNORECASE)):
+        return True
+    else:
+        return False

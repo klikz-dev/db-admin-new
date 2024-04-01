@@ -232,6 +232,9 @@ class DatabaseManager:
             except Product.DoesNotExist:
                 continue
 
+            if feed.brand == "Jamie Young" and feed.collection == "LIFESTYLE":
+                private = True
+
             title = f"{'DecoratorsBest' if private else feed.manufacturer} {feed.name}"
 
             if any(getattr(feed, attr) != getattr(product, attr) for attr in ATTR_DICT):
@@ -338,7 +341,7 @@ class DatabaseManager:
             type="Style").values_list('name', flat=True)
 
         for style in allStyles:
-            if style.lower() in common.toText(feed.keywords).lower():
+            if common.wordInText(style, feed.keywords):
                 try:
                     tag = Tag.objects.get(name=style, type="Style")
                     tags.append(tag)
@@ -359,7 +362,7 @@ class DatabaseManager:
             for category in allCategories:
                 categoryName = category.split(
                     ">")[1] if ">" in category else category
-                if categoryName.lower() in common.toText(feed.keywords).lower():
+                if common.wordInText(categoryName, feed.keywords):
                     try:
                         tag = Tag.objects.get(name=category, type="Category")
                         tags.append(tag)
@@ -368,7 +371,7 @@ class DatabaseManager:
 
         # Generate Color tags
         for key, color in const.colorDict.items():
-            if key.lower() in common.toText(feed.colors).lower():
+            if common.wordInText(key, feed.colors):
                 try:
                     tag = Tag.objects.get(name=color, type="Color")
                     tags.append(tag)
@@ -381,7 +384,7 @@ class DatabaseManager:
 
         for key, size in const.sizeDict.items():
             sizeString = f"{feed.size.replace('W', '').replace('H', '').lower()} {common.toInt(feed.width / 12)}' x {common.toInt(feed.length / 12)}'"
-            if key.lower() in sizeString:
+            if common.wordInText(key, sizeString):
                 sizes.append(size)
                 lumbar = False
 
@@ -414,7 +417,7 @@ class DatabaseManager:
             type="Content").values_list('name', flat=True)
 
         for content in allContents:
-            if content.lower() in common.toText(feed.keywords).lower():
+            if common.wordInText(content, feed.keywords):
                 try:
                     tag = Tag.objects.get(name=content, type="Content")
                     tags.append(tag)
@@ -426,7 +429,7 @@ class DatabaseManager:
             type="Designer").values_list('name', flat=True)
 
         for designer in allDesigners:
-            if designer.lower() in common.toText(feed.collection).lower():
+            if common.wordInText(designer, feed.collection):
                 try:
                     tag = Tag.objects.get(name=designer, type="Designer")
                     tags.append(tag)
@@ -438,7 +441,7 @@ class DatabaseManager:
             type="Shape").values_list('name', flat=True)
 
         for shape in allShapes:
-            if shape.lower() in common.toText(feed.collection).lower():
+            if common.wordInText(shape, feed.collection):
                 try:
                     tag = Tag.objects.get(name=shape, type="Shape")
                     tags.append(tag)
