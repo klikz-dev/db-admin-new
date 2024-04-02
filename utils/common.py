@@ -228,8 +228,4 @@ def getRelatedProducts(product):
 
 def wordInText(word, text):
     pattern = r'\b' + re.escape(word) + r'\b'
-
-    if bool(re.search(pattern, text, re.IGNORECASE)):
-        return True
-    else:
-        return False
+    return re.search(pattern, text, re.IGNORECASE) is not None
