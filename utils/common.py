@@ -227,5 +227,8 @@ def getRelatedProducts(product):
 
 
 def wordInText(word, text):
-    pattern = r'\b' + re.escape(word) + r'\b'
-    return re.search(pattern, text, re.IGNORECASE) is not None
+    if str(word) and str(text):
+        pattern = r'\b' + re.escape(str(word)) + r'\b'
+        return re.search(pattern, str(text), re.IGNORECASE) is not None
+    else:
+        return False
