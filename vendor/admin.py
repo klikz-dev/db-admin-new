@@ -337,6 +337,22 @@ class CustomerAdmin(admin.ModelAdmin):
     ]
 
 
+class LineItemInline(admin.TabularInline):
+    model = LineItem
+    extra = 0
+
+    autocomplete_fields = [
+        'product',
+    ]
+
+    fields = [
+        'product',
+        'variant',
+        'quantity',
+        'orderPrice',
+    ]
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = [
@@ -344,6 +360,8 @@ class OrderAdmin(admin.ModelAdmin):
         'shippingAddress',
         'billingAddress',
     ]
+
+    inlines = [LineItemInline]
 
     fieldsets = [
         ('Primary Keys', {'fields': [

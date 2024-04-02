@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Max
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 
-from utils import debug, shopify
+from utils import debug, shopify, common
 
-from vendor.models import Address, Customer, Order
+from vendor.models import Address, Customer, Order, LineItem, Product
 
 PROCESS = "Sync-Order"
 
@@ -32,6 +33,12 @@ class Processor:
         pass
 
     def order(self):
+
+        Address.objects.all().delete()
+        Customer.objects.all().delete()
+        LineItem.objects.all().delete()
+        Order.objects.all().delete()
+
         shopifyManager = shopify.ShopifyManager()
 
         while True:
@@ -39,103 +46,148 @@ class Processor:
             lastOrderId = Order.objects.aggregate(
                 Max('shopifyId'))['shopifyId__max']
 
-            orders = shopifyManager.getOrders(lastOrderId=lastOrderId or '')
+            orders = shopifyManager.getOrders(lastOrderId=lastOrderId or 0)
 
             if len(orders) == 0:
                 break
 
-            for order in orders:
-                print(order)
+            # for order in tqdm(orders):
+            def syncOrder(order):
 
-                customerAddress = Address.objects.get_or_create(
-                    firstName=order['customer']['default_address']['first_name'],
-                    lastName=order['customer']['default_address']['last_name'],
-                    company=order['customer']['default_address']['company'],
-                    address1=order['customer']['default_address']['address1'],
-                    address2=order['customer']['default_address']['address2'],
-                    city=order['customer']['default_address']['city'],
-                    state=order['customer']['default_address']['province'],
-                    zip=order['customer']['default_address']['zip'],
-                    country=order['customer']['default_address']['country'],
-                    phone=order['customer']['default_address']['phone'],
-                )
+                try:
 
-                shippingAddress = Address.objects.get_or_create(
-                    firstName=order['shipping_address']['first_name'],
-                    lastName=order['shipping_address']['last_name'],
-                    company=order['shipping_address']['company'],
-                    address1=order['shipping_address']['address1'],
-                    address2=order['shipping_address']['address2'],
-                    city=order['shipping_address']['city'],
-                    state=order['shipping_address']['province'],
-                    zip=order['shipping_address']['zip'],
-                    country=order['shipping_address']['country'],
-                    phone=order['shipping_address']['phone'],
-                )
+                    # Addresses
+                    def get_or_create_address(address_data):
+                        unique_fields = {
+                            'firstName': address_data['first_name'],
+                            'lastName': address_data['last_name'],
+                            'address1': address_data['address1'],
+                            'city': address_data['city'],
+                            'state': address_data['province'],
+                            'zip': address_data['zip'],
+                            'country': address_data['country'],
+                        }
 
-                billingAddress = Address.objects.get_or_create(
-                    firstName=order['billing_address']['first_name'],
-                    lastName=order['billing_address']['last_name'],
-                    company=order['billing_address']['company'],
-                    address1=order['billing_address']['address1'],
-                    address2=order['billing_address']['address2'],
-                    city=order['billing_address']['city'],
-                    state=order['billing_address']['province'],
-                    zip=order['billing_address']['zip'],
-                    country=order['billing_address']['country'],
-                    phone=order['billing_address']['phone'],
-                )
+                        defaults = {
+                            'company': address_data.get('company', ''),
+                            'address2': address_data.get('address2', ''),
+                            'phone': address_data.get('phone', ''),
+                        }
 
-                customer = Customer.objects.get_or_create(
-                    shopifyId=order['customer']['id'],
-                    email=order['customer']['email'],
-                    firstName=order['customer']['first_name'],
-                    lastName=order['customer']['last_name'],
-                    phone=order['customer']['phone'],
-                    address=customerAddress,
-                    note=order['customer']['note'],
-                    tags=order['customer']['tags'],
-                )
+                        return Address.objects.get_or_create(**unique_fields, defaults=defaults)
 
-                status = ''
-                reference = ''
-                internalNote = ''
-                for attr in order['note_attributes']:
-                    if attr['name'] == 'Status':
-                        status = attr['value']
-                    if attr['name'] == 'ReferenceNumber':
-                        reference = attr['value']
-                    if attr['name'] == 'CSNote':
-                        internalNote = attr['value']
+                    customerAddress, created = get_or_create_address(
+                        order['customer']['default_address'])
+                    shippingAddress, created = get_or_create_address(
+                        order['shipping_address'])
+                    billingAddress, created = get_or_create_address(
+                        order['billing_address'])
 
-                Order.objects.create(
-                    shopifyId=order['id'],
-                    po=order['order_number'],
+                    # Customer
+                    customer, created = Customer.objects.update_or_create(
+                        shopifyId=order['customer']['id'],
+                        email=order['customer']['email'],
+                        firstName=order['customer']['first_name'],
+                        lastName=order['customer']['last_name'],
+                        phone=order['customer']['phone'],
+                        address=customerAddress,
+                        note=order['customer']['note'],
+                        tags=order['customer']['tags'],
+                    )
 
-                    orderType=order['orderType'],  # To do
-                    email=order['email'],
-                    phone=order['phone'],
-                    customer=customer,
+                    status = ''
+                    reference = ''
+                    internalNote = ''
+                    for attr in order['note_attributes']:
+                        if attr['name'] == 'Status':
+                            status = attr['value']
+                        if attr['name'] == 'ReferenceNumber':
+                            reference = attr['value']
+                        if attr['name'] == 'CSNote':
+                            internalNote = attr['value']
 
-                    shippingAddress=shippingAddress,
-                    billingAddress=billingAddress,
+                    # Order Type
+                    hasOrder = any("Sample" not in item['variant_title']
+                                   for item in order['line_items'])
+                    hasSample = any("Sample" in item['variant_title']
+                                    for item in order['line_items'])
+                    orderType = "/".join(
+                        filter(None, ["Order" if hasOrder else None, "Sample" if hasSample else None]))
 
-                    subTotal=order['total_line_items_price'],
-                    discount=order['total_discount'],
-                    shippingCost=order['shipping_lines'][0]['price'],
-                    tax=order['current_total_tax'],
-                    total=order['total_price'],
+                    shipping_lines = order.get('shipping_lines', [])
+                    if shipping_lines:
+                        shippingCost = shipping_lines[0]['price']
+                        shippingMethod = shipping_lines[0]['title']
+                    else:
+                        shippingCost = 0
+                        shippingMethod = "Free Shipping"
 
-                    shippingMethod=order['shipping_lines'][0]['title'],
-                    weight=round(order['total_weight'] / 453.592, 2),
-                    orderDate=order['created_at'],
+                    orderRef, created = Order.objects.update_or_create(
+                        shopifyId=order['id'],
+                        po=order['order_number'],
 
-                    status=status,
-                    reference=reference,
-                    internalNote=internalNote,
-                    customerNote=order['note'],
-                )
+                        orderType=orderType,
+                        email=order['email'],
+                        phone=order['phone'],
+                        customer=customer,
 
-                break
+                        shippingAddress=shippingAddress,
+                        billingAddress=billingAddress,
 
-            break
+                        subTotal=order['total_line_items_price'],
+                        discount=order['total_discounts'],
+                        shippingCost=shippingCost,
+                        tax=order['current_total_tax'],
+                        total=order['total_price'],
+
+                        shippingMethod=shippingMethod,
+                        weight=round(order['total_weight'] / 453.592, 2),
+                        orderDate=order['created_at'],
+
+                        status=status,
+                        reference=reference,
+                        internalNote=internalNote,
+                        customerNote=order['note'],
+                    )
+
+                    # Line Items
+                    for lineItem in order['line_items']:
+                        try:
+                            product = Product.objects.get(
+                                shopifyId=lineItem['product_id'])
+                        except Product.DoesNotExist:
+                            debug.warn(
+                                PROCESS, f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
+                            continue
+
+                        if "Trade" in lineItem['variant_title']:
+                            variant = "Trade"
+                        elif "Free Sample" in lineItem['variant_title']:
+                            variant = "Free Sample"
+                        elif "Sample" in lineItem['variant_title']:
+                            variant = "Sample"
+                        else:
+                            variant = "Consumer"
+
+                        LineItem.objects.create(
+                            order=orderRef,
+                            product=product,
+
+                            variant=variant,
+                            quantity=lineItem['quantity'],
+
+                            orderPrice=lineItem['price'],
+                            orderDiscount=lineItem['total_discount'],
+                            orderWeight=common.toFloat(
+                                lineItem['grams'] / 453.592),
+                        )
+
+                    debug.log(
+                        PROCESS, f"PO {order['order_number']} has been synced.")
+
+                except Exception as e:
+                    debug.warn(PROCESS, str(e))
+
+            with ThreadPoolExecutor(max_workers=25) as executor:
+                for order in orders:
+                    executor.submit(syncOrder, order)

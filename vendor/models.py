@@ -213,7 +213,7 @@ class Customer(models.Model):
         max_length=200, unique=True, null=False, blank=False)
 
     firstName = models.CharField(max_length=200, null=False, blank=False)
-    lastName = models.TextField(
+    lastName = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 
     phone = models.CharField(
@@ -230,7 +230,7 @@ class Customer(models.Model):
     updatedAt = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.firstName}, {self.lastName}"
+        return f"{self.firstName} {self.lastName}"
 
 
 class Order(models.Model):

@@ -98,9 +98,9 @@ class ShopifyManager:
             {"id": product.tradeId, "title": "Trade",
                 "option1": "Trade", "price": product.trade},
             {"id": product.sampleId, "title": "Sample", "option1": "Sample",
-                "price": product.sample, "cost": 0, "weight": 5},
+                "price": product.sample, "cost": 0, "weight": 0},
             {"id": product.freeSampleId, "title": "Free Sample", "option1": "Free Sample",
-                "price": 0, "cost": 0, "weight": 5}
+                "price": 0, "cost": 0, "weight": 0}
         ]
 
         return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
@@ -271,7 +271,7 @@ class ShopifyManager:
 
     def getOrders(self, lastOrderId):
         ordersData = self.requestAPI(
-            method="GET", url=f"/orders.json?since_id={lastOrderId}&statu=any")
+            method="GET", url=f"/orders.json?since_id={lastOrderId}&statu=any&limit=250")
 
         if 'orders' in ordersData:
             return ordersData['orders']

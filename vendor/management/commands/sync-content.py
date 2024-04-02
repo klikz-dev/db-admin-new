@@ -90,9 +90,9 @@ class Processor:
                 #         {"title": "Trade",
                 #             "option1": "Trade", "price": product.trade},
                 #         {"title": "Sample", "option1": "Sample",
-                #             "price": product.sample, "cost": 0, "weight": 5},
+                #             "price": product.sample, "cost": 0, "weight": 0},
                 #         {"title": "Free Sample", "option1": "Free Sample",
-                #             "price": 0, "cost": 0, "weight": 5}
+                #             "price": 0, "cost": 0, "weight": 0}
                 #     ]
 
                 #     variants = [{**base_variant_info, **variant}
