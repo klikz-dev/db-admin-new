@@ -161,7 +161,7 @@ class Processor:
                         # Additional Information
                         material = ", ".join(attr['material'] + attr['addmat'])
                         finish = ", ".join(attr['finish'])
-                        care = common.toText(attr['care'])
+                        care = common.toText(attr['care']).replace("\n", " ")
                         country = common.toText(row.get('countryoforigin', ''))
                         weight = common.toFloat(attr['weight'])
                         upc = common.toText(row['upc'])
