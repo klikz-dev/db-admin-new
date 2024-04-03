@@ -58,7 +58,39 @@ class Processor:
         if os.path.isfile(FEED_ERROR_DIR):
             os.remove(FEED_ERROR_DIR)
 
-        products = Product.objects.filter(published=True).exclude(type="Trim")
+        testSKUs = [
+            "sr aaa-001",
+            "sr aaa-001",
+            "sr bur2300-810",
+            "sr bur2300-810",
+            "sr bur2305-23",
+            "sr bur2305-23",
+            "sch 1048044",
+            "sch 1048044",
+            "sch 1106032",
+            "sch 1106032",
+            "sch 43426",
+            "sch 43426",
+            "brewster 2532-20424",
+            "brewster 2532-20424",
+            "brewster 2741-87484",
+            "brewster 2741-87484",
+            "brewster 2834-m0736",
+            "brewster 2834-m0736",
+            "p68 acas-230-01",
+            "p68 acas-230-01",
+            "p68 acas-392-03",
+            "p68 acas-392-03",
+            "scala s7badk5400-002",
+            "scala s7badk5400-002",
+            "scala wp88553-002",
+            "scala wp88553-002",
+            "k 36681-335",
+            "k 36681-335",
+        ]
+
+        products = Product.objects.filter(published=True).exclude(
+            type="Trim").filter(sku__in=testSKUs)
 
         root = ET.Element("rss")
         root.set("xmlns:g", "http://base.google.com/ns/1.0")
@@ -86,7 +118,8 @@ class Processor:
 
             brand = product.manufacturer.brand
             manufacturer = product.manufacturer.name
-            type = product.type
+
+            type = product.type.name if product.type.parent == "Root" else product.type.parent
 
             pattern = product.pattern
             description = product.description or product.title
@@ -277,8 +310,8 @@ class Processor:
 
             return
 
-        self.google()
-        self.facebook()
+        # self.google()
+        # self.facebook()
 
     def google(self):
 
