@@ -42,14 +42,12 @@ class Processor:
             productId = sync.productId
 
             try:
-                # if True:
                 product = Product.objects.get(shopifyId=productId)
             except Product.DoesNotExist:
                 debug.warn(PROCESS, f"Product Not Found: {productId}")
                 return
 
             try:
-                # if True:
                 shopifyManager = shopify.ShopifyManager(
                     product=product, thread=index)
 

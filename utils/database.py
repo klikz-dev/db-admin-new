@@ -224,7 +224,7 @@ class DatabaseManager:
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Status")
 
-    def contentSync(self, private=False):
+    def contentSync(self, private=False, fullSync=False):
         feeds = self.Feed.objects.all()
         for feed in tqdm(feeds):
             try:
@@ -248,6 +248,9 @@ class DatabaseManager:
             elif title != product.title:
                 product.title = title
             else:
+                if fullSync:
+                    Sync.objects.get_or_create(
+                        productId=product.shopifyId, type="Content")
                 continue
 
             product.save()
@@ -255,7 +258,7 @@ class DatabaseManager:
             Sync.objects.get_or_create(
                 productId=product.shopifyId, type="Content")
 
-    def priceSync(self):
+    def priceSync(self, fullSync=False):
         feeds = self.Feed.objects.all()
         for feed in tqdm(feeds):
             try:
@@ -292,7 +295,11 @@ class DatabaseManager:
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Price")
 
-    def tagSync(self):
+            if fullSync:
+                Sync.objects.get_or_create(
+                    productId=product.shopifyId, type="Price")
+
+    def tagSync(self, fullSync=False):
         feeds = self.Feed.objects.all()
         for feed in tqdm(feeds):
             try:
@@ -307,6 +314,10 @@ class DatabaseManager:
                 product.tags.clear()
                 product.tags.add(*newTags)
 
+                Sync.objects.get_or_create(
+                    productId=product.shopifyId, type="Tag")
+
+            if fullSync:
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Tag")
 

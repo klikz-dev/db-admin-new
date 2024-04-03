@@ -44,7 +44,6 @@ class Processor:
                 product = Product.objects.get(shopifyId=productId)
             except Product.DoesNotExist:
                 debug.warn(PROCESS, f"Product Not Found: {productId}")
-                sync.delete()
                 return
 
             try:
@@ -63,7 +62,6 @@ class Processor:
                     PROCESS, f"Updated Status of Product: {productId} to {product.published}")
             except Exception as e:
                 debug.warn(PROCESS, str(e))
-                sync.delete()
                 return
 
             sync.delete()
