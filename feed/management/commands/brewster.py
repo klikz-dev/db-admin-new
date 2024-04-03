@@ -257,7 +257,7 @@ class Processor:
                     match = common.toText(row[ids["matchId"]])
                     material = common.toText(row[ids["materialId"]])
                     usage = common.toText(row[ids["usageId"]])
-                    weight = common.toFloat(row[ids["weightId"]]) or 5
+                    weight = common.toFloat(row[ids["weightId"]]) or 1
                     country = common.toText(row[ids["countryId"]])
                     upc = common.toText(row[ids["upcId"]])
 

@@ -189,6 +189,8 @@ class Processor:
 
                 name = f"{pattern} {color} {type}"
 
+                weight = round(weight / 16, 2)
+
                 # Exceptions
                 if not (mpn.endswith('.0') and mpn.count('.') == 2):
                     continue

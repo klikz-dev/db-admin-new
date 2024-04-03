@@ -136,7 +136,7 @@ class Product(models.Model):
     sample = models.FloatField(default=5, null=False, blank=False)
     compare = models.FloatField(default=None, blank=True, null=True)
 
-    weight = models.FloatField(default=5, null=True, blank=True)
+    weight = models.FloatField(default=1, null=True, blank=True)
     barcode = models.CharField(
         max_length=200, default=None, blank=True, null=True)
 
@@ -261,7 +261,7 @@ class Order(models.Model):
 
     shippingMethod = models.CharField(max_length=200, null=False, blank=False)
 
-    weight = models.FloatField(default=5, null=False, blank=False)
+    weight = models.FloatField(default=1, null=False, blank=False)
     orderDate = models.DateTimeField()
 
     status = models.CharField(

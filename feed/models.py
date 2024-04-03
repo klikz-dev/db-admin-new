@@ -41,7 +41,7 @@ class Feed(models.Model):
         max_length=200, default=None, null=True, blank=True)
     care = models.CharField(
         max_length=1000, default=None, null=True, blank=True)
-    weight = models.FloatField(default=5, null=True, blank=True)
+    weight = models.FloatField(default=1, null=True, blank=True)
     country = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     features = models.JSONField(
