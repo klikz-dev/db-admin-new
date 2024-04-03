@@ -34,11 +34,6 @@ class Processor:
 
     def order(self):
 
-        Address.objects.all().delete()
-        Customer.objects.all().delete()
-        LineItem.objects.all().delete()
-        Order.objects.all().delete()
-
         shopifyManager = shopify.ShopifyManager()
 
         while True:
