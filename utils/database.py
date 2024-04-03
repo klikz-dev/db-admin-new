@@ -87,7 +87,7 @@ class DatabaseManager:
                     material=feed.get('material', ""),
                     finish=feed.get('finish', ""),
                     care=feed.get('care', ""),
-                    weight=feed.get('weight', 5),
+                    weight=feed.get('weight', 1),
                     country=feed.get('country', ""),
                     upc=feed.get('upc', ""),
                     features=feed.get('features', []),

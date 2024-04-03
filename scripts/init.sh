@@ -1,5 +1,3 @@
-python3 manage.py sync-content
-
 python3 manage.py brewster feed status content
 python3 manage.py couture feed status content
 python3 manage.py covington feed status content
