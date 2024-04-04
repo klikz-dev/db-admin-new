@@ -131,7 +131,15 @@ class Processor:
                 # Categorization
                 brand = BRAND
                 manufacturer = BRAND
+
                 type = common.toText(row[0]).title()
+                TYPE_DICT = {
+                    "Wallcovering": "Wallpaper",
+                    "Rugs & Carpets": "Rug",
+                    "Furniture & Accessories": "Pillow",
+                }
+                type = TYPE_DICT.get(type, type)
+
                 collection = common.toText(row[2])
 
                 # Main Information
@@ -151,6 +159,15 @@ class Processor:
 
                 # Measurement
                 uom = common.toText(row[9]).title()
+                UOM_DICT = {
+                    "Single Roll": "Roll",
+                    "Yd": "Yard",
+                    "Repeat": "Yard",
+                    "Unit": "Item",
+                    "Ea": "Item",
+                }
+                uom = UOM_DICT.get(uom, uom)
+
                 minimum = common.toInt(row[10])
                 increment = minimum if type == "Wallpaper" and minimum > 1 else 1
 
@@ -175,19 +192,6 @@ class Processor:
 
                 if collection == "Rug Pads":
                     type = "Rug Pad"
-
-                TYPE_DICT = {
-                    "Wallcovering": "Wallpaper",
-                    "Rugs & Carpets": "Rug",
-                    "Furniture & Accessories": "Pillow",
-                }
-                type = TYPE_DICT.get(type, type)
-
-                UOM_DICT = {
-                    "Single Roll": "Roll",
-                    "Yd": "Yard"
-                }
-                uom = UOM_DICT.get(uom, "Item")
 
                 pattern = pattern.replace(type, "").strip()
 
