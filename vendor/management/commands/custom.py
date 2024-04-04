@@ -97,7 +97,7 @@ class Processor:
                 debug.log(
                     "Migrator", f"{index}/{total} - {product} image {imageURL}")
 
-        with ThreadPoolExecutor(max_workers=100) as executor:
+        with ThreadPoolExecutor(max_workers=20) as executor:
             for index, product in enumerate(products):
                 executor.submit(importImage, index, product)
 

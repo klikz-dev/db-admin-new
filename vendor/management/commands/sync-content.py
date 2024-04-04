@@ -134,6 +134,6 @@ class Processor:
 
             sync.delete()
 
-        with ThreadPoolExecutor(max_workers=100) as executor:
+        with ThreadPoolExecutor(max_workers=20) as executor:
             for index, sync in enumerate(syncs):
                 executor.submit(syncContent, index, sync)
