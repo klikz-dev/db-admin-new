@@ -5,7 +5,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from utils import debug, shopify, common
 
-from vendor.models import Address, Customer, Order, LineItem, Product
+from vendor.models import Customer, Order, LineItem, Product
+from monitor.models import Log
 
 PROCESS = "Sync-Order"
 
@@ -32,30 +33,26 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def address(self, address_data):
-        unique_fields = {
-            'address1': address_data['address1'],
-            'city': address_data['city'],
-            'state': address_data['province'],
-            'zip': address_data['zip'],
-            'country': address_data['country'],
-        }
+    def address(self, address_data, prefix=''):
+        def getKey(prefix, key):
+            return key if not prefix else f'{prefix}{key[0].upper() + key[1:]}'
 
-        defaults = {
-            'firstName': address_data['first_name'],
-            'lastName': address_data['last_name'],
-            'company': address_data.get('company', ''),
-            'address2': address_data.get('address2', ''),
-            'phone': address_data.get('phone', ''),
+        return {
+            getKey(prefix, 'address1'): address_data['address1'],
+            getKey(prefix, 'city'): address_data['city'],
+            getKey(prefix, 'state'): address_data['province'],
+            getKey(prefix, 'zip'): address_data['zip'],
+            getKey(prefix, 'country'): address_data['country'],
+            getKey(prefix, 'firstName'): address_data['first_name'],
+            getKey(prefix, 'lastName'): address_data['last_name'],
+            getKey(prefix, 'company'): address_data.get('company', ''),
+            getKey(prefix, 'address2'): address_data.get('address2', ''),
+            getKey(prefix, 'phone'): address_data.get('phone', ''),
         }
-
-        address, _ = Address.objects.get_or_create(
-            **unique_fields, defaults=defaults)
-        return address
 
     def order(self):
 
-        Address.objects.all().delete()
+        Log.objects.all().delete()
         Customer.objects.all().delete()
         LineItem.objects.all().delete()
         Order.objects.all().delete()
@@ -77,19 +74,18 @@ class Processor:
 
                 # Addresses
                 customerAddress = self.address(
-                    order['customer']['default_address'])
-                shippingAddress = self.address(order['shipping_address'])
-                billingAddress = self.address(order['billing_address'])
+                    address_data=order['customer']['default_address'])
+                shippingAddress = self.address(
+                    address_data=order['shipping_address'], prefix='shipping')
+                billingAddress = self.address(
+                    address_data=order['billing_address'], prefix='billing')
 
                 # Customer
                 customer, _ = Customer.objects.update_or_create(
                     shopifyId=order['customer']['id'],
                     defaults={
-                        'email': order['customer']['email'],
-                        'firstName': order['customer']['first_name'],
-                        'lastName': order['customer']['last_name'],
-                        'phone': order['customer']['phone'],
-                        'address': customerAddress,
+                        'email': order['customer']['email'] or order['email'],
+                        **customerAddress,
                         'note': order['customer']['note'],
                         'tags': order['customer']['tags'],
                     }
@@ -130,10 +126,11 @@ class Processor:
                         "orderType": orderType,
                         "email": order['email'],
                         "phone": order['phone'],
+
                         "customer": customer,
 
-                        "shippingAddress": shippingAddress,
-                        "billingAddress": billingAddress,
+                        **shippingAddress,
+                        **billingAddress,
 
                         "subTotal": order['total_line_items_price'],
                         "discount": order['total_discounts'],
@@ -183,7 +180,7 @@ class Processor:
                             lineItem['grams'] / 453.592),
                     )
 
-            with ThreadPoolExecutor(max_workers=25) as executor:
+            with ThreadPoolExecutor(max_workers=100) as executor:
                 future_to_order = {executor.submit(
                     syncOrder, order): order for order in orders}
 

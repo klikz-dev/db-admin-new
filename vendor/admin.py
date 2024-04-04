@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Address, Customer, Order, LineItem
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Customer, Order, LineItem
 
 
 @admin.register(Manufacturer)
@@ -256,60 +256,21 @@ class InventoryAdmin(admin.ModelAdmin):
     ]
 
 
-@admin.register(Address)
-class AddressAdmin(admin.ModelAdmin):
-    fields = [
-        'firstName',
-        'lastName',
-        'company',
-        'address1',
-        'address2',
-        'city',
-        'state',
-        'zip',
-        'country',
-        'phone',
-    ]
-
-    list_display = [
-        'firstName',
-        'lastName',
-        'address1',
-        'city',
-        'state',
-    ]
-
-    list_filter = [
-        'state',
-    ]
-
-    search_fields = [
-        'firstName',
-        'lastName',
-        'company',
-        'address1',
-        'address2',
-        'city',
-        'state',
-        'zip',
-        'country',
-        'phone',
-    ]
-
-
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    autocomplete_fields = [
-        'address',
-    ]
-
     fields = [
         'shopifyId',
         'email',
         'firstName',
         'lastName',
+        'company',
+        'address1',
+        'address2',
+        'city',
+        'state',
+        'zip',
+        'country',
         'phone',
-        'address',
         'note',
         'tags',
     ]
@@ -357,8 +318,6 @@ class LineItemInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         'customer',
-        'shippingAddress',
-        'billingAddress',
     ]
 
     inlines = [LineItemInline]
@@ -372,9 +331,29 @@ class OrderAdmin(admin.ModelAdmin):
             'phone',
             'customer',
         ]}),
-        ('Address', {'fields': [
-            'shippingAddress',
-            'billingAddress',
+        ('Shipping Address', {'fields': [
+            'shippingFirstName',
+            'shippingLastName',
+            'shippingCompany',
+            'shippingAddress1',
+            'shippingAddress2',
+            'shippingCity',
+            'shippingState',
+            'shippingZip',
+            'shippingCountry',
+            'shippingPhone',
+        ]}),
+        ('Billing Address', {'fields': [
+            'billingFirstName',
+            'billingLastName',
+            'billingCompany',
+            'billingAddress1',
+            'billingAddress2',
+            'billingCity',
+            'billingState',
+            'billingZip',
+            'billingCountry',
+            'billingPhone',
         ]}),
         ('Details', {'fields': [
             'subTotal',
