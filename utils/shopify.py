@@ -271,7 +271,7 @@ class ShopifyManager:
 
     def getOrders(self, lastOrderId):
         ordersData = self.requestAPI(
-            method="GET", url=f"/orders.json?since_id={lastOrderId}&statu=any&limit=250")
+            method="GET", url=f"/orders.json?since_id={lastOrderId}&status=any&limit=250")
 
         if 'orders' in ordersData:
             return ordersData['orders']
