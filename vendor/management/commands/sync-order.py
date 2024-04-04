@@ -180,7 +180,7 @@ class Processor:
                             lineItem['grams'] / 453.592),
                     )
 
-            with ThreadPoolExecutor(max_workers=100) as executor:
+            with ThreadPoolExecutor(max_workers=25) as executor:
                 future_to_order = {executor.submit(
                     syncOrder, order): order for order in orders}
 
