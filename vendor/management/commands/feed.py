@@ -90,7 +90,7 @@ class Processor:
         ]
 
         products = Product.objects.filter(published=True).exclude(
-            type="Trim").filter(sku__in=testSKUs)
+            type="Trim").exclude(manufacturer__brand="Poppy").filter(sku__in=testSKUs)
 
         root = ET.Element("rss")
         root.set("xmlns:g", "http://base.google.com/ns/1.0")
