@@ -276,7 +276,7 @@ class Order(models.Model):
 
     status = models.CharField(
         max_length=200, default="New", null=False, blank=False)
-    reference = models.CharField(
+    reference = models.TextField(
         max_length=2000, default=None, null=True, blank=True)
 
     internalNote = models.CharField(
