@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from utils import debug, shopify
 
@@ -35,29 +34,31 @@ class Processor:
 
         syncs = Sync.objects.filter(type="Tag")
 
-        # for index, sync in enumerate(tqdm(syncs)):
         def syncTag(index, sync):
-            productId = sync.productId
 
-            try:
-                product = Product.objects.get(shopifyId=productId)
-            except Product.DoesNotExist:
-                debug.warn(PROCESS, f"Product Not Found: {productId}")
-                return
+            product = Product.objects.get(shopifyId=sync.productId)
 
-            try:
-                shopifyManager = shopify.ShopifyManager(
-                    product=product, thread=index)
-                shopifyManager.updateProductTag()
-
-                debug.log(
-                    PROCESS, f"{productId} Tag updated: {product.title}")
-            except Exception as e:
-                debug.warn(PROCESS, str(e))
-                return
-
-            sync.delete()
+            shopifyManager = shopify.ShopifyManager(
+                product=product, thread=index)
+            shopifyManager.updateProductTag()
 
         with ThreadPoolExecutor(max_workers=20) as executor:
             for index, sync in enumerate(syncs):
                 executor.submit(syncTag, index, sync)
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            future_to_sync = {executor.submit(
+                syncTag, index, sync): sync for index, sync in enumerate(syncs)}
+
+            for future in as_completed(future_to_sync):
+                sync = future_to_sync[future]
+
+                try:
+                    future.result()
+                    sync.delete()
+                    debug.log(
+                        PROCESS, f"Tag Sync for {sync.productId} has been completed.")
+
+                except Exception as e:
+                    debug.warn(
+                        PROCESS, f"Tag Sync for {sync.productId} has been failed. {str(e)}")

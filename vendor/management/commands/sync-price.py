@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from utils import debug, shopify
 
@@ -35,28 +34,26 @@ class Processor:
 
         syncs = Sync.objects.filter(type="Price")
 
-        # for index, sync in tqdm(syncs):
         def syncPrice(index, sync):
-            productId = sync.productId
 
-            try:
-                product = Product.objects.get(shopifyId=productId)
-            except Product.DoesNotExist:
-                debug.warn(PROCESS, f"Product Not Found: {productId}")
-                return
+            product = Product.objects.get(shopifyId=sync.productId)
 
-            try:
-                shopifyManager = shopify.ShopifyManager(thread=index)
-                shopifyManager.updateProductPrice(product=product)
-
-                debug.log(
-                    PROCESS, f"{productId} Price updated: {product.consumer} / {product.trade} / {product.cost}")
-            except Exception as e:
-                debug.warn(PROCESS, str(e))
-                return
-
-            sync.delete()
+            shopifyManager = shopify.ShopifyManager(thread=index)
+            shopifyManager.updateProductPrice(product=product)
 
         with ThreadPoolExecutor(max_workers=20) as executor:
-            for index, sync in enumerate(syncs):
-                executor.submit(syncPrice, index, sync)
+            future_to_sync = {executor.submit(
+                syncPrice, index, sync): sync for index, sync in enumerate(syncs)}
+
+            for future in as_completed(future_to_sync):
+                sync = future_to_sync[future]
+
+                try:
+                    future.result()
+                    sync.delete()
+                    debug.log(
+                        PROCESS, f"Price Sync for {sync.productId} has been completed.")
+
+                except Exception as e:
+                    debug.warn(
+                        PROCESS, f"Price Sync for {sync.productId} has been failed. {str(e)}")

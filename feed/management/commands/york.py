@@ -139,14 +139,21 @@ class Processor:
                     description_parts = [common.toText(row[key].replace('"', "")) for key in [
                         'AdvertisingCopy', 'AdvertisingCopyII', 'AdvertisingCopyIII'] if row[key]]
                     description = ' '.join(description_parts).strip()
+                    width = 0
 
                     # Additional Information
+                    yardsPR = 0
                     match = common.toText(row['Match'])
                     usage = "Wallcovering"
                     country = common.toText(row['CountryOfOrigin'])
                     upc = common.toText(row['UPC'])
 
                     dimension = common.toText(row['ProductDimension'])
+
+                    if "x" in dimension:
+                        width = common.toFloat(dimension.split("x")[0])
+                        yardsPR = common.toFloat(dimension.split("x")[1])
+
                     repeat = common.toText(row['PatternRepeat'])
 
                     specs = [
@@ -224,7 +231,9 @@ class Processor:
                     'collection': collection,
 
                     'description': description,
+                    'width': width,
 
+                    'yardsPR': yardsPR,
                     'match': match,
                     'usage': usage,
                     'features': features,

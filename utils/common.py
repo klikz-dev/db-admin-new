@@ -166,7 +166,7 @@ def toFloat(value):
     if value:
         try:
             value = round(float(str(value).lower().replace("n/a", "").replace('"', "").replace("'", "").replace("in", "").replace(
-                ",", "").replace("kg", "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yd", "").replace("/", "")), 2)
+                ",", "").replace("kg", "").replace('$', "").replace("s/r", "").replace("bolt", "").replace("yds", "").replace("yd", "").replace("/", "")), 2)
         except:
             value = 0
     else:
