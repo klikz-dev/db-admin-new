@@ -72,18 +72,16 @@ class Processor:
             # for order in tqdm(orders):
             def syncOrder(order):
 
-                print(order['order_number'])
-
                 # Addresses
                 customerAddress = self.address(
-                    address_data=order['customer']['default_address'])
+                    address_data=order['customer'].get('default_address', None) or order['shipping_address'])
                 shippingAddress = self.address(
                     address_data=order['shipping_address'], prefix='shipping')
                 billingAddress = self.address(
                     address_data=order['billing_address'] or order['shipping_address'], prefix='billing')
 
                 # Customer
-                customer, _ = Customer.objects.update_or_create(
+                customer, _ = Customer.objects.get_or_create(
                     shopifyId=order['customer']['id'],
                     defaults={
                         'email': order['customer']['email'] or order['email'],
