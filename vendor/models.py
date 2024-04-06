@@ -188,18 +188,24 @@ class Customer(models.Model):
     email = models.CharField(
         max_length=200, unique=True, null=False, blank=False)
 
-    firstName = models.CharField(max_length=200, null=False, blank=False)
+    firstName = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     lastName = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     company = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    address1 = models.CharField(max_length=200, null=False, blank=False)
+    address1 = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     address2 = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    city = models.CharField(max_length=200, null=False, blank=False)
-    state = models.CharField(max_length=200, null=False, blank=False)
-    zip = models.CharField(max_length=200, null=False, blank=False)
-    country = models.CharField(max_length=200, null=False, blank=False)
+    city = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    state = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    zip = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    country = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     phone = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 
@@ -231,7 +237,7 @@ class Order(models.Model):
         Customer, related_name='orders', on_delete=models.CASCADE, blank=False, null=False)
 
     shippingFirstName = models.CharField(
-        max_length=200, null=False, blank=False)
+        max_length=200, default=None, null=True, blank=True)
     shippingLastName = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     shippingCompany = models.CharField(
@@ -240,26 +246,35 @@ class Order(models.Model):
         max_length=200, null=False, blank=False)
     shippingAddress2 = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    shippingCity = models.CharField(max_length=200, null=False, blank=False)
-    shippingState = models.CharField(max_length=200, null=False, blank=False)
-    shippingZip = models.CharField(max_length=200, null=False, blank=False)
-    shippingCountry = models.CharField(max_length=200, null=False, blank=False)
+    shippingCity = models.CharField(
+        max_length=200, null=False, blank=False)
+    shippingState = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    shippingZip = models.CharField(
+        max_length=200, null=False, blank=False)
+    shippingCountry = models.CharField(
+        max_length=200, null=False, blank=False)
     shippingPhone = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 
     billingFirstName = models.CharField(
-        max_length=200, null=False, blank=False)
+        max_length=200, default=None, null=True, blank=True)
     billingLastName = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     billingCompany = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    billingAddress1 = models.CharField(max_length=200, null=False, blank=False)
+    billingAddress1 = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     billingAddress2 = models.CharField(
         max_length=200, default=None, null=True, blank=True)
-    billingCity = models.CharField(max_length=200, null=False, blank=False)
-    billingState = models.CharField(max_length=200, null=False, blank=False)
-    billingZip = models.CharField(max_length=200, null=False, blank=False)
-    billingCountry = models.CharField(max_length=200, null=False, blank=False)
+    billingCity = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    billingState = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    billingZip = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    billingCountry = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
     billingPhone = models.CharField(
         max_length=200, default=None, null=True, blank=True)
 

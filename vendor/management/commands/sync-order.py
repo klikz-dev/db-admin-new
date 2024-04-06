@@ -84,7 +84,7 @@ class Processor:
                 customer, _ = Customer.objects.get_or_create(
                     shopifyId=order['customer']['id'],
                     defaults={
-                        'email': order['customer']['email'] or order['email'],
+                        'email': order['customer']['email'],
                         **customerAddress,
                         'note': order['customer']['note'],
                         'tags': order['customer']['tags'],
@@ -103,9 +103,9 @@ class Processor:
                         internalNote = attr['value']
 
                 # Order Type
-                hasOrder = any("Sample" not in item['variant_title']
+                hasOrder = any("Sample" not in str(item['variant_title'])
                                for item in order['line_items'])
-                hasSample = any("Sample" in item['variant_title']
+                hasSample = any("Sample" in str(item['variant_title'])
                                 for item in order['line_items'])
                 orderType = "/".join(
                     filter(None, ["Order" if hasOrder else None, "Sample" if hasSample else None]))
