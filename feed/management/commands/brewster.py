@@ -311,6 +311,7 @@ class Processor:
 
                     if "Mural" in usage:
                         type = "Mural"
+                        uom = "Each"
 
                     # Exceptions
                     if cost == 0 or not pattern or not color or not type:
