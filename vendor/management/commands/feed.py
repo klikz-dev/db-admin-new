@@ -1,25 +1,142 @@
+from vendor.models import Product, Inventory
+from utils import debug, common
+from tqdm import tqdm
+import xml.dom.minidom as MD
+import xml.etree.ElementTree as ET
+import boto3
+import re
+import environ
+import os
 from django.core.management.base import BaseCommand
 
-import os
-import environ
-import re
-import boto3
-import xml.etree.ElementTree as ET
-import xml.dom.minidom as MD
-from tqdm import tqdm
-
-from utils import debug, common
-
-from vendor.models import Product, Inventory
-
 env = environ.Env()
-
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 FEED_DIR = f"{FILEDIR}/feed/DecoratorsBestFeed.xml"
 FEED_ERROR_DIR = f"{FILEDIR}/feed/DecoratorsBestFeed_error.xml"
 
 PROCESS = "Feed"
+
+nonMAPSurya = [
+    "Alamo",
+    "Alanya",
+    "Alfombra",
+    "Alhambra",
+    "Alice",
+    "Aliyah Shag",
+    "Amelie",
+    "Amore",
+    "Anika",
+    "Ankara",
+    "Antiquity",
+    "Aranya",
+    "Atlanta",
+    "Barbados",
+    "Basel",
+    "Beni Shag",
+    "Big Sur",
+    "Birmingham",
+    "Bitlis",
+    "Bodrum",
+    "Cabo",
+    "Calhoun",
+    "California Shag",
+    "Calla",
+    "Cesar",
+    "Chelsea",
+    "Chester",
+    "City",
+    "City Light",
+    "Cloudy Shag",
+    "Cobb",
+    "Colin",
+    "Davaro",
+    "Davina",
+    "Delphi",
+    "Deluxe Shag",
+    "Dublin",
+    "Eagean",
+    "Elaziz",
+    "Elenor",
+    "Elle",
+    "Elysian Shag",
+    "Enfield",
+    "Farrell",
+    "Firenze",
+    "Floransa",
+    "Fluffy Shag",
+    "Freud",
+    "Hampton",
+    "Harput",
+    "Hera",
+    "Huntington Beach",
+    "Iris",
+    "Jefferson",
+    "Jolie",
+    "Katmandu",
+    "Kayra",
+    "Kemer",
+    "Kimi",
+    "La Casa",
+    "Lavadora",
+    "Leicester",
+    "Lila",
+    "Lillian",
+    "Long Beach",
+    "Luca",
+    "Lustro",
+    "Lykke",
+    "Lyra Shag",
+    "Margaret",
+    "Margot",
+    "Marlene",
+    "Marvel",
+    "Maryland Shag",
+    "Merino",
+    "Moda shag",
+    "Monaco",
+    "Monte Carlo",
+    "Mood",
+    "Morocco",
+    "Morocotton",
+    "Murat",
+    "Murcia",
+    "New Mexico",
+    "Nomadic",
+    "Olivia",
+    "Paramount",
+    "Pasadena",
+    "Perception",
+    "Pertek",
+    "Pisa",
+    "Pismo Beach",
+    "Positano",
+    "Rafetus",
+    "Ravello",
+    "Redondo Beach",
+    "Riley",
+    "Rivi",
+    "Rodos",
+    "Roma",
+    "San Diego",
+    "Santana",
+    "Serapi",
+    "Skagen",
+    "Solana",
+    "Soldado",
+    "St Tropez",
+    "Sunderland",
+    "Tahmis",
+    "Taza Shag",
+    "Tevazu",
+    "Tuareg",
+    "Ustad",
+    "Venezia",
+    "Veranda",
+    "Wanderlust",
+    "West Palm",
+    "Zidane",
+]
 
 
 class Command(BaseCommand):
@@ -155,6 +272,9 @@ class Processor:
             if brand in privateBrands:
                 manufacturer = "DB By DecoratorsBest"
 
+            if (type == "Wallpaper" or type == "Fabric" or type == "Pillow") and type not in manufacturer:
+                manufacturer = f"{manufacturer} {type}"
+
             price_thresholds = [
                 (300, "300+"),
                 (250, "250-300"),
@@ -213,28 +333,6 @@ class Processor:
                 skipped += 1
                 continue
 
-            nonMAPSurya = [
-                "Rodos",
-                "Roma",
-                "San Diego",
-                "Santana",
-                "Serapi",
-                "Skagen",
-                "Solana",
-                "Soldado",
-                "St Tropez",
-                "Sunderland",
-                "Tahmis",
-                "Taza Shag",
-                "Tevazu",
-                "Tuareg",
-                "Ustad",
-                "Venezia",
-                "Veranda",
-                "Wanderlust",
-                "West Palm",
-                "Zidane",
-            ]
             if brand == "Surya" and product.collection in nonMAPSurya:
                 debug.log(PROCESS, f"IGNORED SKU {sku}. Non MAP Surya")
                 skipped += 1
