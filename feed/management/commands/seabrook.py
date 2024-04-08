@@ -138,13 +138,12 @@ class Processor:
 
                 # Measurement
                 uom = common.toText(row[43])
+                minimum = 2 if 'Bolt' in uom else 1
+                increment = 2 if 'Bolt' in uom else 1
 
                 # Pricing
-                cost_index, map_index = (
-                    13, 15) if 'Bolt' in row[43] else (12, 14)
-
-                cost = common.toFloat(row[cost_index])
-                map = 0 if row[53] == "No" else common.toFloat(row[map_index])
+                cost = common.toFloat(row[12])
+                map = 0 if row[53] == "No" else common.toFloat(row[14])
 
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {row[7]} {row[8]}"
@@ -169,7 +168,7 @@ class Processor:
                 type = TYPE_DICT.get(type, type)
 
                 UOM_DICT = {
-                    "1 Bolt": "Double Roll",
+                    "1 Bolt": "Roll",
                     "1 S/R": "Roll",
                     "1 Roll": "Roll",
                     "1 Yd": "Yard",
@@ -217,6 +216,8 @@ class Processor:
                 'specs': specs,
 
                 'uom': uom,
+                'minimum': minimum,
+                'increment': increment,
 
                 'cost': cost,
                 'map': map,

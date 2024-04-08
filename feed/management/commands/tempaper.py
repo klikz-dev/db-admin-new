@@ -160,7 +160,7 @@ class Processor:
 
                 # Status
                 statusP = True
-                if type == "Wallpaper":
+                if type == "Wallpaper" and "Grasscloth" in pattern:
                     statusS = True
                 else:
                     statusS = False
