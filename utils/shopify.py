@@ -249,6 +249,16 @@ class ShopifyManager:
         return True
 
     def updateProductTag(self):
+        # Check exiting tags
+        tagsData = self.requestAPI(
+            method="GET",
+            url=f"/products/{self.productId}.json?fields=tags",
+        )
+
+        if "Block:Change" in tagsData['product']['tags']:
+            debug.log("Shopify", f"Change is blocked for {self.productId}")
+            return
+
         productData = self.requestAPI(
             method="PUT",
             url=f"/products/{self.productId}.json",

@@ -43,10 +43,6 @@ class Processor:
             shopifyManager.updateProductTag()
 
         with ThreadPoolExecutor(max_workers=20) as executor:
-            for index, sync in enumerate(syncs):
-                executor.submit(syncTag, index, sync)
-
-        with ThreadPoolExecutor(max_workers=20) as executor:
             future_to_sync = {executor.submit(
                 syncTag, index, sync): sync for index, sync in enumerate(syncs)}
 
