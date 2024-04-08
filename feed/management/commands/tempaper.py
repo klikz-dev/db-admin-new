@@ -121,7 +121,7 @@ class Processor:
                 length = common.toFloat(row[18]) * 12
 
                 # Additional Information
-                yardsPR = common.toInt(row[14])
+                yardsPR = common.toFloat(row[14])
                 match = common.toText(row[25])
                 material = common.toText(row[27])
                 care = common.toText(row[32])

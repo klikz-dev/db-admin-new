@@ -114,7 +114,7 @@ class Processor:
                 repeatH = common.toFloat(row[21])
 
                 # Additional Information
-                yardsPR = common.toInt(row[13])
+                yardsPR = common.toFloat(row[13])
                 match = common.toText(row[22])
                 material = common.toText(row[24])
                 weight = common.toFloat(row[19])
