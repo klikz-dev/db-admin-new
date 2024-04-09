@@ -141,6 +141,8 @@ class Processor:
 
                 # Measurement
                 uom = type
+                minimum = 3 if "3*" in size else 1
+                increment = 3 if "3*" in size else 1
 
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {color} {row[13]} {material} {finish}"
@@ -171,6 +173,8 @@ class Processor:
                 width = common.toFloat(sizePattern[0][0]) if sizePattern else 0
                 length = common.toFloat(
                     sizePattern[0][1]) if sizePattern else 0
+
+                yardsPR = common.toFloat(length / 36)
 
                 size = f'{width}" x {length}"'
 
@@ -205,10 +209,13 @@ class Processor:
 
                 'description': description,
                 'width': width,
+                'length': length,
+                'size': size,
                 'repeatV': repeatV,
                 'repeatH': repeatH,
 
                 'usage': usage,
+                'yardsPR': yardsPR,
                 'material': material,
                 'finish': finish,
                 'care': care,
@@ -217,6 +224,8 @@ class Processor:
                 'upc': upc,
 
                 'uom': uom,
+                'minimum': minimum,
+                'increment': increment,
 
                 'cost': cost,
 
