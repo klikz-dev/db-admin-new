@@ -87,18 +87,25 @@ class Processor:
                 mpn = common.toText(row[0])
                 sku = f"ES {mpn}"
 
-                pattern = common.toText(row[1])
-                color = common.toText(row[16])
+                pattern = common.toText(row[1]).replace("*", "")
+                color = common.toText(row[18])
 
                 # Categorization
                 brand = BRAND
                 manufacturer = BRAND
                 type = "Pillow"
-                collection = pattern
+                collection = common.toText(row[21])
 
                 # Main Information
-                description = common.toText(row[15])
+                description = common.toText(row[12])
+                width = common.toFloat(row[16])
+                length = common.toFloat(row[15])
+                height = common.toFloat(row[14])
                 size = common.toText(row[2])
+
+                # Additional Information
+                material = common.toText(row[13])
+                country = common.toText(row[17])
 
                 # Measurement
                 uom = "Item"
@@ -109,19 +116,19 @@ class Processor:
                 msrp = common.toFloat(row[6])
 
                 # Tagging
-                keywords = f"{collection} {pattern} {description} {row[17]} {row[18]}"
+                keywords = f"{collection} {pattern} {description} {row[20]} {row[21]}"
                 colors = color
 
                 # Image
                 thumbnail = row[7]
-                roomsets = [row[id] for id in range(8, 15) if row[id]]
+                roomsets = [row[id] for id in range(8, 12) if row[id]]
 
                 # Status
                 statusP = True
                 statusS = False
 
                 # Fine-tuning
-                name = f"{pattern} {color} {type}"
+                name = f"{pattern} {color} {size} {type}"
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
@@ -144,7 +151,13 @@ class Processor:
                 'collection': collection,
 
                 'description': description,
+                'width': width,
+                'length': length,
+                'height': height,
                 'size': size,
+
+                'material': material,
+                'country': country,
 
                 'uom': uom,
 

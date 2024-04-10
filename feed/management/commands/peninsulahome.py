@@ -194,11 +194,38 @@ class Processor:
                     stockNote = ""
 
                 # Fine-tuning
+                TYPE_DICT = {
+                    "tray": "Tray",
+                    "ottoman": "Ottoman",
+                    "stool": "Stool",
+                    "bench": "Bench",
+                    "pouf": "Pouf",
+                    "dresser": "Dresser",
+                    "nighstand": "Dresser",
+                    "counter": "Counter Stool",
+                    "counter stool": "Counter Stool",
+                    "counterstool": "Counter Stool",
+                    "bar stool": "Bar Stool",
+                    "barstool": "Bar Stool",
+                    "buffet": "Dining Table",
+                    "cube": "Accent Chair",
+                    "chair": "Chair",
+                    "dining chair": "Dining Chair",
+                    "table": "Accent Table",
+                    "dining table": "Dining Table",
+                    "coffee table": "Coffee Table",
+                    "sofa": "Sofa",
+                    "console": "Console",
+                }
+                for key in TYPE_DICT.keys():
+                    if key in pattern.lower():
+                        type = TYPE_DICT[key]
+
                 if "," in name:
                     pattern = name.split(",")[0].strip()
                     color = name.split(",")[1].strip()
 
-                name = f"{pattern} {color} {type}"
+                name = f"{pattern} {color.replace(',', '')}"
 
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
