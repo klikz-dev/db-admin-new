@@ -149,9 +149,9 @@ def downloadFileFromFTP(brand, src, dst):
 def downloadFileFromLink(src, dst):
     try:
         urllib.request.urlretrieve(src, dst)
-        debug.log(PROCESS, f"Download From {dst} To {src}")
+        debug.log(PROCESS, f"Download From {src} To {dst}")
     except Exception as e:
-        debug.warn(PROCESS, f"Download From {dst} To {src}. Error: {str(e)}")
+        debug.warn(PROCESS, f"Download From {src} To {dst}. Error: {str(e)}")
 
 
 def toText(text):

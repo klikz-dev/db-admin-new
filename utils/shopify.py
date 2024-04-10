@@ -19,6 +19,8 @@ VARIANT_OPTIONS = [
     "Free Sample"
 ]
 
+PROCESS = "Shopify"
+
 
 class ShopifyManager:
     def __init__(self, product=None, thread=None):
@@ -80,7 +82,7 @@ class ShopifyManager:
             return json.loads(response.text)
         else:
             debug.warn(
-                "Shopify", f"Shopify API Error for {url}. Error: {str(response.text)}")
+                PROCESS, f"Shopify API Error for {url}. Error: {str(response.text)}")
             return {}
 
     def generateVariantsData(self, product):
@@ -256,7 +258,7 @@ class ShopifyManager:
         )
 
         if "Block:Change" in tagsData['product']['tags']:
-            debug.log("Shopify", f"Change is blocked for {self.productId}")
+            debug.log(PROCESS, f"Change is blocked for {self.productId}")
             return
 
         productData = self.requestAPI(
@@ -287,3 +289,16 @@ class ShopifyManager:
             return ordersData['orders']
         else:
             return []
+
+    def deleteImage(self, productId, imageId):
+        self.requestAPI(
+            method="DELETE", url=f"/products/{productId}/images/{imageId}.json")
+
+    def uploadImage(self, productId, position, link, alt):
+        imageData = self.requestAPI(
+            method="POST",
+            url=f"/products/{productId}/images.json",
+            payload={"image": {"position": position, "src": link, "alt": alt}}
+        )
+
+        return imageData['image']

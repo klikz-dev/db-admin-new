@@ -176,16 +176,18 @@ class ImageAdmin(admin.ModelAdmin):
     ]
 
     fields = [
-        'product',
+        'shopifyId',
         'url',
         'position',
+        'product',
         'hires',
     ]
 
     list_display = [
-        'product',
+        'shopifyId',
         'url',
         'position',
+        'product',
         'hires',
     ]
 
@@ -196,6 +198,7 @@ class ImageAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
+        'shopifyId',
         'product__shopifyId',
         'product__shopifyHandle',
         'product__sku',

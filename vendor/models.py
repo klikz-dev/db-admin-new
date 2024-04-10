@@ -148,12 +148,14 @@ class Product(models.Model):
 
 
 class Image(models.Model):
-    url = models.URLField(primary_key=True)
+    shopifyId = models.CharField(max_length=200, primary_key=True)
+
+    url = models.URLField(max_length=1000, blank=False, null=False)
+    position = models.IntegerField(default=1)
 
     product = models.ForeignKey(
         Product, related_name="images", on_delete=models.CASCADE, blank=False, null=False)
 
-    position = models.IntegerField(default=1)
     hires = models.BooleanField(default=False)
 
     def __str__(self):

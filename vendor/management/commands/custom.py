@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 import json
 import environ
@@ -7,7 +7,7 @@ from django.db import transaction
 
 from django.core.management.base import BaseCommand
 
-from utils import debug, shopify
+from utils import debug, shopify, common
 from vendor.models import Product, Image, Sync
 
 
@@ -69,9 +69,9 @@ class Processor:
         return responseJson
 
     def image(self):
-        Image.objects.filter(product__manufacturer__brand="York").delete()
+        # Image.objects.all().delete()
 
-        products = Product.objects.filter(manufacturer__brand="York")
+        products = Product.objects.all()
         total = len(products)
 
         def importImage(index, product):
@@ -83,23 +83,39 @@ class Processor:
             for image in imagesArray:
                 imageURL = image['imageURL']
                 imageIndex = image['imageIndex']
+                imageId = image['imageId']
 
-                if imageIndex == 20:
+                if imageIndex != 20:
                     continue
 
-                Image.objects.update_or_create(
-                    url=imageURL,
-                    position=imageIndex,
-                    product=product,
-                    hires=False,
-                )
+                fname, ext = os.path.splitext(imageURL.split('?')[0])
+                common.downloadFileFromLink(
+                    src=imageURL, dst=f"{FILEDIR}/images/hires/{product.shopifyId}_hires{ext}")
+
+                # Image.objects.update_or_create(
+                #     shopifyId=imageId,
+                #     url=imageURL,
+                #     position=imageIndex,
+                #     product=product,
+                #     hires=False,
+                # )
 
                 debug.log(
                     "Migrator", f"{index}/{total} - {product} image {imageURL}")
 
         with ThreadPoolExecutor(max_workers=20) as executor:
-            for index, product in enumerate(products):
-                executor.submit(importImage, index, product)
+            future_to_product = {executor.submit(
+                importImage, index, product): product for index, product in enumerate(products)}
+
+            for future in as_completed(future_to_product):
+                product = future_to_product[future]
+
+                try:
+                    future.result()
+
+                except Exception as e:
+                    debug.warn(
+                        "Migrator", f"Content Sync for {product.shopifyId} has been failed. {str(e)}")
 
     def cleanup(self):
 
