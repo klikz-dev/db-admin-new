@@ -253,12 +253,12 @@ class Processor:
 
         return products
 
-    def image(self, missingOnly=True):
+    def image(self, fullSync=False):
         hasImageIds = Product.objects.filter(manufacturer__brand=BRAND).filter(
             images__position=1).values_list('shopifyId', flat=True).distinct()
 
         feeds = Scalamandre.objects.exclude(productId=None)
-        if missingOnly:
+        if not fullSync:
             feeds = feeds.exclude(productId__in=hasImageIds)
 
         def downloadImage(_, feed):
@@ -267,7 +267,6 @@ class Processor:
 
             images = self.requestAPI(
                 f"ScalaFeedAPI/FetchImagesByItemID?ITEMID={feed.mpn}")
-
             for image in images:
                 if image["HIGHRESIMAGE"] and image["IMAGEPATH"]:
                     if image["IMAGETYPE"] == "MAIN":

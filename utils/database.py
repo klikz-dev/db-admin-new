@@ -1,3 +1,4 @@
+import os
 import environ
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -8,6 +9,7 @@ from utils import debug, common, shopify, const
 
 env = environ.Env()
 
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 ATTR_DICT = [
     'mpn',
@@ -378,6 +380,28 @@ class DatabaseManager:
             if fullSync:
                 Sync.objects.get_or_create(
                     productId=product.shopifyId, type="Tag")
+
+    def downloadImages(self, fullSync=False):
+        hasImageIds = Product.objects.filter(manufacturer__brand=self.brand).filter(
+            images__position=1).values_list('shopifyId', flat=True).distinct()
+
+        feeds = self.Feed.objects.exclude(productId=None)
+        if not fullSync:
+            feeds = feeds.exclude(productId__in=hasImageIds)
+
+        def downloadImage(_, feed):
+            thumbnail = feed.thumbnail
+            roomsets = feed.roomsets
+
+            if thumbnail:
+                common.downloadFileFromLink(
+                    src=thumbnail, dst=f"{IMAGEDIR}/thumbnail/{feed.productId}.jpg")
+
+            for index, roomset in enumerate(roomsets):
+                common.downloadFileFromLink(
+                    src=roomset, dst=f"{IMAGEDIR}/roomset/{feed.productId}_{index + 2}.jpg")
+
+        common.thread(rows=feeds, function=downloadImage)
 
     def updateInventory(self, stocks, type=1, reset=True):
         if reset:
