@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
         if "tag" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.tagSync(fullSync=True)
+            processor.DatabaseManager.tagSync()
 
         if "add" in options['functions']:
             processor = Processor()

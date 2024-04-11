@@ -63,14 +63,14 @@ class DatabaseManager:
                     sku=feed.get('sku'),
                     pattern=feed.get('pattern'),
                     color=feed.get('color'),
-                    name=feed.get('name', ""),
+                    name=feed.get('name'),
 
                     brand=feed.get('brand'),
                     type=feed.get('type'),
                     manufacturer=feed.get('manufacturer'),
                     collection=feed.get('collection', ""),
 
-                    description=feed.get('description', ""),
+                    description=feed.get('description', feed.get('name')),
                     usage=feed.get('usage', ""),
                     disclaimer=feed.get('disclaimer', ""),
                     width=feed.get('width', 0),
