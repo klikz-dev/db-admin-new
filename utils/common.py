@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import os
 from shutil import copyfile
 import smtplib
@@ -18,6 +20,18 @@ env = environ.Env()
 p = inflect.engine()
 
 PROCESS = "Common"
+
+
+def thread(rows, function):
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        future_to_row = {executor.submit(
+            function, index, row): row for index, row in enumerate(rows)}
+
+        for future in as_completed(future_to_row):
+            try:
+                future.result()
+            except Exception as e:
+                debug.warn(PROCESS, f"{str(e)}")
 
 
 def sendEmail(sender, recipient, subject, body):

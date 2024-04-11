@@ -7,11 +7,13 @@ import json
 import environ
 
 from utils import database, debug, common
+from vendor.models import Product
 
 env = environ.Env()
 
 BRAND = "Scalamandre"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 
 class Command(BaseCommand):
@@ -51,14 +53,9 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.addProducts()
 
-        if "update" in options['functions']:
-            processor = Processor()
-            processor.DatabaseManager.updateProducts(
-                feeds=Scalamandre.objects.all())
-
         if "image" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.downloadImages()
+            processor.image()
 
         if "inventory" in options['functions']:
             processor = Processor()
@@ -255,6 +252,39 @@ class Processor:
             products.append(product)
 
         return products
+
+    def image(self, missingOnly=True):
+        hasImageIds = Product.objects.filter(manufacturer__brand=BRAND).filter(
+            images__position=1).values_list('shopifyId', flat=True).distinct()
+
+        feeds = Scalamandre.objects.exclude(productId=None)
+        if missingOnly:
+            feeds = feeds.exclude(productId__in=hasImageIds)
+
+        def downloadImage(_, feed):
+            thumbnail = None
+            roomsets = []
+
+            images = self.requestAPI(
+                f"ScalaFeedAPI/FetchImagesByItemID?ITEMID={feed.mpn}")
+
+            for image in images:
+                if image["HIGHRESIMAGE"] and image["IMAGEPATH"]:
+                    if image["IMAGETYPE"] == "MAIN":
+                        thumbnail = image["HIGHRESIMAGE"] or image["IMAGEPATH"]
+                    else:
+                        roomsets.append(
+                            image["HIGHRESIMAGE"] or image["IMAGEPATH"])
+
+            if thumbnail:
+                common.downloadFileFromLink(
+                    src=thumbnail, dst=f"{IMAGEDIR}/thumbnail/{feed.productId}.jpg")
+
+            for index, roomset in enumerate(roomsets):
+                common.downloadFileFromLink(
+                    src=roomset, dst=f"{IMAGEDIR}/roomset/{feed.productId}_{index + 2}.jpg")
+
+        common.thread(rows=feeds, function=downloadImage)
 
     def inventory(self):
         stocks = []
