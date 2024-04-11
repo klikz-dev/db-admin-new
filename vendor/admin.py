@@ -131,7 +131,7 @@ class ProductAdmin(admin.ModelAdmin):
             'sample',
             'compare',
             'weight',
-            'barcode',
+            'upc',
         ]}),
         ("Status", {'fields': [
             'published',
@@ -165,7 +165,7 @@ class ProductAdmin(admin.ModelAdmin):
         'tradeId',
         'sampleId',
         'freeSampleId',
-        'barcode',
+        'upc',
     ]
 
 

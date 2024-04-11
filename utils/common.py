@@ -182,15 +182,6 @@ def toInt(value):
     return int(toFloat(value))
 
 
-def toPrice(value, markup):
-    price = math.ceil(value * markup * 4) / 4
-
-    if price == int(price):
-        price -= 0.01
-
-    return price
-
-
 def toHandle(text):
     if text:
         handle = str(text).lower().replace(" ", "-")
@@ -232,3 +223,35 @@ def wordInText(word, text):
         return re.search(pattern, str(text), re.IGNORECASE) is not None
     else:
         return False
+
+
+def getPricing(feed):
+    def toPrice(value, markup):
+        price = math.ceil(value * markup * 4) / 4
+        if price == int(price):
+            price -= 0.01
+        return price
+
+    markup = const.markup[feed.brand]
+
+    if feed.type in markup:
+        markup = markup[feed.type]
+    if feed.european and "European" in markup:
+        markup = markup["European"]
+
+    cost = feed.cost
+    map = feed.map
+    consumer = toPrice(cost, markup['consumer'])
+    trade = toPrice(cost, markup['trade'])
+
+    consumer = map if map > 0 else consumer
+
+    if consumer < 20:
+        consumer = 19.99
+    if trade < 17:
+        trade = 16.99
+
+    sample = 5
+    compare = None
+
+    return (consumer, trade, sample, compare)

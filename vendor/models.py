@@ -137,7 +137,7 @@ class Product(models.Model):
     compare = models.FloatField(default=None, blank=True, null=True)
 
     weight = models.FloatField(default=1, null=True, blank=True)
-    barcode = models.CharField(
+    upc = models.CharField(
         max_length=200, default=None, blank=True, null=True)
 
     # Status

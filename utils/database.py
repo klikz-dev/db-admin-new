@@ -1,7 +1,6 @@
 import environ
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
-from django.db import transaction
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from vendor.models import Product, Sync, Type, Manufacturer, Tag, Inventory
 
@@ -11,6 +10,8 @@ env = environ.Env()
 
 
 ATTR_DICT = [
+    'mpn',
+    'sku',
     'pattern',
     'color',
     'collection',
@@ -36,6 +37,8 @@ ATTR_DICT = [
     'features',
     'usage',
     'disclaimer',
+    'upc',
+    'cost',
 ]
 
 
@@ -121,7 +124,7 @@ class DatabaseManager:
                     custom=feed.get('custom', {}),
                 )
                 success += 1
-                # debug.log(self.brand, f"Imported MPN: {feed.get('mpn')}")
+
             except Exception as e:
                 failed += 1
                 debug.warn(self.brand, str(e))
@@ -183,13 +186,82 @@ class DatabaseManager:
 
         uoms = self.Feed.objects.values_list('uom', flat=True).distinct()
         for uom in uoms:
-            if uom not in ['Roll', 'Double Roll', 'Yard', 'Each', 'Item', 'Panel', 'Square Foot', 'Set', 'Tile', 'Spool', 'Meter']:
+            if uom not in ['Roll', 'Yard', 'Each', 'Item', 'Panel', 'Square Foot', 'Set', 'Tile', 'Spool', 'Meter']:
                 unknownUOMs.append(uom)
 
         if len(unknownUOMs) == 0:
             debug.log(self.brand, "UOMs are ok!")
         else:
             debug.warn(self.brand, f"Unknown UOMs: {', '.join(unknownUOMs)}")
+
+    def addProducts(self, private=False):
+        feeds = self.Feed.objects.filter(productId=None).filter(statusP=True)
+
+        def createProduct(index, feed, private):
+            try:
+                Product.objects.get(sku=feed.sku)
+                raise (f"{feed.sku} is already in Shopify.")
+            except Product.DoesNotExist:
+                product = Product(sku=feed.sku)
+
+            # Copy Feed object to Product object temporarily
+            if feed.brand == "Jamie Young" and feed.collection == "LIFESTYLE":
+                private = True
+
+            title = f"{'DecoratorsBest' if private else feed.manufacturer} {feed.name}"
+
+            for attr in ATTR_DICT:
+                setattr(product, attr, getattr(feed, attr))
+            product.manufacturer = Manufacturer.objects.get(
+                name=feed.manufacturer)
+            product.type = Type.objects.get(name=feed.type)
+            product.title = title
+
+            consumer, trade, sample, _ = common.getPricing(feed)
+            product.consumer = consumer
+            product.trade = trade
+            product.sample = sample
+
+            # Upload to Shopify
+            shopifyManager = shopify.ShopifyManager(
+                product=product, thread=index)
+            productData = shopifyManager.createProduct()
+
+            # Save Shopify values back into Product object
+            product.shopifyId = productData['id']
+            product.shopifyHandle = productData['handle']
+
+            for variant in productData['variants']:
+                if variant['title'] == "Consumer":
+                    product.consumerId = variant['id']
+                elif variant['title'] == "Trade":
+                    product.tradeId = variant['id']
+                elif variant['title'] == "Sample":
+                    product.sampleId = variant['id']
+                elif variant['title'] == "Free Sample":
+                    product.freeSampleId = variant['id']
+
+            product.save()
+
+            # Update Feed's shopifyId accordingly
+            feed.productId = productData['id']
+            feed.save()
+
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            total = len(feeds)
+            future_to_feed = {executor.submit(
+                createProduct, index, feed, private): (index, feed) for index, feed in enumerate(feeds)}
+
+            for future in as_completed(future_to_feed):
+                index, feed = future_to_feed[future]
+
+                try:
+                    future.result()
+                    debug.log(
+                        self.brand, f"{index}/{total} - Product {feed.productId} has been created successfully.")
+                except Exception as e:
+                    debug.warn(
+                        self.brand, f"{index}/{total} - Product Upload for {feed.sku} has been failed. {str(e)}")
 
     def statusSync(self, fullSync=False):
         products = Product.objects.filter(manufacturer__brand=self.brand)
@@ -266,30 +338,16 @@ class DatabaseManager:
             except Product.DoesNotExist:
                 continue
 
-            markup = const.markup[self.brand]
-            if feed.type in markup:
-                markup = markup[feed.type]
-            if feed.european and "European" in markup:
-                markup = markup["European"]
+            consumer, trade, sample, compare = common.getPricing(feed)
 
-            cost = feed.cost
-            map = feed.map
-            consumer = common.toPrice(cost, markup['consumer'])
-            trade = common.toPrice(cost, markup['trade'])
-
-            consumer = map if map > 0 else consumer
-
-            if consumer < 20:
-                consumer = 19.99
-            if trade < 17:
-                trade = 16.99
-
-            if cost == product.cost and consumer == product.consumer and trade == product.trade:
+            if feed.cost == product.cost and consumer == product.consumer and trade == product.trade and sample == product.sample and compare == product.compare:
                 continue
             else:
-                product.cost = cost
+                product.cost = feed.cost
                 product.consumer = consumer
                 product.trade = trade
+                product.sample = sample
+                product.compare = compare
                 product.save()
 
                 Sync.objects.get_or_create(

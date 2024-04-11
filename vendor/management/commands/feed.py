@@ -203,7 +203,7 @@ class Processor:
             pattern = product.pattern
             description = product.description or product.title
             weight = product.weight
-            barcode = product.barcode
+            upc = product.upc
 
             cost = product.cost
             consumer = product.consumer
@@ -223,7 +223,7 @@ class Processor:
             color = colors[0] if len(colors) > 0 else product.color
 
             # Fine Tuning
-            barcode = barcode if re.match(r'^\d{11,14}$', barcode) else ""
+            upc = upc if re.match(r'^\d{11,14}$', upc) else ""
 
             privateBrands = [
                 "Covington",
@@ -336,7 +336,7 @@ class Processor:
             ET.SubElement(item, "g:availability").text = "in stock"
             ET.SubElement(
                 item, "g:quantity_to_sell_on_facebook").text = f"{inventory.quantity}"
-            ET.SubElement(item, "g:gtin").text = f"{barcode}"
+            ET.SubElement(item, "g:gtin").text = f"{upc}"
             ET.SubElement(item, "g:price").text = f"{price}"
             ET.SubElement(item, "g:brand").text = f"{manufacturer}"
             ET.SubElement(item, "g:mpn").text = f"{mpn}"

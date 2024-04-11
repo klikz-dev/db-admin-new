@@ -43,7 +43,10 @@ class ShopifyManager:
             self.brand = product.manufacturer.brand
             self.manufacturer = product.manufacturer.name
 
-            self.variantsData = self.generateVariantsData(product=product)
+            self.existingVariantsData = self.generateVariantsData(
+                product=product, new=False)
+            self.newVariantsData = self.generateVariantsData(
+                product=product, new=True)
 
             self.productMetafields = self.generateProductMetafields(
                 product=product)
@@ -78,34 +81,47 @@ class ShopifyManager:
                 json=payload
             )
 
-        if response.status_code == 200:
+        if response.status_code == 200 or response.status_code == 201:
             return json.loads(response.text)
         else:
             debug.warn(
                 PROCESS, f"Shopify API Error for {url}. Error: {str(response.text)}")
             return {}
 
-    def generateVariantsData(self, product):
+    def generateVariantsData(self, product, new=False):
         base_variant_info = {
             "sku": product.sku,
             "cost": product.cost,
             "weight": product.weight,
             "weight_unit": "lb",
-            "barcode": product.barcode
+            "barcode": product.upc,
+            "inventory_management": None,
+            "fulfillment_service": "manual",
         }
 
-        variants_data = [
-            {"id": product.consumerId, "title": "Consumer", "option1": "Consumer",
-                "price": product.consumer, "compare_at_price": product.compare},
-            {"id": product.tradeId, "title": "Trade",
-                "option1": "Trade", "price": product.trade},
-            {"id": product.sampleId, "title": "Sample", "option1": "Sample",
-                "price": product.sample, "cost": 0, "weight": 0},
-            {"id": product.freeSampleId, "title": "Free Sample", "option1": "Free Sample",
-                "price": 0, "cost": 0, "weight": 0}
-        ]
-
-        return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
+        if new:
+            variants_data = [
+                {"title": "Consumer", "option1": "Consumer",
+                    "price": product.consumer},
+                {"title": "Trade", "option1": "Trade", "price": product.trade},
+                {"title": "Sample", "option1": "Sample",
+                    "price": product.sample, "cost": 0, "weight": 0},
+                {"title": "Free Sample", "option1": "Free Sample",
+                    "price": 0, "cost": 0, "weight": 0}
+            ]
+            return [{**base_variant_info, **variant} for variant in variants_data]
+        else:
+            variants_data = [
+                {"id": product.consumerId, "title": "Consumer", "option1": "Consumer",
+                    "price": product.consumer, "compare_at_price": product.compare},
+                {"id": product.tradeId, "title": "Trade",
+                    "option1": "Trade", "price": product.trade},
+                {"id": product.sampleId, "title": "Sample", "option1": "Sample",
+                    "price": product.sample, "cost": 0, "weight": 0},
+                {"id": product.freeSampleId, "title": "Free Sample", "option1": "Free Sample",
+                    "price": 0, "cost": 0, "weight": 0}
+            ]
+            return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
 
     def generateProductMetafields(self, product):
         keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "uom", "minimum", "increment", "repeatH",
@@ -186,8 +202,17 @@ class ShopifyManager:
             }
         }
 
+    def createProduct(self):
+        # Create Product
+        self.productData['product']['variants'] = self.newVariantsData
+
+        productData = self.requestAPI(
+            method="POST", url=f"/products.json", payload=self.productData)
+
+        return productData["product"]
+
     def updateProduct(self):
-        for variantId in self.variantsData.keys():
+        for variantId in self.existingVariantsData.keys():
             # Delete Variant Metafields
             metafieldsData = self.requestAPI(
                 method="GET", url=f"/products/{self.productId}/variants/{variantId}/metafields.json")
@@ -198,7 +223,7 @@ class ShopifyManager:
 
             # Update Variant
             self.requestAPI(
-                method="PUT", url=f"/variants/{variantId}.json", payload=self.variantsData[variantId])
+                method="PUT", url=f"/variants/{variantId}.json", payload=self.existingVariantsData[variantId])
 
         # Delete Product Metafields
         metafieldsData = self.requestAPI(
