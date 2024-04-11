@@ -1,11 +1,5 @@
-import os
 import environ
-import requests
-import json
 import boto3
-
-from utils import debug, common
-from vendor.models import Sync
 
 env = environ.Env()
 AWS_ACCESS = env('AWS_ACCESS')
@@ -32,12 +26,16 @@ class AWSManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def uploadFile(self, src, dst, contentType=None):
-        if contentType:
-            args = {'ContentType': contentType, 'ACL': 'public-read'}
-        else:
-            args = {'ACL': 'public-read'}
+    def uploadImage(self, src, dst, contentType):
+        args = {'ContentType': contentType, 'ACL': 'public-read'}
 
         self.s3.upload_file(src, self.imageBucket, dst, ExtraArgs=args)
 
         return f"https://s3.amazonaws.com/{self.imageBucket}/{dst}"
+
+    def uploadFeed(self, src, dst):
+        args = {'ACL': 'public-read'}
+
+        self.s3.upload_file(src, self.feedBucket, dst, ExtraArgs=args)
+
+        return f"https://s3.amazonaws.com/{self.feedBucket}/{dst}"

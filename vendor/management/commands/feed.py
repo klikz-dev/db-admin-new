@@ -1,13 +1,14 @@
-from vendor.models import Product, Inventory
-from utils import debug, common
+from django.core.management.base import BaseCommand
+
 from tqdm import tqdm
 import xml.dom.minidom as MD
 import xml.etree.ElementTree as ET
-import boto3
 import re
 import environ
 import os
-from django.core.management.base import BaseCommand
+
+from utils import debug, common, aws
+from vendor.models import Product, Inventory
 
 env = environ.Env()
 
@@ -140,29 +141,21 @@ nonMAPSurya = [
 
 
 class Command(BaseCommand):
-    help = f"Run {PROCESS} processor"
+    help = f"Run {PROCESS}"
 
     def add_arguments(self, parser):
-        parser.add_argument('functions', nargs='+', type=str)
+        pass
 
     def handle(self, *args, **options):
-
-        if "main" in options['functions']:
-            with Processor() as processor:
-                processor.feed()
+        with Processor() as processor:
+            processor.feed()
 
 
 class Processor:
     def __init__(self):
-        self.bucket = 'decoratorsbestimages'
+        pass
 
     def __enter__(self):
-        self.s3 = boto3.client(
-            's3',
-            aws_access_key_id=env('AWS_ACCESS'),
-            aws_secret_access_key=env('AWS_SECRET')
-        )
-
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -381,15 +374,13 @@ class Processor:
         self.facebook()
 
     def google(self):
+        awsManager = aws.AWSManager()
 
-        self.s3.upload_file(FEED_DIR, self.bucket, "DecoratorsBestGS.xml", ExtraArgs={
-                            'ACL': 'public-read'})
-        debug.log(
-            PROCESS, 'Uploaded to https://decoratorsbestimages.s3.amazonaws.com/DecoratorsBestGS.xml')
+        feed = awsManager.uploadFeed(src=FEED_DIR, dst="DecoratorsBestGS.xml")
+        debug.log(PROCESS, f"Uploaded to {feed}")
 
     def facebook(self):
+        awsManager = aws.AWSManager()
 
-        self.s3.upload_file(FEED_DIR, self.bucket, "DecoratorsBestFB.xml", ExtraArgs={
-                            'ACL': 'public-read'})
-        debug.log(
-            PROCESS, 'Uploaded to https://decoratorsbestimages.s3.amazonaws.com/DecoratorsBestFB.xml')
+        feed = awsManager.uploadFeed(src=FEED_DIR, dst="DecoratorsBestFB.xml")
+        debug.log(PROCESS, f"Uploaded to {feed}")

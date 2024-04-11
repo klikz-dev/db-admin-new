@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import os
-import time
 import glob
 from PIL import Image as PILImage
 
@@ -21,16 +20,11 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
+        with Processor() as processor:
+            for path in ["thumbnail", "roomset", "hires"]:
+                processor.compress(path)
 
-        while True:
-
-            with Processor() as processor:
-                for path in ["thumbnail", "roomset", "hires"]:
-                    processor.compress(path)
-
-                processor.upload()
-
-            time.sleep(60)
+            processor.upload()
 
 
 class Processor:
@@ -126,7 +120,7 @@ class Processor:
                 return
 
             # Upload Image to AWS
-            imageLink = awsManager.uploadFile(
+            imageLink = awsManager.uploadImage(
                 src=image, dst=f"{fname}{ext}", contentType=contentType)
 
             # Delete Existing Image
