@@ -87,10 +87,13 @@ class Processor:
 
     def upload(self):
         awsManager = aws.AWSManager()
-        shopifyManager = shopify.ShopifyManager()
 
-        # for image in glob.glob(f"{FILEDIR}/images/compressed/*.*"):
+        images = glob.glob(f"{FILEDIR}/images/compressed/*.*")
+
         def uploadImage(index, image):
+
+            shopifyManager = shopify.ShopifyManager(thread=index)
+
             fpath, ext = os.path.splitext(image)
             fname = os.path.basename(fpath)
 
@@ -149,7 +152,7 @@ class Processor:
 
         with ThreadPoolExecutor(max_workers=20) as executor:
             future_to_image = {executor.submit(
-                uploadImage, index, image): image for index, image in enumerate(glob.glob(f"{FILEDIR}/images/compressed/*.*"))}
+                uploadImage, index, image): image for index, image in enumerate(images)}
 
             for future in as_completed(future_to_image):
                 image = future_to_image[future]
