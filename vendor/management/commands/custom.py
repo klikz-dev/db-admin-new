@@ -1,15 +1,14 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import requests
-import json
-import environ
-import os
-from django.db import transaction
-
 from django.core.management.base import BaseCommand
 
-from utils import debug, shopify, common
-from vendor.models import Product, Image, Sync
+import os
+import glob
+import requests
+import environ
 
+from utils import shopify
+
+from vendor.models import Product, Sync
+from monitor.models import Log
 
 env = environ.Env()
 
@@ -25,26 +24,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         processor = Processor()
 
-        if "image" in options['functions']:
-            processor.image()
+        if "clean" in options['functions']:
+            processor.clean()
 
-        if "cleanup" in options['functions']:
-            processor.cleanup()
-
-        if "collections" in options['functions']:
-            processor.collections()
-
-        if "sync-status" in options['functions']:
-            processor.syncStatus()
-
-        if "sync-price" in options['functions']:
-            processor.syncPrice()
-
-        if "sync-tag" in options['functions']:
-            processor.syncTag()
-
-        if "sync-content" in options['functions']:
-            processor.syncContent()
+        if "delete" in options['functions']:
+            processor.delete()
 
 
 class Processor:
@@ -57,112 +41,20 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def requestAPI(self, url):
-        responseData = requests.get(
-            url,
-            headers={
-                'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
-            }
-        )
-        responseJson = json.loads(responseData.text)
+    def clean(self):
+        # Empty Image folders
+        imageFolders = ["thumbnail", "roomset", "hires", "compressed"]
+        for imageFolder in imageFolders:
+            for file in glob.glob(f"{FILEDIR}/images/{imageFolder}/*.*"):
+                os.remove(file)
 
-        return responseJson
+        # Empty Logs
+        Log.objects.all().delete()
 
-    def image(self):
-        # Image.objects.all().delete()
+        # Empty Syncs
+        Sync.objects.all().delete()
 
-        products = Product.objects.all()
-        total = len(products)
-
-        def importImage(index, product):
-            imagesData = self.requestAPI(
-                f"https://www.decoratorsbestam.com/api/images/?product={product.shopifyId}")
-
-            imagesArray = imagesData['results']
-
-            for image in imagesArray:
-                imageURL = image['imageURL']
-                imageIndex = image['imageIndex']
-                imageId = image['imageId']
-
-                if imageIndex != 20:
-                    continue
-
-                fname, ext = os.path.splitext(imageURL.split('?')[0])
-                common.downloadFileFromLink(
-                    src=imageURL, dst=f"{FILEDIR}/images/hires/{product.shopifyId}_hires{ext}")
-
-                # Image.objects.update_or_create(
-                #     shopifyId=imageId,
-                #     url=imageURL,
-                #     position=imageIndex,
-                #     product=product,
-                #     hires=False,
-                # )
-
-                debug.log(
-                    "Migrator", f"{index}/{total} - {product} image {imageURL}")
-
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            future_to_product = {executor.submit(
-                importImage, index, product): product for index, product in enumerate(products)}
-
-            for future in as_completed(future_to_product):
-                product = future_to_product[future]
-
-                try:
-                    future.result()
-
-                except Exception as e:
-                    debug.warn(
-                        "Migrator", f"Content Sync for {product.shopifyId} has been failed. {str(e)}")
-
-    def cleanup(self):
-
-        # Temp: Enable JFF Casadeco, Caselio, ILIV
-        # shopifyManager = shopify.ShopifyManager()
-
-        # vendors = ["Casadeco", "Caselio", "ILIV"]
-        # for vendor_name in vendors:
-        #     base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
-        #     params = {'vendor': vendor_name,
-        #               'limit': 250, 'fields': 'id,title'}
-        #     headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
-
-        #     session = requests.Session()
-        #     session.headers.update(headers)
-
-        #     response = session.get(base_url, params=params)
-
-        #     page = 1
-        #     while True:
-        #         print(
-        #             f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
-
-        #         products = response.json()['products']
-
-        #         product_ids = {
-        #             str(product['id']) for product in products}
-
-        #         existing_product_ids = set(Product.objects.filter(
-        #             shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
-
-        #         products_to_remove = product_ids - existing_product_ids
-
-        #         for product_id in products_to_remove:
-        #             print(f"Unpublish: {product_id}")
-
-        #             shopifyManager.updateProductStatus(
-        #                 productId=product_id, status=False)
-
-        #         if 'next' in response.links:
-        #             next_url = response.links['next']['url']
-        #             response = session.get(next_url)
-        #             page += 1
-        #         else:
-        #             break
-
-        # return
+    def delete(self):
 
         shopifyManager = shopify.ShopifyManager()
 
@@ -189,12 +81,8 @@ class Processor:
             products_to_remove = product_ids - existing_product_ids
 
             for product_id in products_to_remove:
-                print(f"Unpublish: {product_id}")
-
-                shopifyManager.updateProductStatus(
-                    productId=product_id, status=False)
-
-                # shopifyManager.deleteProduct(product_id)
+                print(f"Delete: {product_id}")
+                shopifyManager.deleteProduct(product_id)
 
             if 'next' in response.links:
                 next_url = response.links['next']['url']
@@ -202,125 +90,3 @@ class Processor:
                 page += 1
             else:
                 break
-
-    def collections(self):
-
-        base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections.json"
-        params = {'limit': 250, 'fields': 'id,handle,rules'}
-        headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
-
-        session = requests.Session()
-        session.headers.update(headers)
-
-        response = session.get(base_url, params=params)
-
-        # Get Collections
-        collections = []
-        while True:
-            collections = response.json()['smart_collections']
-
-            for collection in collections:
-                print(f"Updating: {collection['handle']}")
-
-                collections.append({
-                    'id': collection['id'],
-                    'handle': collection['handle'],
-                    'rules': collection['rules']
-                })
-
-            if 'next' in response.links:
-                next_url = response.links['next']['url']
-                response = session.get(next_url)
-            else:
-                break
-
-        with open(f"{FILEDIR}/collections.json", 'w') as outfile:
-            json.dump(collections, outfile, indent=2)
-
-        # Fix Collection Rules
-        for i, collection in enumerate(collections):
-            rules = collection['rules']
-            for index, rule in enumerate(rules):
-                if rule['column'] == "type" and "Throw Pillows" == rule['condition']:
-                    rules[index]['condition'] = "Pillow"
-
-            collections[i]['rules'] = rules
-
-        # Push Updated Collection Rules
-        for collection in collections:
-            try:
-                requests.request(
-                    "PUT",
-                    f"https://decoratorsbest.myshopify.com/admin/api/2024-01/smart_collections/{collection['id']}.json",
-                    headers=headers,
-                    json={
-                        "smart_collection": {
-                            "rules": collection['rules']
-                        }
-                    }
-                )
-
-                print(collection['handle'])
-            except Exception as e:
-                print(e)
-                continue
-
-    def syncStatus(self):
-
-        Sync.objects.filter(type="Status").delete()
-
-        product_ids = Product.objects.values_list('shopifyId', flat=True)
-
-        sync_objects = [Sync(productId=shopify_id, type="Status")
-                        for shopify_id in product_ids]
-
-        with transaction.atomic():
-            try:
-                Sync.objects.bulk_create(sync_objects)
-            except Exception as e:
-                print(e)
-
-    def syncPrice(self):
-
-        Sync.objects.filter(type="Price").delete()
-
-        product_ids = Product.objects.values_list('shopifyId', flat=True)
-
-        sync_objects = [Sync(productId=shopify_id, type="Price")
-                        for shopify_id in product_ids]
-
-        with transaction.atomic():
-            try:
-                Sync.objects.bulk_create(sync_objects)
-            except Exception as e:
-                print(e)
-
-    def syncTag(self):
-
-        Sync.objects.filter(type="Tag").delete()
-
-        product_ids = Product.objects.values_list('shopifyId', flat=True)
-
-        sync_objects = [Sync(productId=shopify_id, type="Tag")
-                        for shopify_id in product_ids]
-
-        with transaction.atomic():
-            try:
-                Sync.objects.bulk_create(sync_objects)
-            except Exception as e:
-                print(e)
-
-    def syncContent(self):
-
-        Sync.objects.filter(type="Content").delete()
-
-        product_ids = Product.objects.values_list('shopifyId', flat=True)
-
-        sync_objects = [Sync(productId=shopify_id, type="Content")
-                        for shopify_id in product_ids]
-
-        with transaction.atomic():
-            try:
-                Sync.objects.bulk_create(sync_objects)
-            except Exception as e:
-                print(e)
