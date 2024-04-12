@@ -46,11 +46,6 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.addProducts()
 
-        if "update" in options['functions']:
-            processor = Processor()
-            processor.DatabaseManager.updateProducts(
-                feeds=PeninsulaHome.objects.all(), private=False)
-
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
@@ -207,9 +202,12 @@ class Processor:
                     "counterstool": "Counter Stool",
                     "bar stool": "Bar Stool",
                     "barstool": "Bar Stool",
-                    "buffet": "Dining Table",
+                    "buffet": "Buffet",
+                    "sideboard": "Sideboard",
+                    "headboard": "Headboard",
                     "cube": "Accent Chair",
                     "chair": "Chair",
+                    "seat": "Chair",
                     "dining chair": "Dining Chair",
                     "table": "Accent Table",
                     "dining table": "Dining Table",
