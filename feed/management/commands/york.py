@@ -8,11 +8,14 @@ import re
 import environ
 
 from utils import database, debug, common
+from vendor.models import Product
 
 env = environ.Env()
 
-BRAND = "York"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
+
+BRAND = "York"
 
 
 class Command(BaseCommand):
@@ -62,7 +65,7 @@ class Command(BaseCommand):
 
         if "image" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.downloadImages()
+            processor.image()
 
         if "inventory" in options['functions']:
             processor = Processor()
@@ -261,6 +264,58 @@ class Processor:
                 products.append(product)
 
         return products
+
+    def image(self, fullSync=False):
+        hasImageIds = Product.objects.filter(manufacturer__brand=BRAND).filter(
+            images__position=1).values_list('shopifyId', flat=True).distinct()
+
+        feeds = York.objects.exclude(productId=None)
+        if not fullSync:
+            feeds = feeds.exclude(productId__in=hasImageIds)
+
+        # Get Image Paths in SFTP
+        productIds = []
+        thumbnailArray = {}
+        roomsetsArray = {}
+
+        for folder in common.browseSFTP(brand=BRAND, src=f"/york/"):
+            print(f"Retrieving images in {folder} folder.")
+
+            for image in common.browseSFTP(brand=BRAND, src=f"/york/{folder}"):
+                if "_" in image:
+                    try:
+                        feed = feeds.get(mpn=image.split("_")[0])
+                        productIds.append(feed.productId)
+
+                        if feed.productId not in roomsetsArray:
+                            roomsetsArray[feed.productId] = []
+                        roomsetsArray[feed.productId].append(
+                            f"{folder}/{image}")
+                    except York.DoesNotExist:
+                        continue
+                else:
+                    try:
+                        feed = feeds.get(mpn=image.split(".")[0])
+                        productIds.append(feed.productId)
+
+                        thumbnailArray[feed.productId] = f"{folder}/{image}"
+                    except York.DoesNotExist:
+                        continue
+
+        # Download Images
+        def downloadImage(_, productId):
+            thumbnail = thumbnailArray.get(productId, None)
+            roomsets = roomsetsArray.get(productId, [])
+
+            if thumbnail:
+                common.downloadFileFromSFTP(
+                    brand=BRAND, src=thumbnail, dst=f"{IMAGEDIR}/thumbnail/{productId}.jpg")
+
+            for index, roomset in enumerate(roomsets):
+                common.downloadFileFromSFTP(
+                    brand=BRAND, src=roomset, dst=f"{IMAGEDIR}/roomset/{productId}_{index + 2}.jpg")
+
+        common.thread(rows=list(set(productIds)), function=downloadImage)
 
     def inventory(self):
         stocks = []
