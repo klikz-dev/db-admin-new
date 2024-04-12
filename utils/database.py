@@ -75,7 +75,8 @@ class DatabaseManager:
                     manufacturer=feed.get('manufacturer'),
                     collection=feed.get('collection', ""),
 
-                    description=feed.get('description', feed.get('name')),
+                    description=feed.get(
+                        'description', "") or feed.get('name'),
                     usage=feed.get('usage', ""),
                     disclaimer=feed.get('disclaimer', ""),
                     width=feed.get('width', 0),
