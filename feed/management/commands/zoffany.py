@@ -6,6 +6,7 @@ import environ
 import openpyxl
 import csv
 import codecs
+from shutil import copyfile
 
 from utils import database, debug, common
 
@@ -13,6 +14,7 @@ env = environ.Env()
 
 BRAND = "Zoffany"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 
 class Command(BaseCommand):
@@ -51,14 +53,13 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.addProducts()
 
-        if "update" in options['functions']:
-            processor = Processor()
-            processor.DatabaseManager.updateProducts(
-                feeds=Zoffany.objects.all())
-
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "image-local" in options['functions']:
+            processor = Processor()
+            processor.image()
 
         if "inventory" in options['functions']:
             common.downloadFileFromSFTP(
@@ -209,6 +210,36 @@ class Processor:
             products.append(product)
 
         return products
+
+    def image(self, fullSync=False):
+        images = os.listdir(f"{FILEDIR}/images/zoffany-hires")
+        for image in images:
+            mpn = image.split(".")[0]
+
+            try:
+                feed = Zoffany.objects.exclude(productId=None).get(mpn=mpn)
+            except Zoffany.DoesNotExist:
+                continue
+
+            copyfile(f"{FILEDIR}/images/zoffany-hires/{image}",
+                     f"{IMAGEDIR}/hires/{feed.productId}_hires.jpg")
+            os.remove(f"{FILEDIR}/images/zoffany-hires/{image}")
+            debug.log(BRAND, f"Copied {image} to {feed.productId}_hires.jpg")
+
+        images = os.listdir(f"{FILEDIR}/images/zoffany-roomset")
+        for image in images:
+            mpn = image.split("_")[0]
+            index = int(image.split("_")[1].split(".")[0]) + 1
+
+            try:
+                feed = Zoffany.objects.exclude(productId=None).get(mpn=mpn)
+            except Zoffany.DoesNotExist:
+                continue
+
+            copyfile(f"{FILEDIR}/images/zoffany-roomset/{image}",
+                     f"{IMAGEDIR}/roomset/{feed.productId}_{index}.jpg")
+            os.remove(f"{FILEDIR}/images/zoffany-roomset/{image}")
+            debug.log(BRAND, f"Copied {image} to {feed.productId}_{index}.jpg")
 
     def inventory(self):
         stocks = []
