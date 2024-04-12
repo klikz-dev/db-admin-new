@@ -290,7 +290,7 @@ class Processor:
                         if feed.productId not in roomsetsArray:
                             roomsetsArray[feed.productId] = []
                         roomsetsArray[feed.productId].append(
-                            f"{folder}/{image}")
+                            f"/york/{folder}/{image}")
                     except York.DoesNotExist:
                         continue
                 else:
@@ -298,12 +298,12 @@ class Processor:
                         feed = feeds.get(mpn=image.split(".")[0])
                         productIds.append(feed.productId)
 
-                        thumbnailArray[feed.productId] = f"{folder}/{image}"
+                        thumbnailArray[feed.productId] = f"/york/{folder}/{image}"
                     except York.DoesNotExist:
                         continue
 
         # Download Images
-        def downloadImage(_, productId):
+        for productId in list(set(productIds)):
             thumbnail = thumbnailArray.get(productId, None)
             roomsets = roomsetsArray.get(productId, [])
 
@@ -314,8 +314,6 @@ class Processor:
             for index, roomset in enumerate(roomsets):
                 common.downloadFileFromSFTP(
                     brand=BRAND, src=roomset, dst=f"{IMAGEDIR}/roomset/{productId}_{index + 2}.jpg")
-
-        common.thread(rows=list(set(productIds)), function=downloadImage)
 
     def inventory(self):
         stocks = []
