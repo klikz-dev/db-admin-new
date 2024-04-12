@@ -9,6 +9,7 @@ import paramiko
 import math
 import re
 import inflect
+import pycountry
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -52,7 +53,7 @@ def sendEmail(sender, recipient, subject, body):
 
     else:
         message["To"] = recipient
-        smtp.sendmail(sender, receiver, message.as_string())
+        smtp.sendmail(sender, recipient, message.as_string())
 
     smtp.close()
 
@@ -269,3 +270,14 @@ def getPricing(feed):
     compare = None
 
     return (consumer, trade, sample, compare)
+
+
+def provinceCode(province):
+    try:
+        subdivisions = list(pycountry.subdivisions.get(country_code="US"))
+        for subdivision in subdivisions:
+            if subdivision.name.lower() == province.lower():
+                return subdivision.code.split('-')[-1]
+        return province
+    except LookupError:
+        return province

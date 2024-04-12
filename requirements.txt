@@ -22,6 +22,7 @@ djangorestframework==3.14.0
 et-xmlfile==1.1.0
 idna==3.6
 importlib-metadata==7.1.0
+importlib-resources==5.13.0
 inflect==7.0.0
 jmespath==1.0.1
 Markdown==3.6
@@ -31,6 +32,7 @@ openpyxl==3.1.2
 paramiko==3.3.1
 pillow==10.3.0
 pycodestyle==2.11.0
+pycountry==23.12.11
 pycparser==2.21
 pydantic==2.6.4
 pydantic-core==2.16.3
