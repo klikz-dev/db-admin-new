@@ -301,6 +301,8 @@ class Order(models.Model):
     customerNote = models.CharField(
         max_length=2000, default=None, null=True, blank=True)
 
+    manufacturers = models.JSONField(default=None, null=True, blank=True)
+
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 
@@ -324,8 +326,19 @@ class LineItem(models.Model):
     orderDiscount = models.FloatField(default=0, null=False, blank=False)
     orderWeight = models.FloatField(default=0, null=False, blank=False)
 
-    tracking = models.CharField(
+    backorder = models.CharField(
         max_length=1000, default=None, null=True, blank=True)
 
     def __str__(self):
         return self.order.po
+
+
+class Tracking(models.Model):
+    order = models.ForeignKey(
+        Order, related_name='trackings', on_delete=models.CASCADE, blank=False, null=False)
+
+    brand = models.CharField(max_length=200, null=False, blank=False)
+    number = models.CharField(max_length=200, null=False, blank=False)
+
+    def __str__(self):
+        return self.number

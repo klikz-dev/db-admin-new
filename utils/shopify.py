@@ -315,6 +315,15 @@ class ShopifyManager:
         else:
             return []
 
+    def getOrder(self, orderId):
+        ordersData = self.requestAPI(
+            method="GET", url=f"/orders/{orderId}.json")
+
+        if 'order' in ordersData:
+            return ordersData['order']
+        else:
+            return {}
+
     def deleteImage(self, productId, imageId):
         self.requestAPI(
             method="DELETE", url=f"/products/{productId}/images/{imageId}.json")

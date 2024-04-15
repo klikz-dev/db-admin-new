@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from django.db.models import Max
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
+import json
 
 from utils import debug, shopify, common
 
@@ -59,18 +61,35 @@ class Processor:
 
         shopifyManager = shopify.ShopifyManager()
 
+        url = "https://www.decoratorsbestam.com/api/orders/?limit=1000"
+
         while True:
 
-            lastOrderId = Order.objects.aggregate(
-                Max('shopifyId'))['shopifyId__max']
+            # lastOrderId = Order.objects.aggregate(
+            #     Max('shopifyId'))['shopifyId__max']
 
-            orders = shopifyManager.getOrders(lastOrderId=lastOrderId or 0)
+            # orders = shopifyManager.getOrders(lastOrderId=lastOrderId or 0)
+
+            # Temp
+            ordersRes = requests.request("GET", url, headers={
+                'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
+            })
+            ordersData = json.loads(ordersRes.text)
+            orders = ordersData['results']
+            url = ordersData['next']
+            # Temp
 
             if len(orders) == 0:
                 break
 
-            # for order in tqdm(orders):
-            def syncOrder(order):
+            # for orderTemp in tqdm(orders):
+            def syncOrder(orderTemp):
+                orderId = orderTemp['shopifyOrderId']
+                status = orderTemp['status']
+                reference = orderTemp['referenceNumber']
+                internalNote = orderTemp['note']
+
+                order = shopifyManager.getOrder(orderId=orderId)
 
                 # Addresses
                 customerAddress = self.address(
@@ -91,16 +110,16 @@ class Processor:
                     }
                 )
 
-                status = ''
-                reference = ''
-                internalNote = ''
-                for attr in order['note_attributes']:
-                    if attr['name'] == 'Status':
-                        status = attr['value']
-                    if attr['name'] == 'ReferenceNumber':
-                        reference = attr['value']
-                    if attr['name'] == 'CSNote':
-                        internalNote = attr['value']
+                # status = status
+                # reference = ''
+                # internalNote = ''
+                # for attr in order['note_attributes']:
+                #     if attr['name'] == 'Status':
+                #         status = attr['value']
+                #     if attr['name'] == 'ReferenceNumber':
+                #         reference = attr['value']
+                #     if attr['name'] == 'CSNote':
+                #         internalNote = attr['value']
 
                 # Order Type
                 hasOrder = any("Sample" not in str(item['variant_title'])
@@ -149,6 +168,8 @@ class Processor:
                 )
 
                 # Line Items
+                manufacturers = []
+
                 for lineItem in order['line_items']:
                     try:
                         product = Product.objects.get(
@@ -157,6 +178,12 @@ class Processor:
                         print(
                             f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
                         continue
+
+                    if product.manufacturer.name not in {m['name'] for m in manufacturers}:
+                        manufacturers.append({
+                            "brand": product.manufacturer.brand,
+                            "name": product.manufacturer.name
+                        })
 
                     if "Trade" in lineItem['variant_title']:
                         variant = "Trade"
@@ -180,7 +207,10 @@ class Processor:
                             lineItem['grams'] / 453.592),
                     )
 
-            with ThreadPoolExecutor(max_workers=25) as executor:
+                orderRef.manufacturers = manufacturers
+                orderRef.save()
+
+            with ThreadPoolExecutor(max_workers=20) as executor:
                 future_to_order = {executor.submit(
                     syncOrder, order): order for order in orders}
 
@@ -190,7 +220,7 @@ class Processor:
                     try:
                         future.result()
                         debug.log(
-                            PROCESS, f"PO {order['order_number']} has been synced.")
+                            PROCESS, f"PO {order['orderNumber']} has been synced.")
                     except Exception as e:
                         debug.warn(
-                            PROCESS, f"PO {order['order_number']} has been failed. {str(e)}")
+                            PROCESS, f"PO {order['orderNumber']} has been failed. {str(e)}")

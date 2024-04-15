@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Customer, Order, LineItem
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Customer, Order, LineItem, Tracking
 
 
 @admin.register(Manufacturer)
@@ -317,13 +317,23 @@ class LineItemInline(admin.TabularInline):
     ]
 
 
+class TrackingInline(admin.TabularInline):
+    model = Tracking
+    extra = 0
+
+    fields = [
+        'brand',
+        'number',
+    ]
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         'customer',
     ]
 
-    inlines = [LineItemInline]
+    inlines = [LineItemInline, TrackingInline]
 
     fieldsets = [
         ('Primary Keys', {'fields': [
@@ -373,6 +383,7 @@ class OrderAdmin(admin.ModelAdmin):
             'reference',
             'internalNote',
             'customerNote',
+            'manufacturers',
         ]}),
     ]
 
@@ -429,4 +440,31 @@ class LineItemAdmin(admin.ModelAdmin):
 
     search_fields = [
         'variant',
+    ]
+
+
+@admin.register(Tracking)
+class TrackingAdmin(admin.ModelAdmin):
+    autocomplete_fields = [
+        'order',
+    ]
+
+    fields = [
+        'order',
+        'brand',
+        'number',
+    ]
+
+    list_display = [
+        'order',
+        'brand',
+        'number',
+    ]
+
+    list_filter = [
+        'brand',
+    ]
+
+    search_fields = [
+        'number',
     ]

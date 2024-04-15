@@ -127,6 +127,9 @@ class Processor:
                 else:
                     repeat = ""
 
+                specs = [("Packing", "3 rolls in a box")
+                         ] if "3*" in size else []
+
                 # Additional Information
                 usage = common.toText(row[0] or row[17])
                 material = common.toText(row[14])
@@ -136,13 +139,13 @@ class Processor:
                 weight = common.toFloat(row[22]) * 2.2
                 upc = common.toInt(row[23])
 
-                # Pricing
-                cost = common.toFloat(row[10])
-
                 # Measurement
                 uom = type
                 minimum = 3 if "3*" in size else 1
                 increment = 3 if "3*" in size else 1
+
+                # Pricing
+                cost = round(common.toFloat(row[10]) / 3, 2)
 
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {color} {row[13]} {material} {finish}"
@@ -222,6 +225,8 @@ class Processor:
                 'country': country,
                 'weight': weight,
                 'upc': upc,
+
+                'specs': specs,
 
                 'uom': uom,
                 'minimum': minimum,
