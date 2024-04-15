@@ -175,8 +175,8 @@ class Processor:
                         product = Product.objects.get(
                             shopifyId=lineItem['product_id'])
                     except Product.DoesNotExist:
-                        print(
-                            f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
+                        debug.warn(PROCESS,
+                                   f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
                         continue
 
                     if product.manufacturer.name not in {m['name'] for m in manufacturers}:
