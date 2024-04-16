@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Inventory, Order, LineItem, Product, Image, Customer
+from .models import Inventory, Order, LineItem, Product, Tracking, Image, Customer
 
 
 class InventorySerializer(serializers.ModelSerializer):
@@ -31,6 +31,13 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# Tracking
+class TrackingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tracking
+        fields = '__all__'
+
+
 # Line Items
 class LineItemOrder(serializers.ModelSerializer):
     class Meta:
@@ -57,17 +64,24 @@ class LineItemDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class LineItemUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LineItem
+        fields = ['backorder']
+
+
 # Orders
 class OrderListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['shopifyId', 'po', 'orderType', 'email', 'shippingFirstName', 'shippingLastName', 'total',
-                  'shippingMethod', 'status', 'reference', 'orderDate', 'internalNote', 'manufacturers', 'lineItems']
+        fields = ['shopifyId', 'po', 'status', 'orderDate', 'orderType', 'email', 'shippingFirstName',
+                  'shippingLastName', 'total', 'manufacturers', 'shippingMethod', 'reference', 'internalNote']
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(many=False, read_only=True)
     lineItems = LineItemDetailSerializer(many=True, read_only=True)
+    trackings = TrackingSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order
@@ -79,4 +93,4 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['shippingFirstName', 'shippingLastName', 'shippingCompany', 'shippingAddress1', 'shippingAddress2',
                   'shippingCity', 'shippingState', 'shippingZip', 'shippingCountry', 'shippingPhone', 'shippingMethod',
-                  'total', 'internalNote', 'customerNote', 'status', 'manufacturers', 'reference']
+                  'total', 'internalNote', 'status', 'reference']

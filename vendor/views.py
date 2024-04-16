@@ -13,6 +13,7 @@ from .serializers import OrderDetailSerializer
 from .serializers import OrderUpdateSerializer
 from .serializers import LineItemListSerializer
 from .serializers import LineItemDetailSerializer
+from .serializers import LineItemUpdateSerializer
 
 
 class InventoryViewSet(viewsets.ModelViewSet):
@@ -184,3 +185,17 @@ class LineItemViewSet(viewsets.ModelViewSet):
         serializer = LineItemDetailSerializer(
             instance=lineItem, context={'request': request})
         return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        lineItems = LineItem.objects.all()
+        lineItem = get_object_or_404(lineItems, pk=pk)
+        serializer = LineItemUpdateSerializer(data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.update(
+                instance=lineItem, validated_data=serializer.validated_data)
+
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)

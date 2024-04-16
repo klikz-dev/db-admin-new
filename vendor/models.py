@@ -326,8 +326,7 @@ class LineItem(models.Model):
     orderDiscount = models.FloatField(default=0, null=False, blank=False)
     orderWeight = models.FloatField(default=0, null=False, blank=False)
 
-    backorder = models.CharField(
-        max_length=1000, default=None, null=True, blank=True)
+    backorder = models.DateField(default=None, null=True, blank=True)
 
     def __str__(self):
         return self.order.po

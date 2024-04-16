@@ -7,7 +7,7 @@ import json
 
 from utils import debug, shopify, common
 
-from vendor.models import Customer, Order, LineItem, Product
+from vendor.models import Customer, Order, LineItem, Product, Tracking
 from monitor.models import Log
 
 PROCESS = "Sync-Order"
@@ -209,6 +209,20 @@ class Processor:
 
                 orderRef.manufacturers = manufacturers
                 orderRef.save()
+
+                # Tracking
+                trackingsRes = requests.request("GET",  f"https://www.decoratorsbestam.com/api/trackings/?po={order['order_number']}", headers={
+                    'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
+                })
+                trackingsData = json.loads(trackingsRes.text)
+                trackings = trackingsData['results']
+                for tracking in trackings:
+                    Tracking.objects.create(
+                        order=orderRef,
+                        brand=tracking['brand'],
+                        number=tracking['trackingNumber']
+                    )
+                ##########
 
             with ThreadPoolExecutor(max_workers=20) as executor:
                 future_to_order = {executor.submit(
