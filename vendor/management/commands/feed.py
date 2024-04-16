@@ -283,11 +283,14 @@ class Processor:
                 skipped += 1
                 continue
 
-            if brand == "Brewster" and "Peel & Stick" in title:
-                debug.log(
-                    PROCESS, f"IGNORED SKU {sku}. Brewster Peel & Stick")
-                skipped += 1
-                continue
+            if brand == "Brewster":
+                sku = sku.replace("BREWSTER", "Brewster")
+                sku = sku.replace("STREET", "Street")
+                if "Peel & Stick" in title:
+                    debug.log(
+                        PROCESS, f"IGNORED SKU {sku}. Brewster Peel & Stick")
+                    skipped += 1
+                    continue
 
             if bool(re.search(r'\bget\b', f"{title}, {description}", re.IGNORECASE)):
                 debug.log(
