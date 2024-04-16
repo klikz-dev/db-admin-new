@@ -223,8 +223,8 @@ class Processor:
                     # Primary Attributes
                     mpn = common.toText(row[ids["mpnId"]])
 
-                    sku_prefix = "Street" if row[ids["manufacturerId"]
-                                                 ] == "A-Street Prints" else "Brewster"
+                    sku_prefix = "STREET" if row[ids["manufacturerId"]
+                                                 ] == "A-Street Prints" else "BREWSTER"
                     sku = f"{sku_prefix} {mpn}"
 
                     pattern = common.toText(row[ids["patternId"]]) or mpn
