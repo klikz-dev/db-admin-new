@@ -32,7 +32,24 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 # Line Items
-class LineItemSerializer(serializers.ModelSerializer):
+class LineItemOrder(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['shopifyId', 'po', 'email', 'shippingFirstName', 'shippingLastName', 'shippingAddress1', 'shippingAddress2',
+                  'shippingCity', 'shippingState', 'shippingZip', 'shippingCountry', 'shippingPhone', 'shippingMethod',
+                  'status', 'orderType', 'total', 'manufacturers', 'reference', 'orderDate', 'internalNote', 'shippingMethod']
+
+
+class LineItemListSerializer(serializers.ModelSerializer):
+    order = LineItemOrder(many=False, read_only=True)
+    product = ProductSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = LineItem
+        fields = '__all__'
+
+
+class LineItemDetailSerializer(serializers.ModelSerializer):
     product = ProductSerializer(many=False, read_only=True)
 
     class Meta:
@@ -50,7 +67,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     customer = CustomerSerializer(many=False, read_only=True)
-    lineItems = LineItemSerializer(many=True, read_only=True)
+    lineItems = LineItemDetailSerializer(many=True, read_only=True)
 
     class Meta:
         model = Order

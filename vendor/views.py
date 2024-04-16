@@ -2,12 +2,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, Max
 
 from datetime import datetime, timedelta
 
-from .models import Inventory, Order, Product
-from .serializers import InventorySerializer, OrderListSerializer, OrderDetailSerializer, OrderUpdateSerializer
+from .models import Inventory, Order, LineItem
+from .serializers import InventorySerializer
+from .serializers import OrderListSerializer
+from .serializers import OrderDetailSerializer
+from .serializers import OrderUpdateSerializer
+from .serializers import LineItemListSerializer
+from .serializers import LineItemDetailSerializer
 
 
 class InventoryViewSet(viewsets.ModelViewSet):
@@ -53,6 +58,30 @@ class OrderViewSet(viewsets.ModelViewSet):
             orders = orders.filter(orderDate__range=(datetime.strptime(
                 fr, '%y-%m-%d'), datetime.strptime(to, '%y-%m-%d') + timedelta(days=1)))
 
+        type = self.request.query_params.get('type')
+        if type is not None:
+            if type == "s":
+                orders = orders.filter(lineItems__variant__icontains="Sample")
+            else:
+                orders = orders.exclude(lineItems__variant__icontains="Sample")
+
+        brand = self.request.query_params.get('brand')
+        if brand is not None:
+            lastProcessed = orders.filter(
+                status__icontains=f"{brand} OM").aggregate(Max('shopifyId'))['shopifyId__max'] or 0
+            orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
+                Q(status__icontains='Processed') |
+                Q(status__icontains='Cancel') |
+                Q(status__icontains='Hold') |
+                Q(status__icontains='Call') |
+                Q(status__icontains='Return') |
+                Q(status__icontains='Discontinued') |
+                Q(status__icontains='Back') |
+                Q(status__icontains='B/O') |
+                Q(status__icontains='Manually') |
+                Q(status__icontains='CFA')
+            ).filter(manufacturers__icontains=brand)
+
         po = self.request.query_params.get('po')
         if po is not None:
             orders = orders.filter(po=po)
@@ -79,14 +108,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        # orderRes = shopify.getOrderById(pk)
-
-        # if orderRes.get('order'):
-        #     try:
-        #         common.importOrder(orderRes['order'])
-        #     except Exception as e:
-        #         debug.debug("Order", 1, str(e))
-
         orders = Order.objects.all()
         order = get_object_or_404(orders, pk=pk)
         serializer = OrderDetailSerializer(
@@ -102,10 +123,64 @@ class OrderViewSet(viewsets.ModelViewSet):
             serializer.update(
                 instance=order, validated_data=serializer.validated_data)
 
-            updatedOrder = get_object_or_404(orders, pk=pk)
-            # shopify.updateOrderById(order.shopifyOrderId, updatedOrder)
-
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class LineItemViewSet(viewsets.ModelViewSet):
+
+    queryset = LineItem.objects.all()
+    serializer_class = LineItemListSerializer
+
+    def list(self, request):
+        lineItems = LineItem.objects.all()
+
+        # Filter by Brand Name
+        brand = self.request.query_params.get('brand')
+        if brand is not None:
+            lastProcessed = Order.objects.filter(
+                status__icontains=f"{brand} OM").aggregate(Max('shopifyId'))['shopifyId__max'] or 0
+
+            lineItems = lineItems.filter(order__shopifyId__gt=lastProcessed).filter(
+                product__manufacturer__brand=brand)
+        ######################
+
+        # Filter by Processor Type
+        type = self.request.query_params.get('type')
+        if type == 's':
+            lineItems = lineItems.filter(variant__icontains='Sample')
+        if type == 'o':
+            lineItems = lineItems.exclude(variant__icontains='Sample')
+        ###########################
+
+        # Filter by Status
+        lineItems = lineItems.exclude(
+            Q(order__status__icontains='Processed') |
+            Q(order__status__icontains='Cancel') |
+            Q(order__status__icontains='Hold') |
+            Q(order__status__icontains='Call') |
+            Q(order__status__icontains='Return') |
+            Q(order__status__icontains='Discontinued') |
+            Q(order__status__icontains='Back') |
+            Q(order__status__icontains='B/O') |
+            Q(order__status__icontains='Manually') |
+            Q(order__status__icontains='CFA')
+        )
+        ###########################
+
+        page = self.paginate_queryset(lineItems)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(lineItems, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        lineItems = LineItem.objects.all()
+        lineItem = get_object_or_404(lineItems, pk=pk)
+        serializer = LineItemDetailSerializer(
+            instance=lineItem, context={'request': request})
+        return Response(serializer.data)

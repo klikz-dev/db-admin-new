@@ -324,6 +324,15 @@ class ShopifyManager:
         else:
             return {}
 
+    def updateOrder(self, orderId, payload):
+        ordersData = self.requestAPI(
+            method="PUT", url=f"/orders/{orderId}.json", payload=payload)
+
+        if 'order' in ordersData:
+            return ordersData['order']
+        else:
+            return {}
+
     def deleteImage(self, productId, imageId):
         self.requestAPI(
             method="DELETE", url=f"/products/{productId}/images/{imageId}.json")
