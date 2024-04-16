@@ -21,13 +21,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            common.downloadFileFromSFTP(
-                brand=BRAND,
-                src="/noir/NOIR_MASTER.xlsx",
-                dst=f"{FILEDIR}/noir-master.xlsx",
-                fileSrc=True,
-                delete=False
-            )
+            # common.downloadFileFromSFTP(
+            #     brand=BRAND,
+            #     src="/noir/NOIR_MASTER.xlsx",
+            #     dst=f"{FILEDIR}/noir-master.xlsx",
+            #     fileSrc=True,
+            #     delete=False
+            # )
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -99,66 +99,61 @@ class Processor:
         sh = wb.worksheets[0]
 
         for row in sh.iter_rows(min_row=2, values_only=True):
-            # try:
-            if True:
+            try:
                 # Primary Keys
-                mpn = common.toText(row[2])
+                mpn = common.toText(row[0])
                 sku = f"NOIR {mpn}"
 
-                pattern = common.toText(row[6])
-                color = common.toText(row[20])
+                pattern = common.toText(row[1])
+                color = common.toText(row[21])
 
-                name = common.toText(row[6])
+                name = pattern
 
                 # Categorization
                 brand = BRAND
                 manufacturer = BRAND
-                type = common.toText(row[5]).title()
+                type = common.toText(row[6]).title()
                 collection = f"{brand} {type}"
 
                 # Main Information
-                description = common.toText(row[19])
-                width = common.toFloat(row[16])
-                length = common.toFloat(row[15])
-                height = common.toFloat(row[17])
+                description = common.toText(row[27])
+                width = common.toFloat(row[10])
+                length = common.toFloat(row[12])
+                height = common.toFloat(row[11])
 
                 # Additional Information
-                material = common.toText(row[12])
-                country = common.toText(row[35])
-                weight = common.toFloat(row[14])
-                upc = common.toInt(row[13])
-
-                dimension = common.toText(row[18])
-                specs = [
-                    ("Dimension", dimension),
-                ]
+                material = common.toText(row[20])
+                country = common.toText(row[19])
+                weight = common.toFloat(row[13])
+                upc = common.toInt(row[5])
 
                 # Pricing
-                cost = common.toFloat(row[7])
-                map = common.toFloat(row[8])
+                cost = common.toFloat(row[3])
+                map = common.toFloat(row[4])
+                msrp = common.toFloat(row[2])
 
                 # Measurement
                 uom = "Item"
 
                 # Tagging
-                keywords = f"{collection} {pattern} {description} {color} {material} {name}"
+                keywords = f"{collection} {pattern} {description} {color} {material} {name} {row[26]}"
                 colors = color
 
                 # Image
-                thumbnail = row[51].replace("dl=0", "dl=1")
-                roomsets = [row[id].replace("dl=0", "dl=1")
-                            for id in range(52, 65) if row[id]]
+                thumbnail = row[51].replace("dl=0", "dl=1").replace(" ", "%20")
+                roomsets = [row[id].replace("dl=0", "dl=1").replace(" ", "%20")
+                            for id in range(52, 70) if row[id]]
 
                 # Status
                 statusP = True
                 statusS = False
 
                 # Shipping
-                boxHeight = common.toFloat(row[43])
-                boxWidth = common.toFloat(row[44])
-                boxDepth = common.toFloat(row[45])
-                boxWeight = common.toFloat(row[42])
-                if boxWidth > 95 or boxHeight > 95 or boxDepth > 95 or boxWeight > 40 or weight > 40:
+                boxWidth = common.toFloat(row[15])
+                boxLength = common.toFloat(row[17])
+                boxHeight = common.toFloat(row[16])
+                boxWeight = common.toFloat(row[18])
+                if boxWidth > 95 or boxLength > 95 or boxHeight > 95 or boxWeight > 40 or weight > 40:
                     whiteGlove = True
                 else:
                     whiteGlove = False
@@ -175,6 +170,8 @@ class Processor:
                     "Sideboard": "Side Table",
                     "Console/Accent Table": "Accent Table",
                     "Sconce": "Wall Sconce",
+                    "Bar Table": "Accent Table",
+                    "Accent Tables, Stool": "Accent Table",
                 }
                 type = TYPE_DICT.get(type, type)
 
@@ -188,9 +185,9 @@ class Processor:
                 if cost == 0 or not pattern or not color or not type:
                     continue
 
-            # except Exception as e:
-            #     debug.warn(BRAND, str(e))
-            #     continue
+            except Exception as e:
+                debug.warn(BRAND, str(e))
+                continue
 
             product = {
                 'mpn': mpn,
@@ -214,12 +211,11 @@ class Processor:
                 'weight': weight,
                 'upc': upc,
 
-                'specs': specs,
-
                 'uom': uom,
 
                 'cost': cost,
                 'map': map,
+                'msrp': msrp,
 
                 'keywords': keywords,
                 'colors': colors,

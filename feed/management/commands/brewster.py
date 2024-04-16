@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            processor.downloadDatasheets()
+            # processor.downloadDatasheets()
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -79,11 +79,11 @@ class Processor:
         self.DatabaseManager = database.DatabaseManager(
             brand=BRAND, Feed=Brewster)
 
-        transport = paramiko.Transport(
-            (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
-        transport.connect(
-            username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
-        self.imageServer = paramiko.SFTPClient.from_transport(transport)
+        # transport = paramiko.Transport(
+        #     (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
+        # transport.connect(
+        #     username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
+        # self.imageServer = paramiko.SFTPClient.from_transport(transport)
 
     def __enter__(self):
         return self
@@ -136,23 +136,15 @@ class Processor:
             if row[14] == "Y":
                 discontinuedMPNs.append(mpn)
 
-            cost = common.toFloat(row[13])
-            map = common.toFloat(row[12])
-            msrp = common.toFloat(row[11])
+            cost = common.toFloat(row[9])
+            map = common.toFloat(row[8])
+            msrp = common.toFloat(row[7])
 
             prices[mpn] = {
                 'cost': cost,
                 'map': map,
                 'msrp': msrp
             }
-
-        wb = openpyxl.load_workbook(
-            f"{FILEDIR}/brewster-od.xlsx", data_only=True)
-        sh = wb.worksheets[0]
-        for row in sh.iter_rows(min_row=2, values_only=True):
-            mpn = common.toText(row[2])
-            if mpn not in discontinuedMPNs:
-                discontinuedMPNs.append(mpn)
 
         # Best Sellers
         bestsellingMPNs = []
@@ -231,8 +223,8 @@ class Processor:
                     # Primary Attributes
                     mpn = common.toText(row[ids["mpnId"]])
 
-                    sku_prefix = "STREET" if row[ids["manufacturerId"]
-                                                 ] == "A-Street Prints" else "BREWSTER"
+                    sku_prefix = "Street" if row[ids["manufacturerId"]
+                                                 ] == "A-Street Prints" else "Brewster"
                     sku = f"{sku_prefix} {mpn}"
 
                     pattern = common.toText(row[ids["patternId"]]) or mpn
