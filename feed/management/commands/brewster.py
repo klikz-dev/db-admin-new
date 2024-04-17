@@ -136,9 +136,9 @@ class Processor:
             if row[14] == "Y":
                 discontinuedMPNs.append(mpn)
 
-            cost = common.toFloat(row[9])
-            map = common.toFloat(row[8])
-            msrp = common.toFloat(row[7])
+            cost = common.toFloat(row[13])
+            map = common.toFloat(row[12])
+            msrp = common.toFloat(row[11])
 
             prices[mpn] = {
                 'cost': cost,
