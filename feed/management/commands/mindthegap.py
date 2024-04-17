@@ -141,11 +141,9 @@ class Processor:
 
                 # Measurement
                 uom = type
-                minimum = 3 if "3*" in size else 1
-                increment = 3 if "3*" in size else 1
 
                 # Pricing
-                cost = round(common.toFloat(row[10]) / 3, 2)
+                cost = common.toFloat(row[10])
 
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {color} {row[13]} {material} {finish}"
@@ -170,6 +168,7 @@ class Processor:
                     "Pillow": "Item"
                 }
                 uom = UOM_DICT.get(type, uom)
+                uom = "3 rolls in a box" if "3*" in size else uom
 
                 sizePattern = re.findall(
                     r"(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)", size)
@@ -229,8 +228,6 @@ class Processor:
                 'specs': specs,
 
                 'uom': uom,
-                'minimum': minimum,
-                'increment': increment,
 
                 'cost': cost,
 
