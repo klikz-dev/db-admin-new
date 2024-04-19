@@ -120,7 +120,8 @@ class Processor:
                 repeatH = common.toFloat(row[34])
 
                 # Additional Information
-                yardsPR = common.toFloat(row[22])
+                yardsPR = common.toFloat(
+                    row[22]) if "Bolt" in row[43] else common.toFloat(row[22]) / 2
                 usage = type
                 finish = common.toText(row[11])
                 material = common.toText(row[40])
@@ -138,12 +139,11 @@ class Processor:
 
                 # Measurement
                 uom = common.toText(row[43])
-                minimum = 2 if 'Bolt' in uom else 1
-                increment = 2 if 'Bolt' in uom else 1
 
                 # Pricing
-                cost = common.toFloat(row[12])
-                map = 0 if row[53] == "No" else common.toFloat(row[14])
+                cost = common.toFloat(row[13] if "Bolt" in uom else row[12])
+                map = 0 if row[53] == "No" else common.toFloat(
+                    row[15] if "Bolt" in uom else row[14])
 
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {row[7]} {row[8]}"
@@ -216,8 +216,6 @@ class Processor:
                 'specs': specs,
 
                 'uom': uom,
-                'minimum': minimum,
-                'increment': increment,
 
                 'cost': cost,
                 'map': map,

@@ -142,7 +142,7 @@ class LineItemViewSet(viewsets.ModelViewSet):
         brand = self.request.query_params.get('brand')
         if brand is not None:
             lastProcessed = Order.objects.filter(
-                status__icontains=f"{brand} OM").aggregate(Max('shopifyId'))['shopifyId__max'] or 0
+                status__icontains=f"{brand} Reference# Needed").aggregate(Max('shopifyId'))['shopifyId__max'] or 0
 
             lineItems = lineItems.filter(order__shopifyId__gt=lastProcessed).filter(
                 product__manufacturer__brand=brand)
