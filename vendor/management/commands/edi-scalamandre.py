@@ -11,7 +11,7 @@ from vendor.models import Order
 
 env = environ.Env()
 SCALA_API_URL = env('SCALA_API_URL')
-SCALA_API_URL = "http://scala-api-dev.scalamandre.com/api"
+SCALA_API_URL = "http://scala-api.scalamandre.com/api"
 
 BRAND = "Scalamandre"
 PROCESS = "Scalamandre EDI"

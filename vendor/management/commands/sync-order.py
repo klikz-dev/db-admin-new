@@ -1,14 +1,10 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Max
 from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import requests
-import json
 
 from utils import debug, shopify, common
 
-from vendor.models import Customer, Order, LineItem, Product, Tracking
-from monitor.models import Log
+from vendor.models import Customer, Order, LineItem, Product
 
 PROCESS = "Sync-Order"
 
@@ -54,187 +50,121 @@ class Processor:
 
     def order(self):
 
-        Log.objects.all().delete()
-        Customer.objects.all().delete()
-        LineItem.objects.all().delete()
-        Order.objects.all().delete()
-
         shopifyManager = shopify.ShopifyManager()
 
-        url = "https://www.decoratorsbestam.com/api/orders/?limit=1000"
+        lastOrderId = Order.objects.aggregate(
+            Max('shopifyId'))['shopifyId__max']
 
-        while True:
+        orders = shopifyManager.getOrders(lastOrderId=lastOrderId or 0)
 
-            # lastOrderId = Order.objects.aggregate(
-            #     Max('shopifyId'))['shopifyId__max']
+        if len(orders) == 0:
+            return
 
-            # orders = shopifyManager.getOrders(lastOrderId=lastOrderId or 0)
+        for order in tqdm(orders):
 
-            # Temp
-            ordersRes = requests.request("GET", url, headers={
-                'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
-            })
-            ordersData = json.loads(ordersRes.text)
-            orders = ordersData['results']
-            url = ordersData['next']
-            # Temp
+            # Addresses
+            customerAddress = self.address(
+                address_data=order['customer'].get('default_address', None) or order['shipping_address'])
+            shippingAddress = self.address(
+                address_data=order['shipping_address'], prefix='shipping')
+            billingAddress = self.address(
+                address_data=order['billing_address'] or order['shipping_address'], prefix='billing')
 
-            if len(orders) == 0:
-                break
+            # Customer
+            customer, _ = Customer.objects.get_or_create(
+                shopifyId=order['customer']['id'],
+                defaults={
+                    'email': order['customer']['email'],
+                    **customerAddress,
+                    'note': order['customer']['note'],
+                    'tags': order['customer']['tags'],
+                }
+            )
 
-            # for orderTemp in tqdm(orders):
-            def syncOrder(orderTemp):
-                orderId = orderTemp['shopifyOrderId']
-                status = orderTemp['status']
-                reference = orderTemp['referenceNumber']
-                internalNote = orderTemp['note']
+            # Order Type
+            hasOrder = any("Sample" not in str(item['variant_title'])
+                           for item in order['line_items'])
+            hasSample = any("Sample" in str(item['variant_title'])
+                            for item in order['line_items'])
+            orderType = "/".join(
+                filter(None, ["Order" if hasOrder else None, "Sample" if hasSample else None]))
 
-                order = shopifyManager.getOrder(orderId=orderId)
+            shipping_lines = order.get('shipping_lines', [])
+            if shipping_lines:
+                shippingCost = shipping_lines[0]['price']
+                shippingMethod = shipping_lines[0]['title']
+            else:
+                shippingCost = 0
+                shippingMethod = "Free Shipping"
 
-                # Addresses
-                customerAddress = self.address(
-                    address_data=order['customer'].get('default_address', None) or order['shipping_address'])
-                shippingAddress = self.address(
-                    address_data=order['shipping_address'], prefix='shipping')
-                billingAddress = self.address(
-                    address_data=order['billing_address'] or order['shipping_address'], prefix='billing')
+            orderRef, _ = Order.objects.update_or_create(
+                shopifyId=order['id'],
+                defaults={
+                    "po": order['order_number'],
 
-                # Customer
-                customer, _ = Customer.objects.get_or_create(
-                    shopifyId=order['customer']['id'],
-                    defaults={
-                        'email': order['customer']['email'],
-                        **customerAddress,
-                        'note': order['customer']['note'],
-                        'tags': order['customer']['tags'],
-                    }
-                )
+                    "orderType": orderType,
+                    "email": order['email'],
+                    "phone": order['phone'],
 
-                # status = status
-                # reference = ''
-                # internalNote = ''
-                # for attr in order['note_attributes']:
-                #     if attr['name'] == 'Status':
-                #         status = attr['value']
-                #     if attr['name'] == 'ReferenceNumber':
-                #         reference = attr['value']
-                #     if attr['name'] == 'CSNote':
-                #         internalNote = attr['value']
+                    "customer": customer,
 
-                # Order Type
-                hasOrder = any("Sample" not in str(item['variant_title'])
-                               for item in order['line_items'])
-                hasSample = any("Sample" in str(item['variant_title'])
-                                for item in order['line_items'])
-                orderType = "/".join(
-                    filter(None, ["Order" if hasOrder else None, "Sample" if hasSample else None]))
+                    **shippingAddress,
+                    **billingAddress,
 
-                shipping_lines = order.get('shipping_lines', [])
-                if shipping_lines:
-                    shippingCost = shipping_lines[0]['price']
-                    shippingMethod = shipping_lines[0]['title']
+                    "subTotal": order['total_line_items_price'],
+                    "discount": order['total_discounts'],
+                    "shippingCost": shippingCost,
+                    "tax": order['current_total_tax'],
+                    "total": order['total_price'],
+
+                    "shippingMethod": shippingMethod,
+                    "weight": round(order['total_weight'] / 453.592, 2),
+                    "orderDate": order['created_at'],
+                    "customerNote": order['note'],
+                }
+            )
+
+            # Line Items
+            manufacturers = []
+
+            for lineItem in order['line_items']:
+                try:
+                    product = Product.objects.get(
+                        shopifyId=lineItem['product_id'])
+                except Product.DoesNotExist:
+                    debug.warn(PROCESS,
+                               f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
+                    continue
+
+                if product.manufacturer.name not in {m['name'] for m in manufacturers}:
+                    manufacturers.append({
+                        "brand": product.manufacturer.brand,
+                        "name": product.manufacturer.name
+                    })
+
+                if "Trade" in lineItem['variant_title']:
+                    variant = "Trade"
+                elif "Free Sample" in lineItem['variant_title']:
+                    variant = "Free Sample"
+                elif "Sample" in lineItem['variant_title']:
+                    variant = "Sample"
                 else:
-                    shippingCost = 0
-                    shippingMethod = "Free Shipping"
+                    variant = "Consumer"
 
-                orderRef, _ = Order.objects.update_or_create(
-                    shopifyId=order['id'],
-                    defaults={
-                        "po": order['order_number'],
+                LineItem.objects.create(
+                    order=orderRef,
+                    product=product,
 
-                        "orderType": orderType,
-                        "email": order['email'],
-                        "phone": order['phone'],
+                    variant=variant,
+                    quantity=lineItem['quantity'],
 
-                        "customer": customer,
-
-                        **shippingAddress,
-                        **billingAddress,
-
-                        "subTotal": order['total_line_items_price'],
-                        "discount": order['total_discounts'],
-                        "shippingCost": shippingCost,
-                        "tax": order['current_total_tax'],
-                        "total": order['total_price'],
-
-                        "shippingMethod": shippingMethod,
-                        "weight": round(order['total_weight'] / 453.592, 2),
-                        "orderDate": order['created_at'],
-                        "status": status,
-                        "reference": reference,
-                        "internalNote": internalNote,
-                        "customerNote": order['note'],
-                    }
+                    orderPrice=lineItem['price'],
+                    orderDiscount=lineItem['total_discount'],
+                    orderWeight=common.toFloat(
+                        lineItem['grams'] / 453.592),
                 )
 
-                # Line Items
-                manufacturers = []
+            orderRef.manufacturers = manufacturers
+            orderRef.save()
 
-                for lineItem in order['line_items']:
-                    try:
-                        product = Product.objects.get(
-                            shopifyId=lineItem['product_id'])
-                    except Product.DoesNotExist:
-                        debug.warn(PROCESS,
-                                   f"Order #{order['order_number']} Product {lineItem['product_id']} not found.")
-                        continue
-
-                    if product.manufacturer.name not in {m['name'] for m in manufacturers}:
-                        manufacturers.append({
-                            "brand": product.manufacturer.brand,
-                            "name": product.manufacturer.name
-                        })
-
-                    if "Trade" in lineItem['variant_title']:
-                        variant = "Trade"
-                    elif "Free Sample" in lineItem['variant_title']:
-                        variant = "Free Sample"
-                    elif "Sample" in lineItem['variant_title']:
-                        variant = "Sample"
-                    else:
-                        variant = "Consumer"
-
-                    LineItem.objects.create(
-                        order=orderRef,
-                        product=product,
-
-                        variant=variant,
-                        quantity=lineItem['quantity'],
-
-                        orderPrice=lineItem['price'],
-                        orderDiscount=lineItem['total_discount'],
-                        orderWeight=common.toFloat(
-                            lineItem['grams'] / 453.592),
-                    )
-
-                orderRef.manufacturers = manufacturers
-                orderRef.save()
-
-                # Tracking
-                trackingsRes = requests.request("GET",  f"https://www.decoratorsbestam.com/api/trackings/?po={order['order_number']}", headers={
-                    'Authorization': 'Token d71bcdc1b60d358e01182da499fd16664a27877a'
-                })
-                trackingsData = json.loads(trackingsRes.text)
-                trackings = trackingsData['results']
-                for tracking in trackings:
-                    Tracking.objects.create(
-                        order=orderRef,
-                        brand=tracking['brand'],
-                        number=tracking['trackingNumber']
-                    )
-                ##########
-
-            with ThreadPoolExecutor(max_workers=20) as executor:
-                future_to_order = {executor.submit(
-                    syncOrder, order): order for order in orders}
-
-                for future in as_completed(future_to_order):
-                    order = future_to_order[future]
-
-                    try:
-                        future.result()
-                        debug.log(
-                            PROCESS, f"PO {order['orderNumber']} has been synced.")
-                    except Exception as e:
-                        debug.warn(
-                            PROCESS, f"PO {order['orderNumber']} has been failed. {str(e)}")
+            debug.log(PROCESS, f"PO {order['orderNumber']} has been synced.")
