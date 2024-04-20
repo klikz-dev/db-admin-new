@@ -56,11 +56,6 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.addProducts()
 
-        if "update" in options['functions']:
-            processor = Processor()
-            processor.DatabaseManager.updateProducts(
-                feeds=Stout.objects.all())
-
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()

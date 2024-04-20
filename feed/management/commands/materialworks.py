@@ -51,11 +51,6 @@ class Command(BaseCommand):
             processor = Processor()
             processor.DatabaseManager.addProducts(private=True)
 
-        if "update" in options['functions']:
-            processor = Processor()
-            processor.DatabaseManager.updateProducts(
-                feeds=Materialworks.objects.all(), private=True)
-
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
