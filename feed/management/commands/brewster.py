@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            # processor.downloadDatasheets()
+            processor.downloadDatasheets()
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -79,11 +79,11 @@ class Processor:
         self.DatabaseManager = database.DatabaseManager(
             brand=BRAND, Feed=Brewster)
 
-        # transport = paramiko.Transport(
-        #     (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
-        # transport.connect(
-        #     username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
-        # self.imageServer = paramiko.SFTPClient.from_transport(transport)
+        transport = paramiko.Transport(
+            (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
+        transport.connect(
+            username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
+        self.imageServer = paramiko.SFTPClient.from_transport(transport)
 
     def __enter__(self):
         return self
