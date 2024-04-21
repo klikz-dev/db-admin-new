@@ -60,7 +60,7 @@ class Processor:
         if len(orders) == 0:
             return
 
-        for order in tqdm(orders):
+        for index, order in enumerate(orders):
 
             # Addresses
             customerAddress = self.address(
@@ -167,4 +167,5 @@ class Processor:
             orderRef.manufacturers = manufacturers
             orderRef.save()
 
-            debug.log(PROCESS, f"PO {order['orderNumber']} has been synced.")
+            debug.log(
+                PROCESS, f"{index}/{len(orders)}: PO {order['order_number']} has been synced.")
