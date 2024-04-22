@@ -85,22 +85,22 @@ class Processor:
             status__in=exceptions)
 
         for order in orders:
-            try:
+            if "2" in order.shippingMethod:
+                shippingMethod = "UPS2"
+            elif "over" in order.shippingMethod.lower():
+                shippingMethod = "UPSN"
+            else:
+                shippingMethod = "UPSG"
 
-                if "2" in order.shippingMethod:
-                    shippingMethod = "UPS2"
-                elif "over" in order.shippingMethod.lower():
-                    shippingMethod = "UPSN"
-                else:
-                    shippingMethod = "UPSG"
+            instructions = "\n".join(filter(None, [
+                f"Ship Instruction: {order.customerNote}" if order.customerNote else None,
+                f"Pack Instruction: DecoratorsBest/{order.shippingLastName}"
+            ]))
+
+            try:
 
                 sampleArray = []
                 orderArray = []
-
-                instructions = "\n".join(filter(None, [
-                    f"Ship Instruction: {order.customerNote}" if order.customerNote else None,
-                    f"Pack Instruction: DecoratorsBest/{order.shippingLastName}"
-                ]))
 
                 for lineItem in order.lineItems.filter(product__manufacturer__brand=BRAND):
                     if lineItem.variant == "Sample" or lineItem.variant == "Free Sample":
