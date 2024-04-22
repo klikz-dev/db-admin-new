@@ -290,8 +290,7 @@ class ShopifyManager:
             method="PUT",
             url=f"/products/{self.productId}.json",
             payload={
-                "product":
-                {
+                "product": {
                     'id': self.productId,
                     "tags": self.productTags,
                 }

@@ -15,6 +15,8 @@ from .serializers import LineItemListSerializer
 from .serializers import LineItemDetailSerializer
 from .serializers import LineItemUpdateSerializer
 
+from utils import shopify
+
 
 class InventoryViewSet(viewsets.ModelViewSet):
     queryset = Inventory.objects.all()
@@ -123,6 +125,22 @@ class OrderViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.update(
                 instance=order, validated_data=serializer.validated_data)
+
+            updatedOrder = get_object_or_404(orders, pk=pk)
+
+            shopifyManager = shopify.ShopifyManager()
+            shopifyManager.updateOrder(
+                orderId=updatedOrder.shopifyId, payload={
+                    "order": {
+                        "id": updatedOrder.shopifyId,
+                        "note_attributes": {
+                            "_source": "Rebuy",
+                            "_attribution": "Smart Cart",
+                            "internal_note": updatedOrder.internalNote,
+                            "status": updatedOrder.status
+                        },
+                    }
+                })
 
             return Response(status=status.HTTP_200_OK)
         else:
