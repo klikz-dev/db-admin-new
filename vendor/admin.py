@@ -392,10 +392,12 @@ class OrderAdmin(admin.ModelAdmin):
         'orderType',
         'customer',
         'total',
+        'status',
     ]
 
     list_filter = [
         'orderType',
+        'lineItems__product__manufacturer__brand',
         'shippingMethod',
         'status',
     ]
