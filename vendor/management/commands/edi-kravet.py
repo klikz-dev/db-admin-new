@@ -75,8 +75,6 @@ class Processor:
         channel = ET.SubElement(root, "LIST_G_HDR")
 
         for order in orders:
-            print(order)
-
             if "2" in order.shippingMethod:
                 shippingMethod = "2nd Day"
             elif "over" in order.shippingMethod.lower():
