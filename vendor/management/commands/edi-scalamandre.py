@@ -71,6 +71,9 @@ class Processor:
 
         exceptions = [
             "Processed",
+            "Processed Refund",
+            "Processed Cancel",
+            "Processed Return",
             "Cancel",
             "Hold",
             "Call",

@@ -85,6 +85,9 @@ class Processor:
 
         exceptions = [
             "Processed",
+            "Processed Refund",
+            "Processed Cancel",
+            "Processed Return",
             "Cancel",
             "Hold",
             "Call",
@@ -151,8 +154,8 @@ class Processor:
                         'ACK_EMAIL_ADDRESS': email,
                     })
 
-                # order.status = PROCESS if order.status == "New" else f"{order.status}, {PROCESS}"
-                # order.save()
+                order.status = PROCESS if order.status == "New" else f"{order.status}, {PROCESS}"
+                order.save()
 
             except Exception as e:
                 debug.error(
@@ -168,7 +171,7 @@ class Processor:
             for line in lines:
                 csvwriter.writerow(line)
 
-        # self.upload(fileName)
+        self.upload(fileName)
 
     def upload(self, fileName):
         with self.sftp.cd('EDI from DB'):

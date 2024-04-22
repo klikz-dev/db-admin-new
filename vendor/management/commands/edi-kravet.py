@@ -58,6 +58,9 @@ class Processor:
 
         exceptions = [
             "Processed",
+            "Processed Refund",
+            "Processed Cancel",
+            "Processed Return",
             "Cancel",
             "Hold",
             "Call",
@@ -84,6 +87,8 @@ class Processor:
 
             address = ", ".join(filter(
                 None, [order.shippingAddress1, order.shippingAddress2, order.shippingCompany]))
+
+            email = "PURCHASING@DECORATORSBEST.COM" if "Order" in order.orderType else "MEMOS@DECORATORSBEST.COM"
 
             try:
 
@@ -120,7 +125,7 @@ class Processor:
                 ET.SubElement(
                     item, "HDR_PACK_INSTRUCTIONS").text = f"DecoratorsBest/{order.shippingLastName}".upper()
                 ET.SubElement(
-                    item, "ACK_EMAIL_ADDRESS").text = "ORDERS@DECORATORSBEST.COM"
+                    item, "ACK_EMAIL_ADDRESS").text = email
 
                 lines = ET.SubElement(item, "LIST_G_LINES")
 
