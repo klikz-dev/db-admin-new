@@ -63,20 +63,26 @@ class Processor:
             return None
 
     def submit(self):
-        lastProcessed = Order.objects.filter(status__icontains=PROCESS).aggregate(
+        orders = Order.objects.filter(
+            lineItems__product__manufacturer__brand=BRAND)
+
+        lastProcessed = orders.filter(status__icontains=PROCESS).aggregate(
             Max('shopifyId'))['shopifyId__max']
 
         exceptions = [
-            "Hold",
-            "Back Order",
-            "Cancel",
             "Processed",
+            "Cancel",
+            "Hold",
+            "Call",
+            "Return",
+            "Discontinued",
+            "BackOrder",
+            "Manually",
             "CFA",
-            "Call Manufacturer"
         ]
 
-        orders = Order.objects.filter(shopifyId__gt=lastProcessed).filter(
-            lineItems__product__manufacturer__brand=BRAND).exclude(status__in=exceptions)
+        orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
+            status__in=exceptions)
 
         for order in orders:
             try:
