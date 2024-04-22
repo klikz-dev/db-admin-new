@@ -71,6 +71,11 @@ class Processor:
         orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
             status__in=exceptions)
 
+        ### Manual Process for Missing Orders ###
+        # manualPOs = [623766, 624431]
+        # orders = Order.objects.filter(po__in=manualPOs)
+        ### Manual Process for Missing Orders ###
+
         self.submitByType(orders=orders.filter(
             orderType__icontains="Order"), type="Order")
         self.submitByType(orders=orders.filter(

@@ -101,6 +101,11 @@ class Processor:
         orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
             status__in=exceptions)
 
+        ### Manual Process for Missing Orders ###
+        # manualPOs = [616198, 616802, 621039, 623489]
+        # orders = Order.objects.filter(po__in=manualPOs)
+        ### Manual Process for Missing Orders ###
+
         lines = []
 
         for order in orders:

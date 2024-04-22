@@ -74,6 +74,11 @@ class Processor:
         orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
             status__in=exceptions)
 
+        ### Manual Process for Missing Orders ###
+        # manualPOs = [623815, 623740, 623462, 623454]
+        # orders = Order.objects.filter(po__in=manualPOs)
+        ### Manual Process for Missing Orders ###
+
         root = ET.Element("KFI_ORDER_LINE_XML")
         channel = ET.SubElement(root, "LIST_G_HDR")
 
