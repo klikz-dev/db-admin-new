@@ -232,7 +232,7 @@ class Processor:
                     self.ftp.retrbinary(f"RETR {ackExt}", write_to_file)
                     self.ftp.delete(ackExt)
                 except Exception as e:
-                    debug.warn(
+                    debug.error(
                         PROCESS, f"Downloading {ackExt} failed. Terminiated {PROCESS}. {str(e)}")
                     continue
 

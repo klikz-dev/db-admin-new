@@ -184,11 +184,15 @@ class Processor:
         self.upload(fileName)
 
     def upload(self, fileName):
-        with self.sftp.cd('EDI from DB'):
-            self.sftp.put(f"{FILEDIR}/edi/brewster/{fileName}")
+        try:
+            with self.sftp.cd('/brewster/EDI from DB'):
+                self.sftp.put(f"{FILEDIR}/edi/brewster/{fileName}")
+
+        except Exception as e:
+            debug.error(
+                PROCESS, f"Uploading {fileName} failed. Terminiated {PROCESS}. {str(e)}")
 
     def ref(self):
-
         poAs = self.sftp.listdir('/brewster/EDI to DB')
 
         for poA in poAs:
@@ -197,7 +201,7 @@ class Processor:
                               f"{FILEDIR}/edi/brewster/{poA}")
                 self.sftp.remove(f"/brewster/EDI to DB/{poA}")
             except Exception as e:
-                debug.warn(
+                debug.error(
                     PROCESS, f"Downloading {poA} failed. Terminiated {PROCESS}. {str(e)}")
                 continue
 
