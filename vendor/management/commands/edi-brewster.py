@@ -7,6 +7,7 @@ import environ
 import datetime
 import pytz
 import csv
+import codecs
 import pysftp
 import paramiko
 
@@ -32,6 +33,10 @@ class Command(BaseCommand):
         if "submit" in options['functions']:
             with Processor() as processor:
                 processor.submit()
+
+        if "ref" in options['functions']:
+            with Processor() as processor:
+                processor.ref()
 
 
 class SFTP(pysftp.Connection):
@@ -181,3 +186,40 @@ class Processor:
     def upload(self, fileName):
         with self.sftp.cd('EDI from DB'):
             self.sftp.put(f"{FILEDIR}/edi/brewster/{fileName}")
+
+    def ref(self):
+
+        poAs = self.sftp.listdir('/brewster/EDI to DB')
+
+        for poA in poAs:
+            try:
+                self.sftp.get(f"/brewster/EDI to DB/{poA}",
+                              f"{FILEDIR}/edi/brewster/{poA}")
+                self.sftp.remove(f"/brewster/EDI to DB/{poA}")
+            except Exception as e:
+                debug.warn(
+                    PROCESS, f"Downloading {poA} failed. Terminiated {PROCESS}. {str(e)}")
+                continue
+
+        for poA in poAs:
+            f = open(f"{FILEDIR}/edi/brewster/{poA}", "rb")
+            cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+
+            for row in cr:
+                if row[0] == "Customer PO Number":
+                    continue
+
+                try:
+                    order = Order.objects.get(po=row[0])
+                except Order.DoesNotExist:
+                    continue
+
+                if PROCESS not in str(order.reference):
+                    order.reference = "\n".join(filter(None, [
+                        order.reference,
+                        f"{PROCESS}: {row[2]}"
+                    ]))
+                    order.save()
+
+                    debug.log(
+                        PROCESS, f"PO #{order.po} reference number: {order.reference}")
