@@ -73,7 +73,7 @@ class Processor:
 
     def submit(self):
         orders = Order.objects.filter(
-            lineItems__product__manufacturer__brand=BRAND)
+            lineItems__product__manufacturer__brand=BRAND).distinct()
 
         lastProcessed = orders.filter(status__icontains=PROCESS).aggregate(
             Max('shopifyId'))['shopifyId__max'] or 1
