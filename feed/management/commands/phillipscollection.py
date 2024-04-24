@@ -293,8 +293,8 @@ class Processor:
 
                         'statusP': statusP,
                         'statusS': statusS,
-                        'statusS': whiteGlove,
-                        'statusS': quickShip,
+                        'whiteGlove': whiteGlove,
+                        'quickShip': quickShip,
                     }
                     products.append(product)
 

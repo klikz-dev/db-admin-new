@@ -11,7 +11,7 @@ from vendor.models import Order
 
 env = environ.Env()
 SCALA_API_URL = env('SCALA_API_URL')
-SCALA_API_URL = "http://scala-api.scalamandre.com/api"
+SCALA_API_URL = env('SCALA_API_URL')
 
 BRAND = "Scalamandre"
 PROCESS = "Scalamandre EDI"
@@ -67,7 +67,7 @@ class Processor:
             lineItems__product__manufacturer__brand=BRAND)
 
         lastProcessed = orders.filter(status__icontains=PROCESS).aggregate(
-            Max('shopifyId'))['shopifyId__max']
+            Max('shopifyId'))['shopifyId__max'] or 1
 
         exceptions = [
             "Processed",

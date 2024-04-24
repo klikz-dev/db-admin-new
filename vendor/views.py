@@ -71,7 +71,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         brand = self.request.query_params.get('brand')
         if brand is not None:
             lastProcessed = orders.filter(
-                status__icontains=f"{brand} OM").aggregate(Max('shopifyId'))['shopifyId__max'] or 0
+                status__icontains=f"{brand} OM").aggregate(Max('shopifyId'))['shopifyId__max'] or 1
             orders = orders.filter(shopifyId__gt=lastProcessed).exclude(
                 Q(status__icontains='Processed') |
                 Q(status__icontains='Cancel') |

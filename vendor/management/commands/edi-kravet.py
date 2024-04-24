@@ -60,7 +60,7 @@ class Processor:
             lineItems__product__manufacturer__brand=BRAND).distinct()
 
         lastProcessed = orders.filter(status__icontains=PROCESS).aggregate(
-            Max('shopifyId'))['shopifyId__max']
+            Max('shopifyId'))['shopifyId__max'] or 1
 
         exceptions = [
             "Processed",
