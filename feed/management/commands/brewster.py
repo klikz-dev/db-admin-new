@@ -57,7 +57,7 @@ class Command(BaseCommand):
         if "inventory" in options['functions']:
             common.downloadFileFromSFTP(
                 brand=BRAND,
-                src="",
+                src="/brewster",
                 dst=f"{FILEDIR}/brewster-inventory.csv",
                 fileSrc=False,
                 delete=True
