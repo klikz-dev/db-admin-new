@@ -12,8 +12,8 @@ import xml.dom.minidom as MD
 import xml.etree.ElementTree as ET
 from ftplib import FTP
 
-from utils import debug, common, const
-from vendor.models import Order
+from utils import debug, common, const, shopify
+from vendor.models import Order, Tracking
 
 env = environ.Env()
 
@@ -38,6 +38,10 @@ class Command(BaseCommand):
         if "ref" in options['functions']:
             with Processor() as processor:
                 processor.ref()
+
+        if "tracking" in options['functions']:
+            with Processor() as processor:
+                processor.tracking()
 
 
 class Processor:
@@ -209,7 +213,7 @@ class Processor:
         self.upload(fileName)
 
     def upload(self, fileName):
-        self.ftp.cwd("EDI FROM ALL DECOR/Live")
+        self.ftp.cwd("/EDI FROM ALL DECOR/Live")
 
         with open(f"{FILEDIR}/edi/kravet/{fileName}", 'rb') as file:
             try:
@@ -219,9 +223,10 @@ class Processor:
                     PROCESS, f"Uploading {fileName} failed. Terminiated {PROCESS}. {str(e)}")
 
     def ref(self):
-        self.ftp.cwd("EDI TO ALL DECOR/ACK")
+        self.ftp.cwd("/EDI TO ALL DECOR/ACK")
 
-        ackExts = self.ftp.nlst()
+        files = self.ftp.nlst()
+        ackExts = [file for file in files if 'AckExt' in file]
 
         for ackExt in ackExts:
             with open(f"{FILEDIR}/edi/kravet/{ackExt}", 'wb') as file:
@@ -237,7 +242,6 @@ class Processor:
                     continue
 
         for ackExt in ackExts:
-
             f = open(f"{FILEDIR}/edi/kravet/{ackExt}", "rb")
             cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
             for row in cr:
@@ -258,3 +262,48 @@ class Processor:
 
                     debug.log(
                         PROCESS, f"PO #{order.po} reference number: {order.reference}")
+
+    def tracking(self):
+        self.ftp.cwd("/EDI TO ALL DECOR")
+
+        files = self.ftp.nlst()
+        shipExts = [file for file in files if 'ShipExt' in file]
+
+        for shipExt in shipExts:
+            with open(f"{FILEDIR}/edi/kravet/{shipExt}", 'wb') as file:
+                try:
+                    def write_to_file(data):
+                        file.write(data)
+
+                    self.ftp.retrbinary(f"RETR {shipExt}", write_to_file)
+                    self.ftp.delete(shipExt)
+                except Exception as e:
+                    debug.error(
+                        PROCESS, f"Downloading {shipExt} failed. Terminiated {PROCESS}. {str(e)}")
+                    continue
+
+        for shipExt in shipExts:
+            f = open(f"{FILEDIR}/edi/kravet/{shipExt}", "rb")
+            cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+            for row in cr:
+                if row[0] == "Customer PO #":
+                    continue
+
+                try:
+                    order = Order.objects.get(po=row[0])
+                except Order.DoesNotExist:
+                    continue
+
+                number = row[7]
+                company = "FedEx" if "FedEx" in row[8] else "USPS" if "USPS" in row[8] else "UPS"
+
+                Tracking.objects.update_or_create(
+                    order=order,
+                    brand=BRAND,
+                    company=company,
+                    number=number
+                )
+
+                # Upload Tracking to Shopify
+                common.addTracking(order=order, brand=BRAND,
+                                   number=number, company=company)

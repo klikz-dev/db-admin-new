@@ -323,6 +323,7 @@ class TrackingInline(admin.TabularInline):
 
     fields = [
         'brand',
+        'company',
         'number',
     ]
 
@@ -454,20 +455,24 @@ class TrackingAdmin(admin.ModelAdmin):
     fields = [
         'order',
         'brand',
+        'company',
         'number',
     ]
 
     list_display = [
         'order',
         'brand',
+        'company',
         'number',
     ]
 
     list_filter = [
+        'company',
         'brand',
     ]
 
     search_fields = [
+        'order__shopifyId',
         'number',
     ]
 

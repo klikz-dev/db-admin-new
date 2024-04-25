@@ -14,8 +14,8 @@ import pycountry
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from utils import debug, const
-from vendor.models import Product, Tag
+from utils import debug, const, shopify
+from vendor.models import Product
 
 env = environ.Env()
 p = inflect.engine()
@@ -281,3 +281,71 @@ def provinceCode(province):
         return province
     except LookupError:
         return province
+
+
+def addTracking(order, brand, number, company):
+    shopifyManger = shopify.ShopifyManager()
+
+    # all brand variants in order
+    variants = []
+
+    for lineItem in order.lineItems.filter(product__manufacturer__brand=brand):
+        if lineItem.variant == "Trade":
+            variantId = lineItem.product.tradeId
+        elif lineItem.variant == "Sample":
+            variantId = lineItem.product.sampleId
+        elif lineItem.variant == "Free Sample":
+            variantId = lineItem.product.freeSampleId
+        else:
+            variantId = lineItem.product.consumerId
+
+        variants.append(variantId)
+    # all brand variants in order
+
+    # list of line items to fulfill
+    fulfillmentOrder = shopifyManger.getFulfillment(
+        orderId=order.shopifyId)
+
+    if not fulfillmentOrder:
+        debug.log(
+            PROCESS, f"#{order} doesn't have any items to fulfill")
+        return
+
+    itemsToFulfill = []
+    for lineItem in fulfillmentOrder['line_items']:
+        if str(lineItem['variant_id']) in variants:
+            if lineItem['fulfillable_quantity'] == 0:
+                continue
+
+            itemsToFulfill.append({
+                'id': lineItem['id'],
+                'quantity': lineItem['fulfillable_quantity']
+            })
+
+    if len(itemsToFulfill) == 0:
+        debug.log(
+            PROCESS, f"#{order} doesn't have any {brand} items to fulfill")
+        return
+    # list of line items to fulfill
+
+    # Upload tracking to Shopify
+    fulfillmentData = {
+        "fulfillment": {
+            "location_id": '14712864835',
+            "tracking_info": {
+                "number": number,
+                "company": company or "UPS",
+            },
+            "line_items_by_fulfillment_order": [{
+                "fulfillment_order_id": fulfillmentOrder['id'],
+                "fulfillment_order_line_items": itemsToFulfill
+            }]
+        }
+    }
+
+    fulfillmentData = shopifyManger.createFulfillment(payload=fulfillmentData)
+
+    if "fulfillment" in fulfillmentData:
+        debug.log(
+            PROCESS, f"#{order} {brand} Tracking Uploaded. {company}:{number}")
+    # Upload tracking to Shopify

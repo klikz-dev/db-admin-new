@@ -12,7 +12,7 @@ import pysftp
 import paramiko
 
 from utils import debug, common, const
-from vendor.models import Order
+from vendor.models import Order, Tracking
 
 env = environ.Env()
 
@@ -37,6 +37,10 @@ class Command(BaseCommand):
         if "ref" in options['functions']:
             with Processor() as processor:
                 processor.ref()
+
+        if "tracking" in options['functions']:
+            with Processor() as processor:
+                processor.tracking()
 
 
 class SFTP(pysftp.Connection):
@@ -194,7 +198,7 @@ class Processor:
 
     def ref(self):
         files = self.sftp.listdir('/schumacher/EDI/EDI_to_DB')
-        poAs = [file for file in files if 'POA' in file]
+        poAs = [file for file in files if 'POA' in file or 'FTP' in file]
 
         for poA in poAs:
             try:
@@ -228,3 +232,44 @@ class Processor:
 
                     debug.log(
                         PROCESS, f"PO #{order.po} reference number: {order.reference}")
+
+    def tracking(self):
+        files = self.sftp.listdir('/schumacher/EDI/EDI_to_DB')
+        aSNs = [file for file in files if 'ASN' in file]
+
+        for aSN in aSNs:
+            try:
+                self.sftp.get(f"/schumacher/EDI/EDI_to_DB/{aSN}",
+                              f"{FILEDIR}/edi/schumacher/{aSN}")
+                self.sftp.remove(f"/schumacher/EDI/EDI_to_DB/{aSN}")
+            except Exception as e:
+                debug.error(
+                    PROCESS, f"Downloading {aSN} failed. Terminiated {PROCESS}. {str(e)}")
+                continue
+
+        for aSN in aSNs:
+            f = open(f"{FILEDIR}/edi/schumacher/{aSN}", "rb")
+            cr = csv.reader(codecs.iterdecode(f, encoding="ISO-8859-1"))
+
+            for row in cr:
+                if row[0] == "Customer PO Number":
+                    continue
+
+                try:
+                    order = Order.objects.get(po=row[0])
+                except Order.DoesNotExist:
+                    continue
+
+                number = row[4]
+                company = "FedEx" if "FedEx" in row[5] else "USPS" if "USPS" in row[5] else "UPS"
+
+                Tracking.objects.update_or_create(
+                    order=order,
+                    brand=BRAND,
+                    company=company,
+                    number=number
+                )
+
+                # Upload Tracking to Shopify
+                common.addTracking(order=order, brand=BRAND,
+                                   number=number, company=company)

@@ -344,3 +344,19 @@ class ShopifyManager:
         )
 
         return imageData['image']
+
+    def getFulfillment(self, orderId):
+        fulfillmentOrdersData = self.requestAPI(
+            method="GET", url=f"/orders/{orderId}/fulfillment_orders.json")
+        fulfillmentOrders = fulfillmentOrdersData['fulfillment_orders']
+
+        if len(fulfillmentOrders) > 0:
+            return fulfillmentOrders[0]
+        else:
+            return None
+
+    def createFulfillment(self, payload):
+        fulfillmentData = self.requestAPI(
+            method="POST", url=f"/fulfillments.json", payload=payload)
+
+        return fulfillmentData

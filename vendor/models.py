@@ -337,6 +337,9 @@ class Tracking(models.Model):
         Order, related_name='trackings', on_delete=models.CASCADE, blank=False, null=False)
 
     brand = models.CharField(max_length=200, null=False, blank=False)
+
+    company = models.CharField(
+        max_length=200, default="UPS", null=False, blank=False)
     number = models.CharField(max_length=200, null=False, blank=False)
 
     def __str__(self):
