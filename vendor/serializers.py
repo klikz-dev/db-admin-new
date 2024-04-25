@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Inventory, Order, LineItem, Product, Tracking, Image, Customer
+from .models import Inventory, Order, LineItem, Product, Tracking, Image, Customer, Roomvo
 
 
 class InventorySerializer(serializers.ModelSerializer):
@@ -94,3 +94,10 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
         fields = ['shippingFirstName', 'shippingLastName', 'shippingCompany', 'shippingAddress1', 'shippingAddress2',
                   'shippingCity', 'shippingState', 'shippingZip', 'shippingCountry', 'shippingPhone', 'shippingMethod',
                   'total', 'internalNote', 'status', 'reference']
+
+
+# Roomvo Feed
+class RoomvoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Roomvo
+        fields = '__all__'

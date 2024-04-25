@@ -19,6 +19,7 @@
 30 * * * * . /home/ubuntu/admin/venv/bin/activate && python3 /home/ubuntu/admin/manage.py sync-tag > /dev/null 2>> /home/ubuntu/log/cron_error.log
 
 # refresh feeds daily at 6 am
+0 5 * * * . /home/ubuntu/admin/venv/bin/activate && python3 /home/ubuntu/admin/manage.py roomvo > /dev/null 2>> /home/ubuntu/log/cron_error.log
 0 6 * * * . /home/ubuntu/admin/venv/bin/activate && python3 /home/ubuntu/admin/manage.py feed > /dev/null 2>> /home/ubuntu/log/cron_error.log
 
 # EDI - Brewster

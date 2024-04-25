@@ -4,12 +4,13 @@ from rest_framework import routers
 from vendor.views import InventoryViewSet
 
 from . import views
-from vendor.views import OrderViewSet, LineItemViewSet
+from vendor.views import OrderViewSet, LineItemViewSet, RoomvoViewSet
 
 router = routers.DefaultRouter()
 router.register(r'inventories', InventoryViewSet)
 router.register(r'orders', OrderViewSet)
 router.register(r'line-items', LineItemViewSet)
+router.register(r'roomvo', RoomvoViewSet)
 
 urlpatterns = [
     path('', views.index, name='index'),

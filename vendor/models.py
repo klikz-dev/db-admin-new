@@ -341,3 +341,58 @@ class Tracking(models.Model):
 
     def __str__(self):
         return self.number
+
+
+class Roomvo(models.Model):
+    sku = models.CharField(max_length=200, primary_key=True)
+    name = models.CharField(
+        max_length=200, null=False, blank=False)
+    availability = models.CharField(
+        max_length=20, default="Yes", null=False, blank=False)
+
+    width = models.CharField(
+        max_length=200, null=False, blank=False)
+    length = models.CharField(
+        max_length=200, null=False, blank=False)
+    thickness = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    dimension_display = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    horizontal_repeat = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    vertical_repeat = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    layout = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    brand = models.CharField(
+        max_length=200, null=False, blank=False)
+    product_type = models.CharField(
+        max_length=200, null=False, blank=False)
+
+    filter_category = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    filter_style = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    filter_color = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+    filter_subtype = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
+
+    image = models.CharField(
+        max_length=200, null=False, blank=False)
+    link = models.CharField(
+        max_length=200, null=False, blank=False)
+
+    cart_id = models.CharField(
+        max_length=200, null=False, blank=False)
+    cart_id_trade = models.CharField(
+        max_length=200, null=False, blank=False)
+    cart_id_sample = models.CharField(
+        max_length=200, null=False, blank=False)
+    cart_id_free_sample = models.CharField(
+        max_length=200, null=False, blank=False)
+
+    def __str__(self):
+        return self.sku

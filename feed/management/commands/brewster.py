@@ -323,7 +323,7 @@ class Processor:
                     'description': description,
                     'width': width,
                     'length': length,
-                    'repeatH': repeat,
+                    'repeatV': repeat,
 
                     'yardsPR': yardsPR,
                     'match': match,

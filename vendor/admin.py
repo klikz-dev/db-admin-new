@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Customer, Order, LineItem, Tracking
+from .models import Manufacturer, Type, Tag, Product, Image, Sync, Inventory, Customer, Order, LineItem, Tracking, Roomvo
 
 
 @admin.register(Manufacturer)
@@ -469,4 +469,77 @@ class TrackingAdmin(admin.ModelAdmin):
 
     search_fields = [
         'number',
+    ]
+
+
+@admin.register(Roomvo)
+class RoomvoAdmin(admin.ModelAdmin):
+    fields = [
+        'sku',
+        'name',
+        'availability',
+
+        'width',
+        'length',
+        'thickness',
+
+        'dimension_display',
+        'horizontal_repeat',
+        'vertical_repeat',
+        'layout',
+
+        'brand',
+        'product_type',
+
+        'filter_category',
+        'filter_style',
+        'filter_color',
+        'filter_subtype',
+
+        'link',
+        'image',
+
+        'cart_id',
+        'cart_id_trade',
+        'cart_id_sample',
+        'cart_id_free_sample'
+    ]
+
+    list_display = (
+        'sku',
+        'name',
+        'width',
+        'length',
+        'thickness',
+        'dimension_display',
+        'brand',
+        'product_type',
+        'link'
+    )
+
+    list_filter = [
+        'brand',
+        'product_type',
+        'filter_category',
+        'filter_style',
+        'filter_color',
+        'filter_subtype',
+    ]
+
+    search_fields = [
+        'sku',
+        'name',
+        'dimension_display',
+        'layout',
+        'brand',
+        'product_type',
+        'link',
+        'filter_category',
+        'filter_style',
+        'filter_color',
+        'filter_subtype',
+        'cart_id',
+        'cart_id_trade',
+        'cart_id_sample',
+        'cart_id_free_sample'
     ]
