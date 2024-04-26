@@ -5,7 +5,7 @@ import glob
 import requests
 import environ
 
-from utils import shopify, common, debug, const
+from utils import shopify
 
 from vendor.models import Product, Sync
 from monitor.models import Log
@@ -58,10 +58,6 @@ class Processor:
 
         shopifyManager = shopify.ShopifyManager()
 
-        def deleteProduct(_, product_id):
-            print(f"Delete: {product_id}")
-            shopifyManager.deleteProduct(product_id)
-
         base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
         params = {'limit': 250, 'fields': 'id,published_at'}
         headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
@@ -83,7 +79,9 @@ class Processor:
 
             products_to_remove = product_ids - existing_product_ids
 
-            common.thread(rows=products_to_remove, function=deleteProduct)
+            for product_id in products_to_remove:
+                print(f"Delete: {product_id}")
+                shopifyManager.deleteProduct(product_id)
 
             if 'next' in response.links:
                 next_url = response.links['next']['url']
