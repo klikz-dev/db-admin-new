@@ -102,6 +102,8 @@ class Processor:
             return responseJSON['data']
         except Exception as e:
             debug.warn(BRAND, str(e))
+
+            time.sleep(5)
             return None
 
     def fetchFeed(self):
@@ -330,8 +332,6 @@ class Processor:
                     'note': stockNote
                 }
                 stocks.append(stock)
-
-                time.sleep(0.5)
 
             except Exception as e:
                 continue

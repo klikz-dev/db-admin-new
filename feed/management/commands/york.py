@@ -88,8 +88,11 @@ class Processor:
             result = responseJSON['results']
 
             return result
+
         except Exception as e:
             debug.warn(BRAND, str(e))
+
+            time.sleep(3)
             return None
 
     def testData(self):
@@ -213,8 +216,6 @@ class Processor:
                     if cost == 0 or not pattern or not color or not type or not uom:
                         continue
 
-                    time.sleep(0.5)
-
                 except Exception as e:
                     debug.warn(BRAND, str(e))
                     continue
@@ -334,8 +335,6 @@ class Processor:
                     'note': ""
                 }
                 stocks.append(stock)
-
-                time.sleep(0.5)
 
             except Exception as e:
                 continue

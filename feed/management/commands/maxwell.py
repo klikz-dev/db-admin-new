@@ -86,9 +86,13 @@ class Processor:
             )
             responseJSON = json.loads(responseData.text)
 
+            time.sleep(2)
             return responseJSON
+
         except Exception as e:
             debug.warn(BRAND, str(e))
+
+            time.sleep(30)
             return None
 
     def testData(self):
@@ -227,10 +231,7 @@ class Processor:
                 }
                 stocks.append(stock)
 
-                time.sleep(2)
-
             except Exception as e:
-                time.sleep(30)
                 continue
 
         return stocks

@@ -75,11 +75,18 @@ class Processor:
         pass
 
     def requestAPI(self, mpn):
-        responseData = requests.get(
-            f"https://www.phillipjeffries.com/api/products/skews/{mpn}.json")
-        responseJson = json.loads(responseData.text)
+        try:
+            responseData = requests.get(
+                f"https://www.phillipjeffries.com/api/products/skews/{mpn}.json")
+            responseJson = json.loads(responseData.text)
 
-        return responseJson
+            return responseJson
+
+        except Exception as e:
+            debug.warn(BRAND, str(e))
+
+            time.sleep(5)
+            return None
 
     def fetchFeed(self):
         # Get Product Feed
@@ -218,16 +225,12 @@ class Processor:
                 for lot in data["stock"]["sales"]["lots"]:
                     stockP += common.toInt(lot["avail"])
 
-                print(sku, stockP)
-
                 stock = {
                     'sku': sku,
                     'quantity': stockP,
                     'note': ""
                 }
                 stocks.append(stock)
-
-                time.sleep(0.5)
 
             except Exception as e:
                 continue

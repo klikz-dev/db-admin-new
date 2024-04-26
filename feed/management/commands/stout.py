@@ -91,9 +91,12 @@ class Processor:
             responseJSON = json.loads(responseData.text)
             result = responseJSON["result"][0]
 
+            time.sleep(0.5)
             return result
         except Exception as e:
             debug.warn(BRAND, str(e))
+
+            time.sleep(5)
             return None
 
     def fetchFeed(self):
@@ -182,8 +185,6 @@ class Processor:
                 if cost == 0 or not pattern or not color or not type:
                     continue
 
-                time.sleep(0.5)
-
             except Exception as e:
                 debug.warn(BRAND, str(e))
                 continue
@@ -251,8 +252,6 @@ class Processor:
                     'note': ""
                 }
                 stocks.append(stock)
-
-                time.sleep(0.5)
 
             except Exception as e:
                 continue
