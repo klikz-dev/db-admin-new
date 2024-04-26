@@ -6,6 +6,7 @@ import requests
 import json
 import re
 import environ
+import time
 
 from utils import database, debug, common
 
@@ -225,6 +226,8 @@ class Processor:
                     'note': ""
                 }
                 stocks.append(stock)
+
+                time.sleep(0.5)
 
             except Exception as e:
                 continue
