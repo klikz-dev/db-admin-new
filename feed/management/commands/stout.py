@@ -182,7 +182,7 @@ class Processor:
                 if cost == 0 or not pattern or not color or not type:
                     continue
 
-                time.sleep(1)
+                time.sleep(0.5)
 
             except Exception as e:
                 debug.warn(BRAND, str(e))
@@ -252,7 +252,7 @@ class Processor:
                 }
                 stocks.append(stock)
 
-                time.sleep(1)
+                time.sleep(0.5)
 
             except Exception as e:
                 continue
