@@ -6,7 +6,6 @@ import requests
 import json
 import re
 import environ
-import time
 
 from utils import database, debug, common
 from vendor.models import Product
@@ -85,14 +84,14 @@ class Processor:
         try:
             responseData = requests.get(f"{env('YORK_API_URL')}/{url}")
             responseJSON = json.loads(responseData.text)
-            result = responseJSON['results']
 
-            return result
+            if "error" in responseJSON:
+                return []
+            else:
+                return responseJSON['results']
 
         except Exception as e:
             debug.warn(BRAND, str(e))
-
-            time.sleep(3)
             return None
 
     def testData(self):
