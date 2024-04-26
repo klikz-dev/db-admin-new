@@ -160,7 +160,7 @@ class Processor:
                     name = f"{pattern} {color} {type}"
 
                     # Exceptions
-                    if mpn == "OPTIONS":
+                    if mpn == "OPTIONS" or statusP == False:
                         continue
 
                     if cost == 0 or not pattern or not color or not type:

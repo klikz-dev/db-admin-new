@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Feed & Inventory -- SFTP
-python3 /home/ubuntu/admin/manage.py brewster feed status inventory
+python3 /home/ubuntu/admin/manage.py brewster inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py couture inventory
@@ -28,22 +28,22 @@ python3 /home/ubuntu/admin/manage.py hubbardtonforge inventory
 python3 /home/ubuntu/admin/manage.py jaipurliving inventory
 
 # Feed & Inventory -- SFTP
-python3 /home/ubuntu/admin/manage.py jamieyoung feed status inventory
+python3 /home/ubuntu/admin/manage.py jamieyoung inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py jffabrics inventory
 
 # Feed & Inventory -- SFTP
-python3 /home/ubuntu/admin/manage.py kasmir feed status inventory
+python3 /home/ubuntu/admin/manage.py kasmir inventory
 
 # Feed & Inventory -- SFTP
-python3 /home/ubuntu/admin/manage.py kravet feed status inventory
+python3 /home/ubuntu/admin/manage.py kravet inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py materialworks inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py maxwell feed status inventory
+python3 /home/ubuntu/admin/manage.py maxwell inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py mindthegap inventory
@@ -58,10 +58,10 @@ python3 /home/ubuntu/admin/manage.py oliviaquinn inventory
 python3 /home/ubuntu/admin/manage.py peninsulahome inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py phillipjeffries feed status inventory
+python3 /home/ubuntu/admin/manage.py phillipjeffries inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py phillipscollection feed status inventory
+python3 /home/ubuntu/admin/manage.py phillipscollection inventory
 
 # Inventory -- API
 python3 /home/ubuntu/admin/manage.py pindler inventory
@@ -79,16 +79,16 @@ python3 /home/ubuntu/admin/manage.py port68 inventory
 python3 /home/ubuntu/admin/manage.py premierprints inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py scalamandre feed status inventory
+python3 /home/ubuntu/admin/manage.py scalamandre inventory
 
 # Feed & Inventory -- SFTP
-python3 /home/ubuntu/admin/manage.py schumacher feed status inventory
+python3 /home/ubuntu/admin/manage.py schumacher inventory
 
 # Inventory -- API
 python3 /home/ubuntu/admin/manage.py seabrook inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py stout feed status inventory
+python3 /home/ubuntu/admin/manage.py stout inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py surya inventory
@@ -97,7 +97,7 @@ python3 /home/ubuntu/admin/manage.py surya inventory
 python3 /home/ubuntu/admin/manage.py tempaper inventory
 
 # Feed & Inventory -- API
-python3 /home/ubuntu/admin/manage.py york feed status inventory
+python3 /home/ubuntu/admin/manage.py york inventory
 
 # Inventory -- SFTP
 python3 /home/ubuntu/admin/manage.py zoffany inventory
