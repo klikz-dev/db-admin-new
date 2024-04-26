@@ -227,9 +227,10 @@ class Processor:
                 }
                 stocks.append(stock)
 
-                time.sleep(0.5)
+                time.sleep(2)
 
             except Exception as e:
+                time.sleep(30)
                 continue
 
         return stocks
