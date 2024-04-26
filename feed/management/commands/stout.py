@@ -6,6 +6,7 @@ import environ
 import openpyxl
 import requests
 import json
+import time
 
 from utils import database, debug, common
 
@@ -178,8 +179,10 @@ class Processor:
                 name = f"{pattern} {color} {type}"
 
                 # Exceptions
-                # if cost == 0 or not pattern or not color or not type:
-                #     continue
+                if cost == 0 or not pattern or not color or not type:
+                    continue
+
+                time.sleep(1)
 
             except Exception as e:
                 debug.warn(BRAND, str(e))
@@ -248,6 +251,9 @@ class Processor:
                     'note': ""
                 }
                 stocks.append(stock)
+
+                time.sleep(1)
+
             except Exception as e:
                 continue
 
