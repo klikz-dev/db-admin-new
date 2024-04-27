@@ -56,7 +56,7 @@ class Command(BaseCommand):
         if "inventory" in options['functions']:
             common.downloadFileFromSFTP(
                 brand=BRAND,
-                src="Decorating Best Inventory.xlsx",
+                src="/Decorating Best Inventory.xlsx",
                 dst=f"{FILEDIR}/jffabrics-inventory.xlsx",
                 fileSrc=True,
                 delete=False
