@@ -88,7 +88,7 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
     username = const.sftp[brand]["user"]
     password = const.sftp[brand]["pass"]
 
-    if host == "decoratorsbestam.com":
+    if host == "decoratorsbestam.com" and not delete:
         src = f"/var/sftp/{username}{src}"
 
         if fileSrc:
