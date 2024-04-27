@@ -88,8 +88,7 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
     username = const.sftp[brand]["user"]
     password = const.sftp[brand]["pass"]
 
-    # if host == "decoratorsbestam.com":
-    if False:
+    if host == "decoratorsbestam.com":
         src = f"/var/sftp/{username}{src}"
 
         if fileSrc:
@@ -104,6 +103,7 @@ def downloadFileFromSFTP(brand, src, dst, fileSrc=True, delete=False):
                     os.remove(f"{src}/{file}")
 
         debug.log(brand, f"Download Local SFTP file From {src} To {dst}")
+
     else:
         try:
             transport = paramiko.Transport((host, port))
