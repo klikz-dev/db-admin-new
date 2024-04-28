@@ -96,7 +96,7 @@ class Processor:
             'from_name': 'DecoratorsBest',
             'subject': subject,
             'to': json.dumps([
-                {'email': "murrell@decoratorsbest.com", "name": customer}
+                {'email': email, "name": customer}
             ]),
             'context': json.dumps(data)
         }
