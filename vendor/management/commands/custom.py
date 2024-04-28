@@ -2,12 +2,9 @@ from django.core.management.base import BaseCommand
 
 import os
 import glob
-import requests
 import environ
 
-from utils import shopify
-
-from vendor.models import Product, Sync
+from vendor.models import Sync
 from monitor.models import Log
 
 env = environ.Env()
@@ -26,9 +23,6 @@ class Command(BaseCommand):
 
         if "clean" in options['functions']:
             processor.clean()
-
-        if "delete" in options['functions']:
-            processor.delete()
 
 
 class Processor:
@@ -53,39 +47,3 @@ class Processor:
 
         # Empty Syncs
         Sync.objects.all().delete()
-
-    def delete(self):
-
-        shopifyManager = shopify.ShopifyManager()
-
-        base_url = f"https://decoratorsbest.myshopify.com/admin/api/2024-01/products.json"
-        params = {'limit': 250, 'fields': 'id,published_at'}
-        headers = {"X-Shopify-Access-Token": env('SHOPIFY_API_TOKEN')}
-
-        session = requests.Session()
-        session.headers.update(headers)
-
-        response = session.get(base_url, params=params)
-
-        page = 1
-        while True:
-            print(f"Reviewing Products {250 * (page - 1) + 1} - {250 * page}")
-
-            products = response.json()['products']
-            product_ids = {str(product['id']) for product in products}
-
-            existing_product_ids = set(Product.objects.filter(
-                shopifyId__in=product_ids).values_list('shopifyId', flat=True).distinct())
-
-            products_to_remove = product_ids - existing_product_ids
-
-            for product_id in products_to_remove:
-                print(f"Delete: {product_id}")
-                shopifyManager.deleteProduct(product_id)
-
-            if 'next' in response.links:
-                next_url = response.links['next']['url']
-                response = session.get(next_url)
-                page += 1
-            else:
-                break
