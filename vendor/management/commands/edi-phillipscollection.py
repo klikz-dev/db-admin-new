@@ -57,9 +57,11 @@ class Processor:
 
     def requestAPI(self, url, payload):
         try:
-            responseData = requests.post(
+            responseData = requests.request(
+                "POST",
                 f"{PHILLIPS_API_URL}/{url}",
                 headers={
+                    'Content-type': 'application/json',
                     'x-api-key': PHILLIPS_API_KEY,
                     'Authorization': "Bearer {}".format(self.token)
                 },
@@ -97,7 +99,7 @@ class Processor:
             status__in=exceptions)
 
         ### Manual Process for Missing Orders ###
-        # manualPOs = [616198, 616802, 621039, 623489]
+        # manualPOs = [625033]
         # orders = Order.objects.filter(po__in=manualPOs)
         ### Manual Process for Missing Orders ###
 
@@ -114,7 +116,7 @@ class Processor:
                         'qtyorder': lineItem.quantity
                     })
 
-                refData = self.requestAPI(url="/ecomm/orders", payload={
+                refData = self.requestAPI(url="ecomm/orders", payload={
                     'reference': f"PO #{order.po}",
                     'shipto': {
                         'shipname': f"{order.shippingFirstName} {order.shippingLastName}",

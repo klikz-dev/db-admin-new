@@ -78,7 +78,7 @@ class Processor:
             status__in=exceptions)
 
         ### Manual Process for Missing Orders ###
-        # manualPOs = [623766, 624431]
+        # manualPOs = [625027]
         # orders = Order.objects.filter(po__in=manualPOs)
         ### Manual Process for Missing Orders ###
 
@@ -118,7 +118,7 @@ class Processor:
                 ET.SubElement(
                     item, "CONTACT_NAME").text = f"{order.shippingFirstName} {order.shippingLastName}".upper()
                 ET.SubElement(
-                    item, "CONT_PHONE_NUMBER").text = f'{order.shippingPhone.replace("+1", "").replace("-", "").replace(" ", "")}'
+                    item, "CONT_PHONE_NUMBER").text = f'{(order.shippingPhone or "").replace("+1", "").replace("-", "").replace(" ", "")}'
                 ET.SubElement(
                     item, "HDR_SHIP_ADDRESS1").text = f"{order.shippingAddress1}".upper()
                 ET.SubElement(
