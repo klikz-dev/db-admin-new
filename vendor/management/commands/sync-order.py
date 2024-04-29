@@ -97,6 +97,8 @@ class Processor:
                 shippingCost = 0
                 shippingMethod = "Free Shipping"
 
+            status = "Hold" if order['note'] else "New"
+
             orderRef, _ = Order.objects.update_or_create(
                 shopifyId=order['id'],
                 defaults={
@@ -121,6 +123,8 @@ class Processor:
                     "weight": round(order['total_weight'] / 453.592, 2),
                     "orderDate": order['created_at'],
                     "customerNote": order['note'],
+
+                    "status": status,
                 }
             )
 

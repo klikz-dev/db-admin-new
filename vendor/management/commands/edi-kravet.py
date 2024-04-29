@@ -8,14 +8,19 @@ import datetime
 import pytz
 import csv
 import codecs
+import requests
+import json
 import xml.dom.minidom as MD
 import xml.etree.ElementTree as ET
 from ftplib import FTP
 
-from utils import debug, common, const, shopify
+from utils import debug, common, const
 from vendor.models import Order, Tracking
 
 env = environ.Env()
+KRAVET_STOCK_API_URL = env('KRAVET_STOCK_API_URL')
+KRAVET_API_USER = env('KRAVET_API_USER')
+KRAVET_API_PASS = env('KRAVET_API_PASS')
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
@@ -55,6 +60,37 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.ftp.close()
         pass
+
+    def checkStock(self, mpn, quantity):
+        pattern = mpn.split(".")[0]
+        color = mpn.split(".")[1]
+        identifier = mpn.split(".")[2]
+
+        try:
+            responseData = requests.get(
+                f"{KRAVET_STOCK_API_URL}?user={KRAVET_API_USER}&password={KRAVET_API_PASS}&pattern={pattern}&color={color}&identifier={identifier}&quantity={quantity}"
+            )
+
+            stock = responseData.text
+
+            if "<INVENTORY_STATUS>M</INVENTORY_STATUS>" in stock or "<INVENTORY_STATUS>N</INVENTORY_STATUS>" in stock or "<TRANSACTION_STATUS>Invalid Item</TRANSACTION_STATUS>" in stock:
+                if "<INVENTORY_STATUS>M</INVENTORY_STATUS>" in stock:
+                    msg = "will be IN MULTIPLE PIECES"
+                elif "<INVENTORY_STATUS>N</INVENTORY_STATUS>" in stock:
+                    msg = "is OUT OF STOCK"
+                elif "<TRANSACTION_STATUS>Invalid Item</TRANSACTION_STATUS>" in stock:
+                    msg = "is DISCONTINUED"
+                else:
+                    msg = None
+            else:
+                msg = None
+
+            return msg
+
+        except Exception as e:
+            debug.warn(BRAND, str(e))
+
+            return None
 
     def submit(self):
         now = datetime.datetime.now(pytz.timezone("America/New_York"))
@@ -161,6 +197,26 @@ class Processor:
                         uom = "SQF"
                     else:
                         uom = "EA"
+
+                    # Check Stock
+                    if "Sample" not in lineItem.variant:
+                        stockWarn = self.checkStock(
+                            mpn=mpn, quantity=lineItem.quantity)
+
+                        if stockWarn:
+                            debug.warn(
+                                PROCESS, f"PO #{order.po}: {lineItem.quantity} {uom} {mpn} {stockWarn}")
+
+                            common.sendEmail(PROCESS, email, f"PO #{order.po} needs manual process (Kravet)",
+                                             f"PO #{order.po}: {lineItem.quantity} {uom} {mpn} {stockWarn}. Please process it manually.")
+
+                            order.internalNote = "\n".join(filter(None, [
+                                f"{PROCESS}: {lineItem.quantity} {uom} {mpn} {stockWarn}",
+                                order.internalNote
+                            ]))
+                            order.save()
+
+                            continue
 
                     line = ET.SubElement(lines, "G_LINES")
                     ET.SubElement(
