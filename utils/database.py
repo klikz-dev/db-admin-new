@@ -123,6 +123,7 @@ class DatabaseManager:
 
                     thumbnail=feed.get('thumbnail', ""),
                     roomsets=feed.get('roomsets', []),
+                    hires=feed.get('hires', ""),
 
                     custom=feed.get('custom', {}),
                 )

@@ -284,7 +284,7 @@ class Processor:
         return stocks
 
     def hires(self, fullSync=False):
-        hasImageIds = Product.objects.filter(manufacturer__brand=self.brand).filter(
+        hasImageIds = Product.objects.filter(manufacturer__brand=BRAND).filter(
             images__position=1, images__hires=True).values_list('shopifyId', flat=True).distinct()
 
         feeds = Surya.objects.exclude(productId=None)
