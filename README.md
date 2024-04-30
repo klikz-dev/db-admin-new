@@ -71,3 +71,9 @@ AllowAgentForwarding no
 AllowTcpForwarding no
 X11Forwarding no
 ```
+
+## Reset File Permission on Windows
+
+icacls .\db-admin.pem /reset
+icacls .\db-admin.pem /grant:r "$($env:username):(r)"
+icacls .\db-admin.pem /inheritance:r
