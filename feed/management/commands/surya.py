@@ -7,9 +7,11 @@ import csv
 import codecs
 
 from utils import database, debug, common
+from vendor.models import Product
 
 BRAND = "Surya"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 
 class Command(BaseCommand):
@@ -58,6 +60,10 @@ class Command(BaseCommand):
         if "image" in options['functions']:
             processor = Processor()
             processor.DatabaseManager.downloadImages()
+
+        if "hires" in options['functions']:
+            processor = Processor()
+            processor.hires()
 
         if "inventory" in options['functions']:
             common.downloadFileFromSFTP(
@@ -156,6 +162,9 @@ class Processor:
                     if row[id] != "":
                         roomsets.append(row[id])
 
+                hires = thumbnail.replace(
+                    "512x512", "RAW") if "512x512" in thumbnail else ""
+
                 # Status
                 if "Swatch" in type:
                     statusP = False
@@ -237,6 +246,7 @@ class Processor:
 
                 'thumbnail': thumbnail,
                 'roomsets': roomsets,
+                'hires': hires,
 
                 'statusP': statusP,
                 'statusS': statusS,
@@ -272,3 +282,20 @@ class Processor:
             stocks.append(stock)
 
         return stocks
+
+    def hires(self, fullSync=False):
+        hasImageIds = Product.objects.filter(manufacturer__brand=self.brand).filter(
+            images__position=1, images__hires=True).values_list('shopifyId', flat=True).distinct()
+
+        feeds = Surya.objects.exclude(productId=None)
+        if not fullSync:
+            feeds = feeds.exclude(productId__in=hasImageIds)
+
+        def downloadImage(_, feed):
+            hires = feed.hires
+
+            if hires:
+                common.downloadFileFromLink(
+                    src=hires, dst=f"{IMAGEDIR}/hires/{feed.productId}_hires.jpg")
+
+        common.thread(rows=feeds, function=downloadImage)

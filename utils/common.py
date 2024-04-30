@@ -266,7 +266,17 @@ def getPricing(feed):
     if trade < 17:
         trade = 16.99
 
-    sample = 5
+    sample = 5 if feed.type in [
+        "Wallpaper",
+        "Mural",
+        "Fabric",
+        "Trim",
+        "Pillow",
+        "Pillow Kit",
+        "Pillow Cover",
+        "Outdoor Pillow",
+        "Decorative Pillow"
+    ] else 15
     compare = None
 
     return (consumer, trade, sample, compare)

@@ -21,8 +21,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         processor = Processor()
 
-        if "clean" in options['functions']:
-            processor.clean()
+        if "cleanup-images" in options['functions']:
+            processor.cleanupImages()
+
+        if "cleanup-logs" in options['functions']:
+            processor.cleanupLogs()
 
 
 class Processor:
@@ -35,15 +38,13 @@ class Processor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def clean(self):
+    def cleanupImages(self):
         # Empty Image folders
         imageFolders = ["thumbnail", "roomset", "hires", "compressed"]
         for imageFolder in imageFolders:
             for file in glob.glob(f"{FILEDIR}/images/{imageFolder}/*.*"):
                 os.remove(file)
 
+    def cleanupLogs(self):
         # Empty Logs
         Log.objects.all().delete()
-
-        # Empty Syncs
-        Sync.objects.all().delete()

@@ -81,6 +81,8 @@ class Feed(models.Model):
     thumbnail = models.CharField(
         max_length=200, default=None, null=True, blank=True)
     roomsets = models.JSONField(default=None, null=True, blank=True)
+    hires = models.CharField(
+        max_length=200, default=None, null=True, blank=True)
 
     custom = models.JSONField(default=None, null=True, blank=True)
 

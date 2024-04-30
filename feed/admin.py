@@ -107,7 +107,8 @@ class FeedAdmin(admin.ModelAdmin):
         ]}),
         ('Assets', {'fields': [
             'thumbnail',
-            'roomsets'
+            'roomsets',
+            'hires'
         ]}),
         ('Additional', {'fields': [
             'custom',
