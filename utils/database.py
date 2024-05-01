@@ -202,9 +202,9 @@ class DatabaseManager:
 
         feeds = self.Feed.objects.filter(productId=None).filter(statusP=True)
         total = len(feeds)
-        private = private
 
         def createProduct(index, feed):
+
             try:
                 Product.objects.get(sku=feed.sku)
                 raise (f"{feed.sku} is already in Shopify.")
@@ -212,10 +212,10 @@ class DatabaseManager:
                 product = Product(sku=feed.sku)
 
             # Copy Feed object to Product object temporarily
-            if feed.brand == "Jamie Young" and feed.collection == "LIFESTYLE":
-                private = True
-
-            title = f"{'DecoratorsBest' if private else feed.manufacturer} {feed.name}"
+            if private or (feed.brand == "Jamie Young" and feed.collection == "LIFESTYLE"):
+                title = f"DecoratorsBest {feed.name}"
+            else:
+                title = f"{feed.manufacturer} {feed.name}"
 
             for attr in ATTR_DICT:
                 setattr(product, attr, getattr(feed, attr))
