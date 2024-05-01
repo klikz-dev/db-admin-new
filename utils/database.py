@@ -199,9 +199,12 @@ class DatabaseManager:
             debug.warn(self.brand, f"Unknown UOMs: {', '.join(unknownUOMs)}")
 
     def addProducts(self, private=False):
-        feeds = self.Feed.objects.filter(productId=None).filter(statusP=True)
 
-        def createProduct(index, feed, private):
+        feeds = self.Feed.objects.filter(productId=None).filter(statusP=True)
+        total = len(feeds)
+        private = private
+
+        def createProduct(index, feed):
             try:
                 Product.objects.get(sku=feed.sku)
                 raise (f"{feed.sku} is already in Shopify.")
@@ -251,21 +254,10 @@ class DatabaseManager:
             feed.productId = productData['id']
             feed.save()
 
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            total = len(feeds)
-            future_to_feed = {executor.submit(
-                createProduct, index, feed, private): (index, feed) for index, feed in enumerate(feeds)}
+            debug.log(
+                self.brand, f"{index}/{total} - Product {feed.productId} has been created successfully.")
 
-            for future in as_completed(future_to_feed):
-                index, feed = future_to_feed[future]
-
-                try:
-                    future.result()
-                    debug.log(
-                        self.brand, f"{index}/{total} - Product {feed.productId} has been created successfully.")
-                except Exception as e:
-                    debug.warn(
-                        self.brand, f"{index}/{total} - Product Upload for {feed.sku} has been failed. {str(e)}")
+        common.thread(rows=feeds, function=createProduct)
 
     def statusSync(self, fullSync=False):
         products = Product.objects.filter(manufacturer__brand=self.brand)

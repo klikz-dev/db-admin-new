@@ -91,7 +91,6 @@ class Processor:
             responseJSON = json.loads(responseData.text)
             result = responseJSON["result"][0]
 
-            time.sleep(0.5)
             return result
         except Exception as e:
             debug.warn(BRAND, str(e))

@@ -7,9 +7,12 @@ import codecs
 import zipfile
 
 from utils import database, debug, common
+from vendor.models import Product
+
+FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 BRAND = "Kravet"
-FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
 
 
 class Command(BaseCommand):
@@ -61,7 +64,7 @@ class Command(BaseCommand):
 
         if "image" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.downloadImages()
+            processor.image()
 
         if "inventory" in options['functions']:
             common.downloadFileFromFTP(
@@ -263,6 +266,19 @@ class Processor:
             products.append(product)
 
         return products
+
+    def image(self, fullSync=False):
+        hasImageIds = Product.objects.filter(manufacturer__brand=BRAND).filter(
+            images__position=1).values_list('shopifyId', flat=True).distinct()
+
+        feeds = Kravet.objects.exclude(productId=None)
+        if not fullSync:
+            feeds = feeds.exclude(productId__in=hasImageIds)
+
+        for feed in feeds:
+            if feed.thumbnail:
+                common.downloadFileFromFTP(
+                    brand=BRAND, src=feed.thumbnail, dst=f"{IMAGEDIR}/thumbnail/{feed.productId}.jpg")
 
     def inventory(self):
         stocks = []
