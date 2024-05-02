@@ -48,8 +48,7 @@ class ShopifyManager:
             self.newVariantsData = self.generateVariantsData(
                 product=product, new=True)
 
-            self.productMetafields = self.generateProductMetafields(
-                product=product)
+            self.metafields = self.generateMetafields(product=product)
 
             self.productTags = self.generateProductTags(product=product)
 
@@ -123,7 +122,7 @@ class ShopifyManager:
             ]
             return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
 
-    def generateProductMetafields(self, product):
+    def generateMetafields(self, product):
         keys = ["mpn", "pattern", "color", "collection", "width", "length", "height", "size", "uom", "minimum", "increment", "repeatH",
                 "repeatV", "specs", "yardsPR", "content", "match", "material", "finish", "care", "country", "features", "usage", "disclaimer"]
 
@@ -198,9 +197,27 @@ class ShopifyManager:
                 "title": product.title.title(),
                 "handle": common.toHandle(product.title),
                 "vendor": self.manufacturer,
-                "metafields": self.productMetafields
+                "metafields": self.metafields
             }
         }
+
+    def updateVariant(self, variantId):
+        variantData = self.requestAPI(
+            method="PUT", url=f"/variants/{variantId}.json", payload=self.existingVariantsData[variantId])
+
+        return variantData
+
+    def getMetafields(self):
+        metafieldsData = self.requestAPI(
+            method="GET", url=f"/products/{self.productId}/metafields.json")
+
+        return metafieldsData["metafields"]
+
+    def deleteMetafield(self, metafieldId):
+        self.requestAPI(
+            method="DELETE", url=f"/metafields/{metafieldId}.json")
+
+        return True
 
     def createProduct(self):
         # Create Product
@@ -212,26 +229,14 @@ class ShopifyManager:
         return productData["product"]
 
     def updateProduct(self):
+        # Update Variants
         for variantId in self.existingVariantsData.keys():
-            # Delete Variant Metafields
-            metafieldsData = self.requestAPI(
-                method="GET", url=f"/products/{self.productId}/variants/{variantId}/metafields.json")
+            self.updateVariant(variantId=variantId)
 
-            for metafield in metafieldsData["metafields"]:
-                self.requestAPI(
-                    method="DELETE", url=f"/metafields/{metafield['id']}.json")
-
-            # Update Variant
-            self.requestAPI(
-                method="PUT", url=f"/variants/{variantId}.json", payload=self.existingVariantsData[variantId])
-
-        # Delete Product Metafields
-        metafieldsData = self.requestAPI(
-            method="GET", url=f"/products/{self.productId}/metafields.json")
-
-        for metafield in metafieldsData["metafields"]:
-            self.requestAPI(
-                method="DELETE", url=f"/metafields/{metafield['id']}.json")
+        # Delete Metafields
+        metafields = self.getMetafields()
+        for metafield in metafields:
+            self.deleteMetafield(metafieldId=metafield['id'])
 
         # Update Product
         productData = self.requestAPI(

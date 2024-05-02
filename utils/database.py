@@ -254,6 +254,10 @@ class DatabaseManager:
             feed.productId = productData['id']
             feed.save()
 
+            # Add to Content Sync to sync Related Products field
+            Sync.objects.get_or_create(
+                productId=feed.productId, type="Content")
+
             debug.log(
                 self.brand, f"{index}/{total} - Product {feed.productId} has been created successfully.")
 
@@ -295,6 +299,8 @@ class DatabaseManager:
     def contentSync(self, private=False, fullSync=False):
         feeds = self.Feed.objects.all()
         for feed in tqdm(feeds):
+            updated = False
+
             try:
                 product = Product.objects.get(sku=feed.sku)
             except Product.DoesNotExist:
@@ -308,17 +314,22 @@ class DatabaseManager:
             if any(getattr(feed, attr) != getattr(product, attr) for attr in ATTR_DICT):
                 for attr in ATTR_DICT:
                     setattr(product, attr, getattr(feed, attr))
-            elif feed.manufacturer != product.manufacturer.name:
+                updated = True
+
+            if feed.manufacturer != product.manufacturer.name:
                 product.manufacturer = Manufacturer.objects.get(
                     name=feed.manufacturer)
-            elif feed.type != product.type.name:
+                updated = True
+
+            if feed.type != product.type.name:
                 product.type = Type.objects.get(name=feed.type)
-            elif title != product.title:
+                updated = True
+
+            if title != product.title:
                 product.title = title
-            else:
-                if fullSync:
-                    Sync.objects.get_or_create(
-                        productId=product.shopifyId, type="Content")
+                updated = True
+
+            if not updated and not fullSync:
                 continue
 
             product.save()
