@@ -257,6 +257,8 @@ class DatabaseManager:
             # Add to Content Sync to sync Related Products field
             Sync.objects.get_or_create(
                 productId=feed.productId, type="Content")
+            Sync.objects.get_or_create(
+                productId=feed.productId, type="Tag")
 
             debug.log(
                 self.brand, f"{index}/{total} - Product {feed.productId} has been created successfully.")
