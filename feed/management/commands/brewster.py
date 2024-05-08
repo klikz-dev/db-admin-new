@@ -236,11 +236,11 @@ class Processor:
                     # Main Information
                     description = common.toText(row[ids["descriptionId"]])
                     width = common.toFloat(row[ids["widthId"]])
-                    length = common.toFloat(row[ids["lengthId"]])
+                    length = common.toFloat(row[ids["lengthId"]]) * 12
                     repeat = common.toFloat(row[ids["repeatId"]])
 
                     # Additional Information
-                    yardsPR = common.toFloat(length / 3)
+                    yardsPR = common.toFloat(length / 36)
                     match = common.toText(row[ids["matchId"]])
                     material = common.toText(row[ids["materialId"]])
                     usage = common.toText(row[ids["usageId"]])
