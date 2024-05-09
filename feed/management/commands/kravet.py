@@ -66,6 +66,10 @@ class Command(BaseCommand):
             processor = Processor()
             processor.image()
 
+        if "roomset" in options['functions']:
+            processor = Processor()
+            processor.roomset()
+
         if "inventory" in options['functions']:
             common.downloadFileFromFTP(
                 brand=BRAND,
@@ -279,6 +283,16 @@ class Processor:
             if feed.thumbnail:
                 common.downloadFileFromFTP(
                     brand=BRAND, src=feed.thumbnail, dst=f"{IMAGEDIR}/thumbnail/{feed.productId}.jpg")
+
+    def roomset(self):
+
+        feeds = Kravet.objects.exclude(productId=None).filter(
+            collection="CANDICE OLSON CASUAL ELEGANCE")
+
+        for feed in feeds:
+            srcFile = feed.mpn.replace(".", "_").replace("_0", "_2")
+            common.downloadFileFromFTP(
+                brand=BRAND, src=f"/TWImgs/Lifestyle/{srcFile}.webp", dst=f"{IMAGEDIR}/roomset/{feed.productId}_2.jpg")
 
     def inventory(self):
         stocks = []
