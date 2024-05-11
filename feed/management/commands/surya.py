@@ -202,8 +202,6 @@ class Processor:
 
                 name = f"{collection} {pattern} {color} {size} {type}"
 
-                pattern = collection  # Color Variant
-
                 # Exceptions
                 if cost == 0 or not pattern or not color or not type:
                     continue

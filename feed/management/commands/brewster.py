@@ -8,9 +8,11 @@ import csv
 import codecs
 
 from utils import database, debug, common, const
+from vendor.models import Product
 
 BRAND = "Brewster"
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
+IMAGEDIR = f"{os.path.expanduser('~')}/admin/vendor/management/files/images"
 
 
 class Command(BaseCommand):
@@ -22,7 +24,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            # processor.downloadDatasheets()
+            processor.downloadDatasheets()
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -52,7 +54,7 @@ class Command(BaseCommand):
 
         if "image" in options['functions']:
             processor = Processor()
-            processor.DatabaseManager.downloadImages()
+            processor.image()
 
         if "inventory" in options['functions']:
             common.downloadFileFromSFTP(
@@ -74,11 +76,11 @@ class Processor:
         self.DatabaseManager = database.DatabaseManager(
             brand=BRAND, Feed=Brewster)
 
-        # transport = paramiko.Transport(
-        #     (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
-        # transport.connect(
-        #     username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
-        # self.imageServer = paramiko.SFTPClient.from_transport(transport)
+        transport = paramiko.Transport(
+            (const.sftp[f"{BRAND} Images"]["host"], const.sftp[f"{BRAND} Images"]["port"]))
+        transport.connect(
+            username=const.sftp[f"{BRAND} Images"]["user"], password=const.sftp[f"{BRAND} Images"]["pass"])
+        self.imageServer = paramiko.SFTPClient.from_transport(transport)
 
     def __enter__(self):
         return self
@@ -292,6 +294,9 @@ class Processor:
                     else:
                         colors = f"{color} {colors}"
 
+                    custom = {
+                        'originalBrand': manufacturer
+                    }
                     manufacturer = "Brewster Home Fashions" if manufacturer != "A-Street Prints" else "A-Street Prints"
                     name = common.toText(
                         row[ids["nameId"]]) or f"{pattern} {color} {type}"
@@ -350,10 +355,50 @@ class Processor:
                     'statusP': statusP,
                     'statusS': statusS,
                     'bestSeller': bestSeller,
+
+                    'custom': custom,
                 }
                 products.append(product)
 
         return products
+
+    def image(self, fullSync=False):
+        has_image_ids = set(Product.objects.filter(manufacturer__brand=BRAND)
+                                           .filter(images__position=1)
+                                           .values_list('shopifyId', flat=True)
+                                           .distinct())
+
+        feeds = Brewster.objects.exclude(productId=None)
+        if not fullSync:
+            feeds = feeds.exclude(productId__in=has_image_ids)
+
+        for feed in feeds.iterator():
+            collection = feed.collection.strip()
+            mpn = feed.mpn
+            product_id = feed.productId
+            original_brand = feed.custom.get('originalBrand')
+
+            if original_brand != "Advantage" and collection != "Eijffinger Web Only":
+                collection = collection.replace(original_brand, "").strip()
+
+            for image_size in ['300dpi', '72dpi', None]:
+                try:
+                    dir_path = f'/WallpaperBooks/{collection}/Images'
+                    if image_size:
+                        dir_path += f'/{image_size}'
+                    self.imageServer.chdir(path=dir_path)
+                    break
+                except Exception as e:
+                    pass
+
+            files = set(self.imageServer.listdir())
+
+            for index, suffix in enumerate(["", "_Room", "_Room_2", "_Room_3", "_Room_4"], start=1):
+                file_name = f"{mpn}{suffix}.jpg"
+                if file_name in files:
+                    local_path = f"{IMAGEDIR}/thumbnail/{product_id}.jpg" if index == 1 else f"{IMAGEDIR}/roomset/{product_id}_{index}.jpg"
+                    self.imageServer.get(file_name, local_path)
+                    debug.log(BRAND, f"downloaded {local_path}")
 
     def inventory(self):
         stocks = []

@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
         if "image" in options['functions']:
             processor = Processor()
-            processor.image()
+            processor.image(fullSync=True)
 
         if "inventory" in options['functions']:
             processor = Processor()
