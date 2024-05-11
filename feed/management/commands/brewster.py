@@ -381,9 +381,9 @@ class Processor:
             if original_brand != "Advantage" and collection != "Eijffinger Web Only":
                 collection = collection.replace(original_brand, "").strip()
 
-            for image_size in ['300dpi', '72dpi', None]:
+            for image_size in ['Images/300dpi', 'Images/72dpi', 'Images', '300dpi', '72dpi']:
                 try:
-                    dir_path = f'/WallpaperBooks/{collection}/Images'
+                    dir_path = f'/WallpaperBooks/{collection}'
                     if image_size:
                         dir_path += f'/{image_size}'
                     self.imageServer.chdir(path=dir_path)
