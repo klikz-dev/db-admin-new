@@ -178,6 +178,11 @@ class Processor:
                 roomsets = common.toText(row[22]).split(",")
 
                 # Fine-tuning
+                if type == "Fabric" and "Upholstery" in description:
+                    type = "Upholstery Fabric"
+                elif type == "Fabric" and "Drapery" in description:
+                    type = "Drapery Fabric"
+
                 if "BORSTAPETER" in collection:
                     manufacturer = "Borastapeter"
                     collection = "Borastapeter"

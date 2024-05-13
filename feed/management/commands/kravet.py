@@ -163,8 +163,8 @@ class Processor:
                 TYPE_DICT = {
                     "WALLCOVERING": "Wallpaper",
                     "TRIM": "Trim",
-                    "UPHOLSTERY": "Fabric",
-                    "DRAPERY": "Fabric",
+                    "UPHOLSTERY": "Upholstery Fabric",
+                    "DRAPERY": "Drapery Fabric",
                     "MULTIPURPOSE": "Fabric"
                 }
                 type = TYPE_DICT.get(type, type)

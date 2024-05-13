@@ -164,6 +164,11 @@ class Processor:
                 }
                 type = TYPE_DICT.get(type, type)
 
+                if type == "Fabric" and "Upholstery" in usage:
+                    type = "Upholstery Fabric"
+                elif type == "Fabric" and "Drapery" in usage:
+                    type = "Drapery Fabric"
+
                 UOM_DICT = {
                     "DR": "Roll",
                     "EA": "Yard",

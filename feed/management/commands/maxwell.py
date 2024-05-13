@@ -150,6 +150,11 @@ class Processor:
                     statusP = statusS = row['discontinued'] is None
 
                     # Fine-tuning
+                    if type == "Fabric" and "UPHOLSTERY" in collection:
+                        type = "Upholstery Fabric"
+                    elif type == "Fabric" and "DRAPERY" in collection:
+                        type = "Drapery Fabric"
+
                     vPattern = r'V-(.*?)\"'
                     hPattern = r'H-(.*?)\"'
 
