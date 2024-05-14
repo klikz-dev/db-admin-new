@@ -209,7 +209,7 @@ class Processor:
                 name = f"{pattern} {color} {type}".title()
 
                 if sku in const.CONVERSATIONAL_SKUS:
-                    keywords = f"{keywords} Conversational"
+                    keywords = f"{keywords} Conversation"
 
                 # Exceptions
                 if type == "UNDETERMINED":

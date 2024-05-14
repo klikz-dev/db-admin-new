@@ -310,7 +310,7 @@ class Processor:
                             "Mural", "").replace("Border", "").replace("  ", " ").strip()
 
                     if sku in const.CONVERSATIONAL_SKUS:
-                        keywords = f"{keywords} Conversational"
+                        keywords = f"{keywords} Conversation"
 
                     # Exceptions
                     if cost == 0 or not pattern or not color or not type:
