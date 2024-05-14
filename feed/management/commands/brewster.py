@@ -309,6 +309,9 @@ class Processor:
                         pattern = name.replace(color, "").replace("Wallpaper", "").replace(
                             "Mural", "").replace("Border", "").replace("  ", " ").strip()
 
+                    if sku in const.CONVERSATIONAL_SKUS:
+                        keywords = f"{keywords} Conversational"
+
                     # Exceptions
                     if cost == 0 or not pattern or not color or not type:
                         continue

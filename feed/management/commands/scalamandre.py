@@ -6,7 +6,7 @@ import requests
 import json
 import environ
 
-from utils import database, debug, common
+from utils import database, debug, common, const
 from vendor.models import Product
 
 env = environ.Env()
@@ -207,6 +207,9 @@ class Processor:
                 uom = UOM_DICT.get(uom, 'Item')
 
                 name = f"{pattern} {color} {type}".title()
+
+                if sku in const.CONVERSATIONAL_SKUS:
+                    keywords = f"{keywords} Conversational"
 
                 # Exceptions
                 if type == "UNDETERMINED":

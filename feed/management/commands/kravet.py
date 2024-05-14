@@ -6,7 +6,7 @@ import csv
 import codecs
 import zipfile
 
-from utils import database, debug, common
+from utils import database, debug, common, const
 from vendor.models import Product
 
 FILEDIR = f"{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}/files"
@@ -100,6 +100,7 @@ class Processor:
         pass
 
     def fetchFeed(self):
+
         # Get Product Feed
         products = []
 
@@ -192,6 +193,9 @@ class Processor:
                 name = f"{pattern} {color} {type}"
 
                 weight = round(weight / 16, 2)
+
+                if sku in const.CONVERSATIONAL_SKUS:
+                    keywords = f"{keywords} Conversational"
 
                 # Exceptions
                 if not (mpn.endswith('.0') and mpn.count('.') == 2):
