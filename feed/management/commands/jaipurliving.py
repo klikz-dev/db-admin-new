@@ -19,13 +19,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "feed" in options['functions']:
             processor = Processor()
-            common.downloadFileFromSFTP(
-                brand=BRAND,
-                src="/jaipur/Jaipur Living Master Data Template.xlsx",
-                dst=f"{FILEDIR}/jaipurliving-master.xlsx",
-                fileSrc=True,
-                delete=False
-            )
+            # common.downloadFileFromSFTP(
+            #     brand=BRAND,
+            #     src="/jaipur/Jaipur Living Master Data Template.xlsx",
+            #     dst=f"{FILEDIR}/jaipurliving-master.xlsx",
+            #     fileSrc=True,
+            #     delete=False
+            # )
             feeds = processor.fetchFeed()
             processor.DatabaseManager.writeFeed(feeds=feeds)
 
@@ -76,6 +76,26 @@ class Processor:
         pass
 
     def fetchFeed(self):
+
+        # Price
+        prices = {}
+
+        wb = openpyxl.load_workbook(
+            f"{FILEDIR}/jaipurliving-price.xlsx", data_only=True)
+        sh = wb.worksheets[0]
+        for row in sh.iter_rows(min_row=4, values_only=True):
+            mpn = common.toText(row[0])
+
+            cost = common.toFloat(row[3])
+            map = common.toFloat(row[2])
+            msrp = common.toFloat(row[1])
+
+            prices[mpn] = {
+                'cost': cost,
+                'map': map,
+                'msrp': msrp
+            }
+
         # Get Product Feed
         products = []
 
@@ -143,6 +163,11 @@ class Processor:
                 map = common.toFloat(row[16])
                 msrp = common.toFloat(row[17])
 
+                if mpn in prices:
+                    cost = prices[mpn]['cost']
+                    map = prices[mpn]['map']
+                    msrp = prices[mpn]['msrp']
+
                 # Tagging
                 keywords = f"{collection} {pattern} {description} {row[19]} {row[50]} {row[51]} {name} {type} {' '.join(features)}"
                 colors = color
@@ -180,6 +205,7 @@ class Processor:
                 TYPE_DICT = {
                     "Accent Furniture": "Furniture",
                     "Décor": "Throw",
+                    "Dcor": "Throw",
                 }
                 type = TYPE_DICT.get(type, type)
 
