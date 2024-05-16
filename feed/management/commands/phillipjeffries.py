@@ -155,7 +155,7 @@ class Processor:
                 thumbnail = f"https://www.phillipjeffries.com{data['assets']['download_src']}"
 
                 # Status
-                statusP = True
+                statusP = False
                 statusS = False
 
                 if data['order']['wallcovering']['purcode'] == "NJSTOCKED":

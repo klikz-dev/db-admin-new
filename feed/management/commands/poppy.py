@@ -155,8 +155,8 @@ class Processor:
                         roomsets.append(roomset)
 
                 # Status
-                statusP = True
-                statusS = True
+                statusP = False
+                statusS = False
 
                 # Fine-tuning
                 name = f"{pattern} {color} {type}"

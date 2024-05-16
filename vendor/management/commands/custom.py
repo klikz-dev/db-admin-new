@@ -4,8 +4,10 @@ import os
 import glob
 import environ
 
-from vendor.models import Sync
+from utils import shopify
+
 from monitor.models import Log
+from vendor.models import Product, Sync
 
 env = environ.Env()
 
@@ -26,6 +28,12 @@ class Command(BaseCommand):
 
         if "cleanup-logs" in options['functions']:
             processor.cleanupLogs()
+
+        if "disable-brand" in options['functions']:
+            processor.disableBrand()
+
+        if "delete-brand" in options['functions']:
+            processor.deleteBrand()
 
 
 class Processor:
@@ -48,3 +56,27 @@ class Processor:
     def cleanupLogs(self):
         # Empty Logs
         Log.objects.all().delete()
+
+    def disableBrand(self):
+        brand = "Poppy"
+
+        products = Product.objects.filter(manufacturer__brand=brand)
+
+        for product in products:
+            if product.published:
+                product.published = False
+                product.save()
+
+                Sync.objects.get_or_create(
+                    productId=product.shopifyId, type="Status")
+
+    def deleteBrand(self):
+        brand = "Poppy"
+
+        shopifyManager = shopify.ShopifyManager()
+
+        products = Product.objects.filter(manufacturer__brand=brand)
+
+        for product in products:
+            shopifyManager.deleteProduct(productId=product.shopifyId)
+            product.delete()
