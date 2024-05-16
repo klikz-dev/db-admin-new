@@ -449,17 +449,16 @@ class DatabaseManager:
                     continue
 
         # Generate Category tags
-        if feed.type in [
-            "Fabric", "Upholstery Fabric", "Drapery Fabric",
-            "Wallpaper", "Mural",
-            "Pillow", "Pillow Kit", "Pillow Insert", "Pillow Cover", "Outdoor Pillow", "Decorative Pillow",
-            "Trim",
-            "Rug", "Rug Pad",
-        ]:
-            allCategories = Tag.objects.filter(
-                type="Category").values_list('name', flat=True)
-
-            for category in allCategories:
+        allCategories = Tag.objects.filter(
+            type="Category").values_list('name', flat=True)
+        for category in allCategories:
+            if feed.type in [
+                "Fabric", "Upholstery Fabric", "Drapery Fabric",
+                "Wallpaper", "Mural",
+                "Pillow", "Pillow Kit", "Pillow Insert", "Pillow Cover", "Outdoor Pillow", "Decorative Pillow",
+                "Trim",
+                "Rug", "Rug Pad",
+            ] or category in ["Outdoor"]:
                 categoryName = category.split(
                     ">")[1] if ">" in category else category
                 if common.wordInText(categoryName, feed.keywords):

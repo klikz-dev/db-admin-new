@@ -4,7 +4,7 @@ import os
 import glob
 import environ
 
-from utils import shopify
+from utils import shopify, debug
 
 from monitor.models import Log
 from vendor.models import Product, Sync
@@ -34,6 +34,9 @@ class Command(BaseCommand):
 
         if "delete-brand" in options['functions']:
             processor.deleteBrand()
+
+        if "refresh" in options['functions']:
+            processor.refresh()
 
 
 class Processor:
@@ -80,3 +83,14 @@ class Processor:
         for product in products:
             shopifyManager.deleteProduct(productId=product.shopifyId)
             product.delete()
+
+    def refresh(self):
+        products = Product.objects.all()
+
+        total = len(products)
+        for index, product in enumerate(products):
+            shopifyManager = shopify.ShopifyManager(product=product)
+            shopifyManager.updateProductTag()
+
+            debug.log(
+                "Custom", f"{index}/{total}: Tag Sync for {product.shopifyId} has been completed.")
