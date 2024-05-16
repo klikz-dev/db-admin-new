@@ -58,7 +58,7 @@ class Processor:
         Log.objects.all().delete()
 
     def disableBrand(self):
-        brand = "Poppy"
+        brand = "Phillip Jeffries"
 
         products = Product.objects.filter(manufacturer__brand=brand)
 
