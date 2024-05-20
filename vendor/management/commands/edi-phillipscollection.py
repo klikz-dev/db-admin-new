@@ -105,6 +105,9 @@ class Processor:
 
         for order in orders:
 
+            if "Sample" in order.orderType:
+                continue
+
             address = ", ".join(filter(
                 None, [order.shippingAddress1, order.shippingAddress2, order.shippingCompany]))
 
