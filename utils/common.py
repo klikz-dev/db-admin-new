@@ -10,6 +10,7 @@ import math
 import re
 import inflect
 import pycountry
+import xlsxwriter
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -359,3 +360,16 @@ def addTracking(order, brand, number, company):
         debug.log(
             PROCESS, f"#{order} {brand} Tracking Uploaded. {company}:{number}")
     # Upload tracking to Shopify
+
+
+def writeDatasheet(filePath, header, rows):
+    workbook = xlsxwriter.Workbook(filePath)
+    worksheet = workbook.add_worksheet()
+
+    worksheet.write_row(0, 0, header)
+
+    for rowId, row in enumerate(rows):
+        for columnId, column in enumerate(row):
+            worksheet.write(rowId + 1, columnId, column)
+
+    workbook.close()

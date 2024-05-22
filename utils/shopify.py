@@ -60,11 +60,12 @@ class ShopifyManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    def requestAPI(self, method, url, payload={}):
+    def requestAPI(self, method, url, payload={}, params=[], pagination=False):
         if method == "GET" or method == "DELETE":
             response = requests.request(
                 method,
                 f"{SHOPIFY_API_BASE_URL}/{SHOPIFY_API_VERSION}{url}",
+                params=params,
                 headers={
                     'X-Shopify-Access-Token': self.apiToken,
                 }
@@ -81,7 +82,10 @@ class ShopifyManager:
             )
 
         if response.status_code == 200 or response.status_code == 201:
-            return json.loads(response.text)
+            if pagination:
+                return response
+            else:
+                return json.loads(response.text)
         else:
             debug.warn(
                 PROCESS, f"Shopify API Error for {url}. Error: {str(response.text)}")
@@ -365,3 +369,33 @@ class ShopifyManager:
             method="POST", url=f"/fulfillments.json", payload=payload)
 
         return fulfillmentData
+
+    def getCollections(self, type="smart"):
+        allCollections = []
+
+        params = {
+            "limit": 250,  # Adjust limit if necessary (maximum is 250)
+            "page_info": None  # Used for pagination
+        }
+
+        while True:
+            collectionsResponse = self.requestAPI(
+                method="GET", url=f"/{type}_collections.json", params=params, pagination=True)
+            collections = collectionsResponse.json().get(
+                f'{type}_collections', [])
+
+            allCollections.extend(collections)
+
+            next_link = collectionsResponse.links.get('next')
+            if next_link:
+                params['page_info'] = next_link['url'].split('page_info=')[1]
+            else:
+                break
+
+        return allCollections
+
+    def getCollection(self, type, collectionId):
+        collectionData = self.requestAPI(
+            method="GET", url=f"/{type}_collections/{collectionId}.json")
+
+        return collectionData[f'{type}_collection']

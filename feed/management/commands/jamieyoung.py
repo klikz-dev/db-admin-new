@@ -199,7 +199,7 @@ class Processor:
                 msrp = common.toFloat(row[10])
 
                 # Tagging
-                keywords = f"{collection} {pattern} {description} {row[19]} {','.join(features)}"
+                keywords = f"{collection} {pattern} {row[19]} {','.join(features)}"
                 colors = color
 
                 # Image
@@ -250,7 +250,7 @@ class Processor:
                     "**MUST SHIP COMMON CARRIER**", "").replace("  ", " ").strip()
 
                 # Exceptions
-                if "Sideboard" in pattern or "Console" in pattern:
+                if "Sideboard" in pattern or "Console" in pattern:  # Bk: Remove Sideboard and Console from JY
                     continue
 
                 if cost == 0 or not pattern or not color or not type:

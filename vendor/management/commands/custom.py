@@ -4,7 +4,7 @@ import os
 import glob
 import environ
 
-from utils import shopify, debug
+from utils import shopify, debug, common
 
 from monitor.models import Log
 from vendor.models import Product, Sync
@@ -37,6 +37,9 @@ class Command(BaseCommand):
 
         if "refresh" in options['functions']:
             processor.refresh()
+
+        if "report" in options['functions']:
+            processor.report()
 
 
 class Processor:
@@ -94,3 +97,29 @@ class Processor:
 
             debug.log(
                 "Custom", f"{index}/{total}: Tag Sync for {product.shopifyId} has been completed.")
+
+    def report(self):
+        collectionReports = []
+
+        shopifyManager = shopify.ShopifyManager()
+        collections = shopifyManager.getCollections()
+        for collection in collections:
+            type = "smart" if "rules" in collection else "custom"
+            collectionData = shopifyManager.getCollection(
+                type=type, collectionId=collection['id'])
+            count = collectionData['products_count']
+
+            collectionReport = (
+                collection['id'], collection['handle'], collection['title'], count)
+
+            print(collectionReport)
+            collectionReports.append(collectionReport)
+
+        sorted_collectionReports = sorted(
+            collectionReports, key=lambda x: x[3], reverse=False)
+
+        common.writeDatasheet(
+            filePath=f"{FILEDIR}/collections-report.xlsx",
+            header=['ID', 'Handle', 'Title', 'Product Count'],
+            rows=sorted_collectionReports
+        )
