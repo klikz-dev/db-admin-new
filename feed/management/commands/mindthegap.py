@@ -108,7 +108,16 @@ class Processor:
                 # Categorization
                 brand = BRAND
                 manufacturer = BRAND
+
                 type = common.toText(row[0]).title()
+                TYPE_DICT = {
+                    "Fabrics": "Fabric",
+                    "Designer Wallpaper": "Wallpaper",
+                    "Metallic Wallpaper": "Wallpaper",
+                    "Complementary Wallpaper": "Wallpaper",
+                }
+                type = TYPE_DICT.get(type, type)
+
                 collection = common.toText(row[1])
 
                 # Main Information
@@ -145,17 +154,10 @@ class Processor:
                 colors = row[5]
 
                 # Status
-                statusP = type != "Fabric"
-                statusS = False
+                statusP = True
+                statusS = type == "Fabric"
 
                 # Fine-tuning
-                TYPE_DICT = {
-                    "Fabrics": "Fabric",
-                    "Designer Wallpaper": "Wallpaper",
-                    "Metallic Wallpaper": "Wallpaper",
-                    "Complementary Wallpaper": "Wallpaper",
-                }
-                type = TYPE_DICT.get(type, type)
 
                 UOM_DICT = {
                     "Wallpaper": "Roll",
