@@ -159,3 +159,5 @@ migrations/
 static/
 main.sqlite3-journal
 utils/const.py
+
+vendor/management/commands/misc.py
