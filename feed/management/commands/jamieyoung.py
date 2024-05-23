@@ -208,8 +208,7 @@ class Processor:
                     "dl=0", "dl=1") for id in range(70, 83) if row[id]]
 
                 # Status
-                statusP = not (
-                    "Sideboard" in pattern or "Console" in pattern or mpn not in available_mpns)
+                statusP = mpn in available_mpns
                 statusS = False
                 bestSeller = pattern in bestSellingPatterns
                 outlet = mpn in outletMPNs
@@ -229,6 +228,10 @@ class Processor:
                     whiteGlove = False
 
                 # Fine-tuning
+                name = name.replace(
+                    "**MUST SHIP COMMON CARRIER**", "").replace("  ", " ").strip()
+                name = name or f"{color} {pattern}"
+
                 TYPE_DICT = {
                     "Table Lamps": "Table Lamp",
                     "Floor Lamps": "Floor Lamp",
@@ -243,16 +246,10 @@ class Processor:
                 type = TYPE_DICT.get(type, type)
 
                 pattern = pattern.replace(type, "")
-
                 pattern = pattern.replace(
-                    "**MUST SHIP COMMON CARRIER**", "").replace("  ", " ").strip()
-                name = name.replace(
                     "**MUST SHIP COMMON CARRIER**", "").replace("  ", " ").strip()
 
                 # Exceptions
-                if "Sideboard" in pattern or "Console" in pattern:  # Bk: Remove Sideboard and Console from JY
-                    continue
-
                 if cost == 0 or not pattern or not color or not type:
                     continue
 
