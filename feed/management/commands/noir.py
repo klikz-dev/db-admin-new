@@ -122,6 +122,11 @@ class Processor:
                 weight = common.toFloat(row[13])
                 upc = common.toInt(row[5])
 
+                dimension = f"{width}W x {height}D x {length}H" if width > 0 else ""
+                specs = [
+                    ("Dimension", dimension),
+                ]
+
                 # Pricing
                 cost = common.toFloat(row[3])
                 map = common.toFloat(row[4])
@@ -205,6 +210,8 @@ class Processor:
                 'country': country,
                 'weight': weight,
                 'upc': upc,
+
+                'specs': specs,
 
                 'uom': uom,
 
