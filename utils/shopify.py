@@ -108,9 +108,9 @@ class ShopifyManager:
                     "price": product.consumer},
                 {"title": "Trade", "option1": "Trade", "price": product.trade},
                 {"title": "Sample", "option1": "Sample",
-                    "price": product.sample, "cost": 0, "weight": 0},
+                    "price": product.sample, "cost": 0, "weight": 0.01},
                 {"title": "Free Sample", "option1": "Free Sample",
-                    "price": 0, "cost": 0, "weight": 0}
+                    "price": 0, "cost": 0, "weight": 0.01}
             ]
             return [{**base_variant_info, **variant} for variant in variants_data]
         else:
@@ -120,9 +120,9 @@ class ShopifyManager:
                 {"id": product.tradeId, "title": "Trade",
                     "option1": "Trade", "price": product.trade},
                 {"id": product.sampleId, "title": "Sample", "option1": "Sample",
-                    "price": product.sample, "cost": 0, "weight": 0},
+                    "price": product.sample, "cost": 0, "weight": 0.01},
                 {"id": product.freeSampleId, "title": "Free Sample", "option1": "Free Sample",
-                    "price": 0, "cost": 0, "weight": 0}
+                    "price": 0, "cost": 0, "weight": 0.01}
             ]
             return {variant['id']: {"variant": {**base_variant_info, **variant}} for variant in variants_data}
 
@@ -374,8 +374,8 @@ class ShopifyManager:
         allCollections = []
 
         params = {
-            "limit": 250,  # Adjust limit if necessary (maximum is 250)
-            "page_info": None  # Used for pagination
+            "limit": 250,
+            "page_info": None
         }
 
         while True:

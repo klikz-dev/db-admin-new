@@ -91,12 +91,22 @@ class Processor:
         products = Product.objects.all()
 
         total = len(products)
-        for index, product in enumerate(products):
-            shopifyManager = shopify.ShopifyManager(product=product)
-            shopifyManager.updateProductTag()
+
+        def syncContent(index, product):
+
+            shopifyManager = shopify.ShopifyManager(
+                product=product, thread=index)
+
+            handle = shopifyManager.updateProduct()
+
+            if handle:
+                product.shopifyHandle = handle
+                product.save()
 
             debug.log(
-                "Custom", f"{index}/{total}: Tag Sync for {product.shopifyId} has been completed.")
+                "Custom", f"{index}/{total}: Content Sync for {product.shopifyId} has been completed.")
+
+        common.thread(rows=products, function=syncContent)
 
     def report(self):
         collectionReports = []
