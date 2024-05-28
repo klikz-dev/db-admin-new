@@ -118,8 +118,8 @@ class Processor:
                 colors = common.toText(row[25])
 
                 # Status
-                statusP = True
-                statusS = True
+                statusP = False
+                statusS = False
 
                 # Fine-tuning
                 name = f"{pattern} {color} {type}"
