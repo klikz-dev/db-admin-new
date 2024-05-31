@@ -197,7 +197,7 @@ class Processor:
                         }
                     )
 
-                    ref = refData[0]['WEBQUOTEID']
+                    ref = refData[0]['MQUOTEID']
                     self.ref(order, ref)
 
                 if len(sampleArray) > 0:
