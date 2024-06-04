@@ -305,9 +305,8 @@ class Processor:
                         type = "Mural"
                         uom = "Each"
 
-                    if pattern == mpn:
-                        pattern = name.replace(color, "").replace("Wallpaper", "").replace(
-                            "Mural", "").replace("Border", "").replace("  ", " ").strip()
+                    pattern = name.replace(color, "").replace("Wallpaper", "").replace(
+                        "Mural", "").replace("Border", "").replace("  ", " ").strip()
 
                     if sku in const.CONVERSATIONAL_SKUS:
                         keywords = f"{keywords} Conversational"
