@@ -38,8 +38,8 @@ class Command(BaseCommand):
         if "refresh" in options['functions']:
             processor.refresh()
 
-        if "report" in options['functions']:
-            processor.report()
+        if "collections" in options['functions']:
+            processor.collections()
 
 
 class Processor:
@@ -108,28 +108,40 @@ class Processor:
 
         common.thread(rows=products, function=syncContent)
 
-    def report(self):
+    def collections(self):
         collectionReports = []
 
         shopifyManager = shopify.ShopifyManager()
         collections = shopifyManager.getCollections()
-        for collection in collections:
+
+        def getCollection(index, collection):
             type = "smart" if "rules" in collection else "custom"
+
+            shopifyManager = shopify.ShopifyManager(thread=index)
             collectionData = shopifyManager.getCollection(
                 type=type, collectionId=collection['id'])
             count = collectionData['products_count']
 
-            collectionReport = (
-                collection['id'], collection['handle'], collection['title'], count)
+            if count < 10:
+                shopifyManager.deleteCollection(
+                    type=type, collectionId=collection['id'])
+                return
 
-            print(collectionReport)
+            collectionReport = (
+                collection['id'], collection['handle'], collection['title'], count, str(collection['rules']))
+
             collectionReports.append(collectionReport)
+
+            debug.log(
+                "Custom", f"{index}/{len(collections)} -- Collection {collection['id']}")
+
+        common.thread(rows=collections, function=getCollection)
 
         sorted_collectionReports = sorted(
             collectionReports, key=lambda x: x[3], reverse=False)
 
         common.writeDatasheet(
             filePath=f"{FILEDIR}/collections-report.xlsx",
-            header=['ID', 'Handle', 'Title', 'Product Count'],
+            header=['ID', 'Handle', 'Title', 'Product Count', 'Rules'],
             rows=sorted_collectionReports
         )

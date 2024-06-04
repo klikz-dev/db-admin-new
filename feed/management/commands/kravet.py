@@ -194,9 +194,6 @@ class Processor:
 
                 weight = round(weight / 16, 2)
 
-                if sku in const.CONVERSATIONAL_SKUS:
-                    keywords = f"{keywords} Conversational"
-
                 # Exceptions
                 if not (mpn.endswith('.0') and mpn.count('.') == 2):
                     continue

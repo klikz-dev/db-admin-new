@@ -399,3 +399,9 @@ class ShopifyManager:
             method="GET", url=f"/{type}_collections/{collectionId}.json")
 
         return collectionData[f'{type}_collection']
+
+    def deleteCollection(self, type, collectionId):
+        self.requestAPI(
+            method="DELETE", url=f"/{type}_collections/{collectionId}.json")
+
+        return True

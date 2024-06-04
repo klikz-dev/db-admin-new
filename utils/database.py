@@ -434,6 +434,10 @@ class DatabaseManager:
                 debug.warn(self.brand, str(e))
 
     def generateTags(self, feed, price):
+        keywords = feed.keywords
+        if feed.sku in const.CONVERSATIONAL_SKUS:
+            keywords = f"{keywords} Conversational"
+
         tags = []
 
         # Generate Style tags
@@ -441,7 +445,7 @@ class DatabaseManager:
             type="Style").values_list('name', flat=True)
 
         for style in allStyles:
-            if common.wordInText(style, feed.keywords):
+            if common.wordInText(style, keywords):
                 try:
                     tag = Tag.objects.get(name=style, type="Style")
                     tags.append(tag)
@@ -459,9 +463,10 @@ class DatabaseManager:
                 "Trim",
                 "Rug", "Rug Pad",
             ] or category in ["Outdoor"]:
+
                 categoryName = category.split(
                     ">")[1] if ">" in category else category
-                if common.wordInText(categoryName, feed.keywords):
+                if common.wordInText(categoryName, keywords):
                     try:
                         tag = Tag.objects.get(name=category, type="Category")
                         tags.append(tag)
@@ -516,7 +521,7 @@ class DatabaseManager:
             type="Content").values_list('name', flat=True)
 
         for content in allContents:
-            if common.wordInText(content, feed.keywords):
+            if common.wordInText(content, keywords):
                 try:
                     tag = Tag.objects.get(name=content, type="Content")
                     tags.append(tag)
