@@ -3,11 +3,13 @@ from django.core.management.base import BaseCommand
 import os
 import glob
 import environ
+import openpyxl
+import json
 
 from utils import shopify, debug, common
 
 from monitor.models import Log
-from vendor.models import Product, Sync
+from vendor.models import Product, Sync, Tag
 
 env = environ.Env()
 
@@ -109,22 +111,90 @@ class Processor:
         common.thread(rows=products, function=syncContent)
 
     def collections(self):
-        collectionReports = []
 
         shopifyManager = shopify.ShopifyManager()
-        collections = shopifyManager.getCollections()
+
+        ### Fix Buggy Collections ###
+        shopifyCollections = shopifyManager.getCollections()
+        for shopifyCollection in shopifyCollections:
+
+            newRules = []
+
+            for rule in shopifyCollection['rules']:
+                newRule = {}
+
+                if "Category:" in rule['condition']:
+
+                    condition = rule['condition']
+                    if condition == "Category:Dog":
+                        condition = "Category:Animals>Dog"
+                    if condition == "Category:Horse":
+                        condition = "Category:Animals>Horse"
+                    if condition == "Category:Leopard":
+                        condition = "Category:Animals>Leopard"
+                    if condition == "Category:Zebra":
+                        condition = "Category:Animals>Zebra"
+                    if condition == "Category:Fish":
+                        condition = "Category:Animals>Fish"
+
+                    newRule = {
+                        'column': rule['column'],
+                        'relation': rule['relation'],
+                        'condition': condition,
+                    }
+
+                elif "Color:" in rule['condition']:
+
+                    condition = rule['condition']
+                    if condition == "Color:Black/White":
+                        condition = "Color:Black and White"
+                    if condition == "Color:Blue Green":
+                        condition = "Color:Blue/Green"
+
+                    newRule = {
+                        'column': rule['column'],
+                        'relation': rule['relation'],
+                        'condition': condition,
+                    }
+
+                elif rule['column'] == "tag" and ":" not in rule['condition']:
+
+                    condition = rule['condition']
+                    if condition == "Best Selling":
+                        condition = "Group:Best Selling"
+
+                    newRule = {
+                        'column': rule['column'],
+                        'relation': rule['relation'],
+                        'condition': condition,
+                    }
+
+                else:
+                    newRule = rule
+
+                if newRule not in newRules:
+                    newRules.append(newRule)
+
+            if newRules != shopifyCollection['rules']:
+                shopifyManager.updateCollection(
+                    collection=shopifyCollection, newRules=newRules)
+                debug.log(
+                    "Custom", f"Updated buggy collection {shopifyCollection['handle']}")
+        ### Fix Buggy Collections ###
+
+        return
+
+        ### Report Existing Collections ###
+        collectionReports = []
 
         def getCollection(index, collection):
-            type = "smart" if "rules" in collection else "custom"
-
             shopifyManager = shopify.ShopifyManager(thread=index)
             collectionData = shopifyManager.getCollection(
-                type=type, collectionId=collection['id'])
+                collectionId=collection['id'])
             count = collectionData['products_count']
 
             if count < 10:
-                shopifyManager.deleteCollection(
-                    type=type, collectionId=collection['id'])
+                shopifyManager.deleteCollection(collectionId=collection['id'])
                 return
 
             collectionReport = (
@@ -133,9 +203,9 @@ class Processor:
             collectionReports.append(collectionReport)
 
             debug.log(
-                "Custom", f"{index}/{len(collections)} -- Collection {collection['id']}")
+                "Custom", f"{index}/{len(shopifyCollections)} -- Collection {collection['id']}")
 
-        common.thread(rows=collections, function=getCollection)
+        common.thread(rows=shopifyCollections, function=getCollection)
 
         sorted_collectionReports = sorted(
             collectionReports, key=lambda x: x[3], reverse=False)
@@ -145,3 +215,4 @@ class Processor:
             header=['ID', 'Handle', 'Title', 'Product Count', 'Rules'],
             rows=sorted_collectionReports
         )
+        ### Report Existing Collections ###

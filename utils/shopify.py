@@ -370,7 +370,7 @@ class ShopifyManager:
 
         return fulfillmentData
 
-    def getCollections(self, type="smart"):
+    def getCollections(self):
         allCollections = []
 
         params = {
@@ -380,9 +380,9 @@ class ShopifyManager:
 
         while True:
             collectionsResponse = self.requestAPI(
-                method="GET", url=f"/{type}_collections.json", params=params, pagination=True)
+                method="GET", url=f"/smart_collections.json", params=params, pagination=True)
             collections = collectionsResponse.json().get(
-                f'{type}_collections', [])
+                f'smart_collections', [])
 
             allCollections.extend(collections)
 
@@ -394,14 +394,40 @@ class ShopifyManager:
 
         return allCollections
 
-    def getCollection(self, type, collectionId):
+    def createCollection(self, collection, newRules):
+
         collectionData = self.requestAPI(
-            method="GET", url=f"/{type}_collections/{collectionId}.json")
+            method="POST", url=f"/smart_collections.json", payload={
+                'smart_collection': {
+                    'title': collection['title'],
+                    'handle': collection['handle'],
+                    'rules': newRules,
+                }
+            })
 
-        return collectionData[f'{type}_collection']
+        return collectionData
 
-    def deleteCollection(self, type, collectionId):
+    def updateCollection(self, collection, newRules):
+
+        collectionData = self.requestAPI(
+            method="PUT", url=f"/smart_collections/{collection['id']}.json", payload={
+                'smart_collection': {
+                    'title': collection['title'],
+                    'handle': collection['handle'],
+                    'rules': newRules,
+                }
+            })
+
+        return collectionData
+
+    def getCollection(self, collectionId):
+        collectionData = self.requestAPI(
+            method="GET", url=f"/smart_collections/{collectionId}.json")
+
+        return collectionData[f'smart_collection']
+
+    def deleteCollection(self, collectionId):
         self.requestAPI(
-            method="DELETE", url=f"/{type}_collections/{collectionId}.json")
+            method="DELETE", url=f"/smart_collections/{collectionId}.json")
 
         return True
