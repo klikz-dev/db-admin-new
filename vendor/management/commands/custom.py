@@ -182,8 +182,6 @@ class Processor:
                     "Custom", f"Updated buggy collection {shopifyCollection['handle']}")
         ### Fix Buggy Collections ###
 
-        return
-
         ### Report Existing Collections ###
         collectionReports = []
 
@@ -192,10 +190,6 @@ class Processor:
             collectionData = shopifyManager.getCollection(
                 collectionId=collection['id'])
             count = collectionData['products_count']
-
-            if count < 10:
-                shopifyManager.deleteCollection(collectionId=collection['id'])
-                return
 
             collectionReport = (
                 collection['id'], collection['handle'], collection['title'], count, str(collection['rules']))
