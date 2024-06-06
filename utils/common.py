@@ -215,22 +215,31 @@ def pluralToSingular(word):
 
 
 def getRelatedProducts(product):
-    samePatterns = Product.objects.filter(
-        manufacturer=product.manufacturer, type=product.type, collection=product.collection, pattern=product.pattern)
+    allPatterns = Product.objects.filter(
+        manufacturer=product.manufacturer,
+        type=product.type,
+        collection=product.collection,
+        pattern=product.pattern
+    ).filter(published=True).filter(images__position=1).order_by('width')
+
+    firstPattern = allPatterns.first()
+    samePatterns = allPatterns.exclude(shopifyId=product.shopifyId)[:20]
+
+    swatchType = "parent" if firstPattern == product else "child"
 
     relatedProducts = []
     for samePattern in samePatterns:
         color = samePattern.color
         size = samePattern.size
-        handle = toHandle(samePattern.title)
+        handle = samePattern.shopifyHandle
 
         relatedProducts.append({
             "color": color,
             "size": size,
-            "handle": handle
+            "handle": handle,
         })
 
-    return relatedProducts
+    return (swatchType, relatedProducts)
 
 
 def wordInText(word, text):

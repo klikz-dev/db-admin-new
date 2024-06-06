@@ -48,6 +48,9 @@ class ShopifyManager:
             self.newVariantsData = self.generateVariantsData(
                 product=product, new=True)
 
+            self.swatchType, self.relatedProducts = common.getRelatedProducts(
+                product=product)
+
             self.metafields = self.generateMetafields(product=product)
 
             self.productTags = self.generateProductTags(product=product)
@@ -143,12 +146,10 @@ class ShopifyManager:
                 "value": value
             })
 
-        relatedProducts = common.getRelatedProducts(product=product)
-
         metafields.append({
             "namespace": "custom",
             "key": "related_products",
-            "value": json.dumps(relatedProducts)
+            "value": json.dumps(self.relatedProducts)
         })
 
         return metafields
@@ -186,6 +187,12 @@ class ShopifyManager:
             tags.append(f"Rebuy_Rug_Size_{size}")
         if product.type.name == "Rug Pad" and size:
             tags.append(f"Rebuy_Rug_Pad_Size_{size}")
+
+        # SearchSpring Swatch Tagging
+        tags.append(
+            f"group:{product.manufacturer}_{product.type}_{product.collection}_{product.pattern}")
+        tags.append("ptype:parent" if self.swatchType ==
+                    "parent" else "ptype:child")
 
         return ",".join(tags)
 

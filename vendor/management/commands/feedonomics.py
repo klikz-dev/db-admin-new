@@ -118,8 +118,12 @@ class Processor:
             ] else product.manufacturer.name
             image = product.images.filter(position=1).first().url
             tags = set(product.tags.values_list('name', flat=True).distinct())
-            specs = ', '.join(
-                [f"{key}: {value}" for key, value in product.specs])
+
+            try:
+                specs = ', '.join(
+                    [f"{key}: {value}" for key, value in product.specs])
+            except:
+                specs = ""
 
             if not image:
                 continue
