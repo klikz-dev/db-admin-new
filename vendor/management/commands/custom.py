@@ -108,6 +108,9 @@ class Processor:
             debug.log(
                 "Custom", f"{index}/{total}: Content Sync for {product.shopifyId} has been completed.")
 
+        # for index, product in enumerate(products):
+        #     syncContent(index, product)
+
         common.thread(rows=products, function=syncContent)
 
     def collections(self):
