@@ -379,6 +379,9 @@ def writeDatasheet(filePath, header, rows):
 
     for rowId, row in enumerate(rows):
         for columnId, column in enumerate(row):
-            worksheet.write(rowId + 1, columnId, column)
+            if "http" in column:
+                worksheet.write_string(rowId + 1, columnId, column)
+            else:
+                worksheet.write(rowId + 1, columnId, column)
 
     workbook.close()
