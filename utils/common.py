@@ -11,6 +11,7 @@ import re
 import inflect
 import pycountry
 import xlsxwriter
+import csv
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -385,3 +386,13 @@ def writeDatasheet(filePath, header, rows):
                 worksheet.write(rowId + 1, columnId, column)
 
     workbook.close()
+
+
+def writeCSV(filePath, header, rows):
+    with open(filePath, mode='w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        writer.writerow(header)
+
+        for row in rows:
+            writer.writerow(row)

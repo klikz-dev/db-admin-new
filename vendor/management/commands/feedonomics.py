@@ -182,8 +182,8 @@ class Processor:
 
             rows.append(row)
 
-        common.writeDatasheet(
-            filePath=f"{FILEDIR}/decoratorsbest-feedonomics-feed.xlsx",
+        common.writeCSV(
+            filePath=f"{FILEDIR}/decoratorsbest-feedonomics-feed.csv",
             header=header,
             rows=rows
         )
@@ -194,7 +194,7 @@ class Processor:
         try:
             with self.sftp.cd('/incoming'):
                 self.sftp.put(
-                    f"{FILEDIR}/decoratorsbest-feedonomics-feed.xlsx")
+                    f"{FILEDIR}/decoratorsbest-feedonomics-feed.csv")
 
         except Exception as e:
             debug.error(
