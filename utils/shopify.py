@@ -189,10 +189,11 @@ class ShopifyManager:
             tags.append(f"Rebuy_Rug_Pad_Size_{size}")
 
         # SearchSpring Swatch Tagging
-        tags.append(
-            f"group:{product.manufacturer}_{product.type}_{product.collection}_{product.pattern}")
-        tags.append("ptype:parent" if self.swatchType ==
-                    "parent" else "ptype:child")
+        if size:
+            tags.append(
+                f"group:{product.manufacturer}_{product.type}_{product.collection}_{product.pattern}")
+            tags.append("ptype:parent" if self.swatchType ==
+                        "parent" else "ptype:child")
 
         return ",".join(tags)
 

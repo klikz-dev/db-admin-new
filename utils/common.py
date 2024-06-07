@@ -223,7 +223,7 @@ def getRelatedProducts(product):
     ).filter(published=True).filter(images__position=1).order_by('width')
 
     firstPattern = allPatterns.first()
-    samePatterns = allPatterns.exclude(shopifyId=product.shopifyId)[:20]
+    samePatterns = allPatterns[:20]
 
     swatchType = "parent" if firstPattern == product else "child"
 
